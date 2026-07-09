@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LocalKirana — Apna Saman</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#1B4332" />
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<style>
+  :root{
+    --ink:#1F2A20;
+    --forest:#1B4332;
+    --forest-dark:#12301F;
+    --paper:#F7F5EF;
+    --card:#FFFFFF;
+    --turmeric:#E8A33D;
+    --turmeric-dark:#C97F1E;
+    --line:#E4E0D4;
+    --red:#B3432B;
+    --green-ok:#2F6B3A;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:'Segoe UI', system-ui, -apple-system, sans-serif;
+    background:var(--paper); color:var(--ink);
+  }
+  h1,h2,h3{font-family:'Poppins', 'Segoe UI', sans-serif; margin:0;}
+  header{
+    background:var(--forest); color:#fff; padding:18px 20px;
+    display:flex; align-items:center; justify-content:space-between;
+    position:sticky; top:0; z-index:10;
+  }
+  header h1{font-size:1.15rem; font-weight:700; letter-spacing:.2px;}
+  header h1 span{color:var(--turmeric);}
+  .badge{
+    background:rgba(255,255,255,.12); border-radius:20px; padding:4px 12px;
+    font-size:.78rem;
+  }
+  main{max-width:520px; margin:0 auto; padding:16px;}
+  .panel{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:16px; margin-bottom:14px;
+  }
+  .panel h2{font-size:1rem; margin-bottom:10px; color:var(--forest-dark);}
+  input, select{
+    width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:10px;
+    font-size:1rem; margin-bottom:10px; background:#fff;
+  }
+  label{font-size:.82rem; color:#6b6b5f; display:block; margin-bottom:4px;}
+  button{
+    border:none; border-radius:10px; padding:11px 16px; font-size:.95rem;
+    font-weight:600; cursor:pointer; transition:transform .08s ease;
+  }
+  button:active{transform:scale(.97);}
+  .btn-primary{background:var(--forest); color:#fff; width:100%;}
+  .btn-accent{background:var(--turmeric); color:#3a2600; width:100%;}
+  .btn-outline{background:#fff; border:1px solid var(--forest); color:var(--forest);}
+  .btn-sm{padding:6px 12px; font-size:.82rem;}
+  .item-row{
+    display:flex; align-items:center; gap:10px; padding:8px 0;
+    border-bottom:1px dashed var(--line);
+  }
+  .item-row:last-child{border-bottom:none;}
+  .item-row span.name{flex:1; font-size:.92rem;}
+  .item-row input[type=number]{width:70px; margin:0; padding:6px;}
+  .receipt-line{
+    display:flex; justify-content:space-between; font-size:.88rem; padding:6px 0;
+    border-bottom:1px dotted var(--line);
+  }
+  .receipt-line .shop{color:#6b6b5f; font-size:.78rem;}
+  .total-line{
+    display:flex; justify-content:space-between; font-weight:700; padding-top:10px;
+    font-size:1.05rem; color:var(--forest-dark);
+  }
+  .status-pill{
+    display:inline-block; padding:3px 10px; border-radius:20px; font-size:.72rem;
+    font-weight:700; text-transform:uppercase; letter-spacing:.4px;
+  }
+  .status-pending_shop_review{background:#FDF0DC; color:var(--turmeric-dark);}
+  .status-partially_unavailable{background:#FBE3DD; color:var(--red);}
+  .status-awaiting_payment{background:#E6EEE8; color:var(--forest);}
+  .status-confirmed{background:#E6EEE8; color:var(--green-ok);}
+  .status-ready{background:#1B4332; color:#fff;}
+  .status-completed{background:#22281F; color:#fff;}
+  #order-tracker .order-card{margin-bottom:12px;}
+  #qr-box{text-align:center; padding:10px;}
+  #qr-box canvas{margin:0 auto;}
+  .code-box{
+    text-align:center; font-size:2rem; letter-spacing:10px; font-weight:800;
+    color:var(--forest); background:#EFEADA; border-radius:12px; padding:14px; margin:10px 0;
+  }
+  .hint{font-size:.78rem; color:#847f6f; margin-top:4px;}
+  .hidden{display:none !important;}
+  #map{width:100%; height:220px; border-radius:12px; margin-top:10px; border:1px solid var(--line);}
+  .toast{
+    position:fixed; bottom:16px; left:50%; transform:translateX(-50%);
+    background:var(--forest-dark); color:#fff; padding:10px 18px; border-radius:30px;
+    font-size:.85rem; z-index:50; box-shadow:0 4px 14px rgba(0,0,0,.2);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Local<span>Kirana</span></h1>
+  <div class="badge" id="user-badge">Guest</div>
+</header>
+
+<main>
+
+  <!-- ============ AUTH ============ -->
+  <section id="auth-panel" class="panel">
+    <h2>Login / Naya Account</h2>
+    <label>Naam</label>
+    <input id="reg-name" placeholder="Ravi Kumar" />
+    <label>Phone Number</label>
+    <input id="phone" placeholder="9876543210" />
+    <label>Password</label>
+    <input id="password" type="password" placeholder="••••••" />
+    <button class="btn-primary" onclick="login()">Login</button>
+    <div style="height:8px;"></div>
+    <button class="btn-outline" style="width:100%" onclick="signup()">Naya Account Banao</button>
+  </section>
+
+  <!-- ============ CATALOG / CART ============ -->
+  <section id="shop-panel" class="panel hidden">
+    <h2>Saman Chuno</h2>
+    <div id="catalog"></div>
+    <div style="height:10px;"></div>
+    <button class="btn-primary" onclick="matchCart()">Sabse Sasti Dukan Dhoondo</button>
+  </section>
+
+  <section id="match-panel" class="panel hidden">
+    <h2>Aapka Bill Preview</h2>
+    <div id="match-lines"></div>
+    <div class="total-line"><span>Total</span><span id="grand-total">₹0</span></div>
+    <div style="height:10px;"></div>
+    <button class="btn-accent" onclick="placeOrder()">Done — Order Bhejo</button>
+  </section>
+
+  <!-- ============ LIVE ORDER TRACKING ============ -->
+  <section id="order-tracker" class="panel hidden">
+    <h2>Aapka Order</h2>
+    <div id="order-cards"></div>
+  </section>
+
+</main>
+
+<script>
+const API = "http://localhost:8000";
+let token = null, myRole = null, myUserId = null, ws = null;
+let catalogItems = [], cart = {}, matchedLines = [], activeShopOrderIds = [];
+
+// ---------------- AUTH ----------------
+async function signup(){
+  const body = {
+    name: document.getElementById('reg-name').value,
+    phone: document.getElementById('phone').value,
+    password: document.getElementById('password').value,
+    role: "customer"
+  };
+  const res = await fetch(`${API}/auth/signup`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+  if(!res.ok){ toast('Signup fail ho gaya: ' + (await res.text())); return; }
+  onLoggedIn(await res.json());
+}
+
+async function login(){
+  const body = { phone: document.getElementById('phone').value, password: document.getElementById('password').value };
+  const res = await fetch(`${API}/auth/login`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+  if(!res.ok){ toast('Login fail: phone ya password galat hai'); return; }
+  onLoggedIn(await res.json());
+}
+
+function onLoggedIn(data){
+  token = data.access_token; myRole = data.role; myUserId = data.user_id;
+  document.getElementById('user-badge').innerText = `${data.name} · ${data.role}`;
+  document.getElementById('auth-panel').classList.add('hidden');
+  document.getElementById('shop-panel').classList.remove('hidden');
+  document.getElementById('order-tracker').classList.remove('hidden');
+  loadCatalog();
+  connectWS();
+}
+
+function authHeaders(){ return {'Authorization': `Bearer ${token}`, 'Content-Type':'application/json'}; }
+
+// ---------------- CATALOG ----------------
+async function loadCatalog(){
+  const res = await fetch(`${API}/customer/items`, {headers: authHeaders()});
+  catalogItems = await res.json();
+  const el = document.getElementById('catalog');
+  el.innerHTML = catalogItems.map(it => `
+    <div class="item-row">
+      <span class="name">${it.name} <span class="hint">(${it.unit})</span></span>
+      <input type="number" min="0" step="0.5" placeholder="0" data-item="${it.id}" onchange="updateCart(${it.id}, this.value)" />
+    </div>
+  `).join('');
+}
+
+function updateCart(itemId, qty){
+  qty = parseFloat(qty);
+  if(!qty || qty <= 0){ delete cart[itemId]; return; }
+  cart[itemId] = qty;
+}
+
+// ---------------- MATCH CHEAPEST SHOP ----------------
+async function matchCart(){
+  const lines = Object.entries(cart).map(([item_id, quantity]) => ({item_id: parseInt(item_id), quantity}));
+  if(lines.length === 0){ toast('Pehle kuch saman chuno'); return; }
+
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    await doMatch(lines, pos.coords.latitude, pos.coords.longitude);
+  }, async () => { await doMatch(lines, null, null); });
+}
+
+async function doMatch(lines, lat, lng){
+  const res = await fetch(`${API}/customer/cart/match`, {
+    method:'POST', headers: authHeaders(),
+    body: JSON.stringify({lines, latitude: lat, longitude: lng})
+  });
+  const data = await res.json();
+  matchedLines = data.lines;
+  window._lastLat = lat; window._lastLng = lng;
+
+  document.getElementById('match-panel').classList.remove('hidden');
+  document.getElementById('match-lines').innerHTML = matchedLines.map(l => l.available ? `
+    <div class="receipt-line">
+      <span>${l.item_name} × ${l.quantity}<br><span class="shop">📍 ${l.shop_name} — ₹${l.unit_price}/unit</span></span>
+      <span>₹${l.line_total.toFixed(2)}</span>
+    </div>` : `
+    <div class="receipt-line">
+      <span>${l.item_name} × ${l.quantity}<br><span class="shop" style="color:var(--red)">❌ Kahi bhi available nahi</span></span>
+      <span>—</span>
+    </div>`
+  ).join('');
+  document.getElementById('grand-total').innerText = `₹${data.grand_total.toFixed(2)}`;
+}
+
+// ---------------- PLACE ORDER ----------------
+async function placeOrder(){
+  const lines = Object.entries(cart).map(([item_id, quantity]) => ({item_id: parseInt(item_id), quantity}));
+  const res = await fetch(`${API}/customer/orders`, {
+    method:'POST', headers: authHeaders(),
+    body: JSON.stringify({lines, latitude: window._lastLat, longitude: window._lastLng})
+  });
+  if(!res.ok){ toast('Order nahi ban paya: ' + (await res.text())); return; }
+  const shopOrders = await res.json();
+  activeShopOrderIds = shopOrders.map(so => so.id);
+  document.getElementById('match-panel').classList.add('hidden');
+  shopOrders.forEach(renderOrderCard);
+  toast('Order dukandar ko bhej diya gaya!');
+}
+
+function renderOrderCard(so){
+  let el = document.getElementById(`order-${so.id}`);
+  if(!el){
+    el = document.createElement('div');
+    el.id = `order-${so.id}`;
+    el.className = 'order-card panel';
+    document.getElementById('order-cards').prepend(el);
+  }
+
+  const itemsHtml = so.items.map(i => `
+    <div class="receipt-line">
+      <span>${i.item_name} × ${i.quantity} ${i.availability === 'not_available' ? '❌' : i.availability === 'available' ? '✅' : '⏳'}</span>
+      <span>₹${(i.unit_price * i.quantity).toFixed(2)}</span>
+    </div>`).join('');
+
+  let actionHtml = '';
+  if(so.status === 'awaiting_payment'){
+    actionHtml = `
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <button class="btn-primary" style="flex:1" onclick="payOnline(${so.id}, ${so.amount})">Online Payment</button>
+        <button class="btn-outline" style="flex:1" onclick="payCash(${so.id})">Cash</button>
+      </div>
+      <div class="hint">Cash on pickup 10 online orders ke baad unlock hota hai.</div>`;
+  } else if(so.status === 'ready'){
+    actionHtml = `
+      <div id="qr-box-${so.id}" style="text-align:center; margin-top:10px;"></div>
+      <div class="code-box">${so.verification_code}</div>
+      <div class="hint">Yeh QR ya code dukandar ko dikhao/batao pickup ke liye</div>
+      <div id="map-${so.id}"></div>`;
+  }
+
+  el.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <strong>${so.shop_name}</strong>
+      <span class="status-pill status-${so.status}">${so.status.replace(/_/g,' ')}</span>
+    </div>
+    ${itemsHtml}
+    <div class="total-line"><span>Total</span><span>₹${so.amount.toFixed(2)}</span></div>
+    ${actionHtml}
+  `;
+
+  if(so.status === 'ready'){
+    QRCode.toCanvas(document.createElement('canvas'), so.qr_token, {width:180}, (err, canvas) => {
+      if(!err) document.getElementById(`qr-box-${so.id}`).appendChild(canvas);
+    });
+  }
+}
+
+// ---------------- PAYMENT ----------------
+async function payOnline(shopOrderId, amount){
+  const res = await fetch(`${API}/customer/shop-orders/${shopOrderId}/pay/create`, {method:'POST', headers: authHeaders()});
+  if(!res.ok){ toast('Payment order nahi ban paya: ' + (await res.text())); return; }
+  const rp = await res.json();
+
+  const options = {
+    key: rp.key_id,
+    amount: rp.amount_paise,
+    currency: rp.currency,
+    order_id: rp.razorpay_order_id,
+    name: "LocalKirana",
+    description: "Order Payment",
+    handler: async function(response){
+      const verifyRes = await fetch(`${API}/customer/shop-orders/${shopOrderId}/pay/verify`, {
+        method:'POST', headers: authHeaders(),
+        body: JSON.stringify({
+          razorpay_order_id: response.razorpay_order_id,
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_signature: response.razorpay_signature
+        })
+      });
+      if(verifyRes.ok){ toast('Payment ho gaya! ✅'); } else { toast('Payment verify nahi hua'); }
+    },
+    theme: { color: "#1B4332" }
+  };
+  const rzp = new Razorpay(options);
+  rzp.open();
+}
+
+async function payCash(shopOrderId){
+  const res = await fetch(`${API}/customer/shop-orders/${shopOrderId}/pay/cash`, {method:'POST', headers: authHeaders()});
+  if(!res.ok){ toast(await res.text()); return; }
+  toast('Cash on pickup confirm ho gaya');
+}
+
+// ---------------- WEBSOCKET (REAL-TIME) ----------------
+function connectWS(){
+  const wsUrl = API.replace('http', 'ws') + `/ws?token=${token}`;
+  ws = new WebSocket(wsUrl);
+  ws.onmessage = (msg) => {
+    const {event, data} = JSON.parse(msg.data);
+    if(event === 'item_not_available'){
+      toast(`${data.item_name} ${data.shop_name} mein nahi hai. Alternatives dekh rahe hain.`);
+    } else if(event === 'ready_for_payment'){
+      toast('Aapke items confirm ho gaye — ab payment kijiye');
+      refreshOrders();
+    } else if(event === 'order_ready'){
+      toast(data.message);
+      refreshOrders();
+      showMap(data);
+    } else if(event === 'order_received'){
+      toast(data.message);
+      refreshOrders();
+    }
+  };
+  ws.onclose = () => setTimeout(connectWS, 3000);
+}
+
+async function refreshOrders(){
+  for(const soId of activeShopOrderIds){
+    // simplest: refetch via order endpoint using order_id would need mapping;
+    // is demo mein hum orders/{order_id}/shop-orders ka istemal karte hain
+  }
+}
+
+function showMap(data){
+  const mapDiv = document.getElementById(`map-${data.shop_order_id}`);
+  if(!mapDiv) return;
+  // Google Maps Embed - GOOGLE_MAPS_API_KEY .env se backend proxy ya frontend config se aayegi
+  mapDiv.innerHTML = `<iframe id="map" style="border:0" loading="lazy"
+    src="https://www.google.com/maps/embed/v1/place?key=YOUR_GOOGLE_MAPS_API_KEY&q=${data.shop_latitude},${data.shop_longitude}">
+    </iframe>`;
+}
+
+function toast(msg){
+  const t = document.createElement('div');
+  t.className = 'toast'; t.innerText = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+</script>
+</body>
+</html>

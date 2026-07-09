@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LocalKirana — Dukandar</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#1B4332" />
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+  :root{
+    --ink:#1F2A20; --forest:#1B4332; --forest-dark:#12301F; --paper:#F7F5EF;
+    --card:#FFFFFF; --turmeric:#E8A33D; --turmeric-dark:#C97F1E; --line:#E4E0D4;
+    --red:#B3432B; --green-ok:#2F6B3A; --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; font-family:'Segoe UI', system-ui, sans-serif; background:var(--paper); color:var(--ink);}
+  h1,h2{font-family:'Poppins','Segoe UI',sans-serif; margin:0;}
+  header{background:var(--forest); color:#fff; padding:18px 20px; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:10;}
+  header h1{font-size:1.15rem;} header h1 span{color:var(--turmeric);}
+  .badge{background:rgba(255,255,255,.12); border-radius:20px; padding:4px 12px; font-size:.78rem;}
+  main{max-width:560px; margin:0 auto; padding:16px;}
+  .panel{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:16px; margin-bottom:14px;}
+  .panel h2{font-size:1rem; margin-bottom:10px; color:var(--forest-dark);}
+  input{width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:10px; font-size:1rem; margin-bottom:10px;}
+  label{font-size:.82rem; color:#6b6b5f; display:block; margin-bottom:4px;}
+  button{border:none; border-radius:10px; padding:11px 16px; font-size:.95rem; font-weight:600; cursor:pointer;}
+  button:active{transform:scale(.97);}
+  .btn-primary{background:var(--forest); color:#fff; width:100%;}
+  .btn-accent{background:var(--turmeric); color:#3a2600; width:100%;}
+  .btn-outline{background:#fff; border:1px solid var(--forest); color:var(--forest);}
+  .btn-row{display:flex; gap:8px;}
+  .btn-row button{flex:1;}
+  .item-check-row{display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px dashed var(--line);}
+  .item-check-row:last-child{border-bottom:none;}
+  .item-check-row .name{flex:1; font-size:.92rem;}
+  .avail-btn{width:42px; height:42px; border-radius:10px; font-size:1.1rem; font-weight:800;}
+  .avail-ok{background:#E6EEE8; color:var(--green-ok); border:2px solid var(--green-ok);}
+  .avail-no{background:#FBE3DD; color:var(--red); border:2px solid var(--red);}
+  .avail-ok.active{background:var(--green-ok); color:#fff;}
+  .avail-no.active{background:var(--red); color:#fff;}
+  .status-pill{display:inline-block; padding:3px 10px; border-radius:20px; font-size:.72rem; font-weight:700; text-transform:uppercase;}
+  .status-pending_shop_review{background:#FDF0DC; color:var(--turmeric-dark);}
+  .status-partially_unavailable{background:#FBE3DD; color:var(--red);}
+  .status-awaiting_payment{background:#E6EEE8; color:var(--forest);}
+  .status-confirmed{background:#E6EEE8; color:var(--green-ok);}
+  .status-ready{background:#1B4332; color:#fff;}
+  .status-completed{background:#22281F; color:#fff;}
+  .order-card{margin-bottom:14px;}
+  .hint{font-size:.78rem; color:#847f6f; margin-top:4px;}
+  .hidden{display:none !important;}
+  .toast{position:fixed; bottom:16px; left:50%; transform:translateX(-50%); background:var(--forest-dark); color:#fff; padding:10px 18px; border-radius:30px; font-size:.85rem; z-index:50;}
+  #qr-reader{width:100%; margin-top:10px;}
+  .tabbar{display:flex; gap:8px; margin-bottom:14px;}
+  .tabbar button{flex:1; background:#fff; border:1px solid var(--line); color:var(--ink);}
+  .tabbar button.active{background:var(--forest); color:#fff; border-color:var(--forest);}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Local<span>Kirana</span> · Dukandar</h1>
+  <div class="badge" id="user-badge">Guest</div>
+</header>
+
+<main>
+  <section id="auth-panel" class="panel">
+    <h2>Login / Naya Account (Dukan)</h2>
+    <label>Naam</label><input id="reg-name" placeholder="Ravi Kirana Store" />
+    <label>Phone</label><input id="phone" placeholder="9876543210" />
+    <label>Password</label><input id="password" type="password" />
+    <label>Dukan ka Naam</label><input id="shop-name" placeholder="Ravi Kirana Store" />
+    <label>Dukan ka Address</label><input id="shop-address" placeholder="Main Market, Shrirampur" />
+    <div class="hint" style="margin-bottom:10px;">Location automatic browser se le li jaayegi.</div>
+    <button class="btn-outline" style="width:100%; margin-bottom:8px;" onclick="signup()">Naya Account (Signup)</button>
+    <button class="btn-primary" onclick="login()">Login</button>
+  </section>
+
+  <div id="app-content" class="hidden">
+    <div class="tabbar">
+      <button id="tab-orders" class="active" onclick="switchTab('orders')">Orders</button>
+      <button id="tab-inventory" onclick="switchTab('inventory')">Inventory</button>
+      <button id="tab-scan" onclick="switchTab('scan')">Pickup Verify</button>
+    </div>
+
+    <!-- ORDERS TAB -->
+    <div id="tab-content-orders">
+      <div id="orders-list"></div>
+    </div>
+
+    <!-- INVENTORY TAB -->
+    <div id="tab-content-inventory" class="hidden">
+      <section class="panel">
+        <h2>Naya Item Catalog Mein Jodo</h2>
+        <label>Item Naam</label><input id="new-item-name" placeholder="Dal (Toor)" />
+        <label>Unit</label><input id="new-item-unit" placeholder="kg" />
+        <button class="btn-outline" style="width:100%" onclick="createItem()">Item Banao</button>
+      </section>
+      <section class="panel">
+        <h2>Apni Dukan Ka Price Set Karo</h2>
+        <div id="inventory-list"></div>
+      </section>
+    </div>
+
+    <!-- SCAN TAB -->
+    <div id="tab-content-scan" class="hidden">
+      <section class="panel">
+        <h2>QR Scan Karo (Pickup Confirm)</h2>
+        <label>Order ID</label>
+        <input id="scan-order-id" placeholder="Shop Order ID" />
+        <button class="btn-primary" onclick="startScanner()">Camera Se QR Scan Karo</button>
+        <div id="qr-reader"></div>
+      </section>
+      <section class="panel">
+        <h2>Ya 4-Digit Code Se Verify Karo</h2>
+        <label>Order ID</label>
+        <input id="code-order-id" placeholder="Shop Order ID" />
+        <label>Customer Ne Bataya Code</label>
+        <input id="code-input" maxlength="4" placeholder="1234" />
+        <button class="btn-accent" onclick="verifyByCode()">Code Se Confirm Karo</button>
+      </section>
+    </div>
+  </div>
+</main>
+
+<script>
+const API = "http://localhost:8000";
+let token = null, myUserId = null, ws = null;
+let catalogItems = [];
+
+// ---------------- AUTH ----------------
+function getShopLocation(cb){
+  navigator.geolocation.getCurrentPosition(
+    pos => cb(pos.coords.latitude, pos.coords.longitude),
+    () => cb(22.7500, 88.3400) // fallback: Shrirampur ke aas paas
+  );
+}
+
+async function signup(){
+  getShopLocation(async (lat, lng) => {
+    const body = {
+      name: document.getElementById('reg-name').value,
+      phone: document.getElementById('phone').value,
+      password: document.getElementById('password').value,
+      role: "shopkeeper",
+      shop_name: document.getElementById('shop-name').value,
+      shop_address: document.getElementById('shop-address').value,
+      shop_latitude: lat, shop_longitude: lng
+    };
+    const res = await fetch(`${API}/auth/signup`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+    if(!res.ok){ toast('Signup fail: ' + (await res.text())); return; }
+    onLoggedIn(await res.json());
+  });
+}
+
+async function login(){
+  const body = { phone: document.getElementById('phone').value, password: document.getElementById('password').value };
+  const res = await fetch(`${API}/auth/login`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+  if(!res.ok){ toast('Login fail'); return; }
+  onLoggedIn(await res.json());
+}
+
+function onLoggedIn(data){
+  token = data.access_token; myUserId = data.user_id;
+  document.getElementById('user-badge').innerText = data.name;
+  document.getElementById('auth-panel').classList.add('hidden');
+  document.getElementById('app-content').classList.remove('hidden');
+  loadOrders(); loadCatalogAndInventory(); connectWS();
+  setInterval(loadOrders, 8000); // simple polling backup, WS bhi hai
+}
+
+function authHeaders(){ return {'Authorization': `Bearer ${token}`, 'Content-Type':'application/json'}; }
+
+function switchTab(name){
+  ['orders','inventory','scan'].forEach(t => {
+    document.getElementById(`tab-content-${t}`).classList.toggle('hidden', t !== name);
+    document.getElementById(`tab-${t}`).classList.toggle('active', t === name);
+  });
+}
+
+// ---------------- ORDERS ----------------
+async function loadOrders(){
+  const res = await fetch(`${API}/shop/orders`, {headers: authHeaders()});
+  if(!res.ok) return;
+  const orders = await res.json();
+  const wrap = document.getElementById('orders-list');
+  wrap.innerHTML = orders.filter(o => o.status !== 'completed').map(renderOrderCard).join('') || '<div class="panel">Abhi koi naya order nahi hai.</div>';
+}
+
+function renderOrderCard(so){
+  const itemsHtml = so.items.map(i => `
+    <div class="item-check-row">
+      <span class="name">${i.item_name} × ${i.quantity} <br><span class="hint">₹${i.unit_price}/unit</span></span>
+      <button class="avail-btn avail-ok ${i.availability==='available'?'active':''}" onclick="setAvailability(${i.id}, 'available')">✓</button>
+      <button class="avail-btn avail-no ${i.availability==='not_available'?'active':''}" onclick="setAvailability(${i.id}, 'not_available')">✕</button>
+    </div>`).join('');
+
+  let footer = '';
+  if(so.status === 'awaiting_payment'){
+    footer = `<div class="hint">Customer payment kar raha hai — thoda intezaar karo.</div>`;
+  } else if(so.status === 'confirmed'){
+    footer = `<div class="hint">Payment: <strong>${so.payment_status}</strong></div>
+      <button class="btn-accent" style="margin-top:8px" onclick="markReady(${so.id})">Ready — Saman Taiyar Hai</button>`;
+  } else if(so.status === 'ready'){
+    footer = `<div class="hint">Customer aa raha hai. Order ID: <strong>${so.id}</strong> — Pickup Verify tab se confirm karo.</div>`;
+  }
+
+  return `
+    <div class="panel order-card">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <strong>${so.customer_name}</strong>
+        <span class="status-pill status-${so.status}">${so.status.replace(/_/g,' ')}</span>
+      </div>
+      <div class="hint">Order ID: ${so.id} · Total: ₹${so.amount.toFixed(2)}</div>
+      ${itemsHtml}
+      ${footer}
+    </div>`;
+}
+
+async function setAvailability(shopOrderItemId, availability){
+  const res = await fetch(`${API}/shop/order-items/${shopOrderItemId}/availability`, {
+    method:'PATCH', headers: authHeaders(), body: JSON.stringify({availability})
+  });
+  if(!res.ok){ toast(await res.text()); return; }
+  loadOrders();
+}
+
+async function markReady(shopOrderId){
+  const res = await fetch(`${API}/shop/orders/${shopOrderId}/ready`, {method:'POST', headers: authHeaders()});
+  if(!res.ok){ toast(await res.text()); return; }
+  toast('Customer ko "order ready" bhej diya!');
+  loadOrders();
+}
+
+// ---------------- INVENTORY ----------------
+async function loadCatalogAndInventory(){
+  const res = await fetch(`${API}/customer/items`, {headers: authHeaders()});
+  catalogItems = await res.json();
+  document.getElementById('inventory-list').innerHTML = catalogItems.map(it => `
+    <div class="item-check-row">
+      <span class="name">${it.name}</span>
+      <input type="number" step="0.5" style="width:90px; margin:0;" placeholder="Price ₹" id="price-${it.id}" />
+      <button class="btn-outline btn-row" style="width:auto; padding:8px 12px;" onclick="saveInventory(${it.id})">Save</button>
+    </div>`).join('');
+}
+
+async function createItem(){
+  const name = document.getElementById('new-item-name').value;
+  const unit = document.getElementById('new-item-unit').value || 'unit';
+  if(!name) return;
+  const res = await fetch(`${API}/shop/items?name=${encodeURIComponent(name)}&unit=${encodeURIComponent(unit)}`, {method:'POST', headers: authHeaders()});
+  if(!res.ok){ toast(await res.text()); return; }
+  toast('Item catalog mein add ho gaya');
+  document.getElementById('new-item-name').value = '';
+  loadCatalogAndInventory();
+}
+
+async function saveInventory(itemId){
+  const price = parseFloat(document.getElementById(`price-${itemId}`).value);
+  if(!price || price <= 0){ toast('Sahi price daalo'); return; }
+  const res = await fetch(`${API}/shop/inventory`, {
+    method:'POST', headers: authHeaders(),
+    body: JSON.stringify({item_id: itemId, price, in_stock: true})
+  });
+  if(!res.ok){ toast(await res.text()); return; }
+  toast('Price save ho gaya');
+}
+
+// ---------------- PICKUP VERIFICATION ----------------
+let html5QrCode = null;
+
+function startScanner(){
+  const orderId = document.getElementById('scan-order-id').value;
+  if(!orderId){ toast('Pehle Order ID daalo'); return; }
+  if(html5QrCode){ html5QrCode.stop(); }
+  html5QrCode = new Html5Qrcode("qr-reader");
+  html5QrCode.start(
+    { facingMode: "environment" }, { fps: 10, qrbox: 220 },
+    async (decodedText) => {
+      html5QrCode.stop();
+      const res = await fetch(`${API}/shop/orders/${orderId}/verify-qr`, {
+        method:'POST', headers: authHeaders(), body: JSON.stringify({qr_token: decodedText})
+      });
+      if(res.ok){ toast('Pickup confirm ho gaya! ✅'); loadOrders(); }
+      else{ toast('QR match nahi hua: ' + (await res.text())); }
+    },
+    () => {}
+  );
+}
+
+async function verifyByCode(){
+  const orderId = document.getElementById('code-order-id').value;
+  const code = document.getElementById('code-input').value;
+  const res = await fetch(`${API}/shop/orders/${orderId}/verify-code`, {
+    method:'POST', headers: authHeaders(), body: JSON.stringify({code})
+  });
+  if(res.ok){ toast('Pickup confirm ho gaya! ✅'); loadOrders(); }
+  else{ toast('Code galat hai: ' + (await res.text())); }
+}
+
+// ---------------- WEBSOCKET ----------------
+function connectWS(){
+  const wsUrl = API.replace('http', 'ws') + `/ws?token=${token}`;
+  ws = new WebSocket(wsUrl);
+  ws.onmessage = (msg) => {
+    const {event, data} = JSON.parse(msg.data);
+    if(event === 'new_order'){ toast('Naya order aaya!'); loadOrders(); }
+    else if(event === 'order_completed'){ toast(`${data.customer_name} ko saman de diya gaya`); loadOrders(); }
+  };
+  ws.onclose = () => setTimeout(connectWS, 3000);
+}
+
+function toast(msg){
+  const t = document.createElement('div');
+  t.className = 'toast'; t.innerText = typeof msg === 'string' ? msg : JSON.stringify(msg);
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+</script>
+</body>
+</html>

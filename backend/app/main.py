@@ -80,7 +80,7 @@ async def websocket_endpoint(websocket: WebSocket, token: str = Query(...)):
     except WebSocketDisconnect:
         manager.disconnect(user_id, websocket)
 # Frontend files serve karne ke liye
-FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "frontend")
+FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..",  "frontend")
 
 app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
 
