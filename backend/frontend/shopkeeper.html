@@ -65,17 +65,25 @@
 
 <main>
   <section id="auth-panel" class="panel">
-    <h2>Login / Naya Account (Dukan)</h2>
-    <label>Naam</label><input id="reg-name" placeholder="Ravi Kirana Store" />
+    <h2 id="auth-title">Login Karo</h2>
+
     <label>Phone</label><input id="phone" placeholder="9876543210" />
     <label>Password</label><input id="password" type="password" />
-    <label>Dukan ka Naam</label><input id="shop-name" placeholder="Ravi Kirana Store" />
-    <label>Dukan ka Address</label><input id="shop-address" placeholder="Main Market, Shrirampur" />
-    <div class="hint" style="margin-bottom:10px;">Location automatic browser se le li jaayegi.</div>
-    <button class="btn-outline" style="width:100%; margin-bottom:8px;" onclick="signup()">Naya Account (Signup)</button>
-    <button class="btn-primary" onclick="login()">Login</button>
-  </section>
 
+    <div id="signup-extra-fields" class="hidden">
+      <label>Naam</label><input id="reg-name" placeholder="Ravi Kirana Store" />
+      <label>Dukan ka Naam</label><input id="shop-name" placeholder="Ravi Kirana Store" />
+      <label>Dukan ka Address</label><input id="shop-address" placeholder="Main Market, Shrirampur" />
+      <div class="hint" style="margin-bottom:10px;">Location automatic browser se le li jaayegi.</div>
+    </div>
+
+    <button class="btn-primary" id="auth-main-btn" onclick="login()">Login</button>
+
+    <div style="text-align:center; margin-top:14px; font-size:.85rem;">
+      <span id="toggle-text">Naya account nahi hai? </span>
+      <a href="#" id="toggle-link" onclick="toggleAuthMode(); return false;" style="color:#1B4332; font-weight:600;">Naya Account Banao</a>
+    </div>
+</section>
   <div id="app-content" class="hidden">
     <div class="tabbar">
       <button id="tab-orders" class="active" onclick="switchTab('orders')">Orders</button>
@@ -124,16 +132,16 @@
 </main>
 
 <script>
-const API = "https://localkirana-production.up.railway.app";
 let token = null, myUserId = null, ws = null;
-let catalogItems = [];
-
-// ---------------- AUTH ----------------
-function getShopLocation(cb){
-  navigator.geolocation.getCurrentPosition(
-    pos => cb(pos.coords.latitude, pos.coords.longitude),
-    () => cb(22.7500, 88.3400) // fallback: Shrirampur ke aas paas
-  );
+let isSignupMode = false;
+function toggleAuthMode(){
+  isSignupMode = !isSignupMode;
+  document.getElementById('signup-extra-fields').classList.toggle('hidden', !isSignupMode);
+  document.getElementById('auth-title').innerText = isSignupMode ? 'Naya Account Banao' : 'Login Karo';
+  document.getElementById('auth-main-btn').innerText = isSignupMode ? 'Naya Account (Signup)' : 'Login';
+  document.getElementById('auth-main-btn').setAttribute('onclick', isSignupMode ? 'signup()' : 'login()');
+  document.getElementById('toggle-text').innerText = isSignupMode ? 'Pehle se account hai? ' : 'Naya account nahi hai? ';
+  document.getElementById('toggle-link').innerText = isSignupMode ? 'Login Karo' : 'Naya Account Banao';
 }
 
 async function signup(){
