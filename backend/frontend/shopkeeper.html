@@ -143,6 +143,22 @@ function toggleAuthMode(){
   document.getElementById('toggle-text').innerText = isSignupMode ? 'Pehle se account hai? ' : 'Naya account nahi hai? ';
   document.getElementById('toggle-link').innerText = isSignupMode ? 'Login Karo' : 'Naya Account Banao';
 }
+function getShopLocation(callback){
+  if(!navigator.geolocation){
+    toast('Location support nahi hai is browser mein');
+    callback(0, 0);
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      callback(position.coords.latitude, position.coords.longitude);
+    },
+    (error) => {
+      toast('Location allow karo, tabhi signup hoga');
+      console.error('Geolocation error:', error);
+    }
+  );
+}
 
 async function signup(){
   getShopLocation(async (lat, lng) => {
