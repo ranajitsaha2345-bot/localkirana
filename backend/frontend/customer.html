@@ -154,19 +154,20 @@
     <h2>Aapka Order</h2>
     <div id="order-cards"></div>
   </section>
-  let isSignupMode = false;
-  function toggleAuthMode(){
-    isSignupMode = !isSignupMode;
-    document.getElementById('signup-extra-fields').classList.toggle('hidden', !isSignupMode);
-    document.getElementById('auth-title').innerText = isSignupMode ? 'Naya Account Banao' : 'Login Karo';
-    document.getElementById('auth-main-btn').innerText = isSignupMode ? 'Naya Account (Signup)' : 'Login';
-    document.getElementById('auth-main-btn').setAttribute('onclick', isSignupMode ? 'signup()' : 'login()');
-    document.getElementById('toggle-text').innerText = isSignupMode ? 'Pehle se account hai? ' : 'Naya account nahi hai? ';
-    document.getElementById('toggle-link').innerText = isSignupMode ? 'Login Karo' : 'Naya Account Banao';
-  }
-</main>
-
-<script>
+  <script>
+    let isSignupMode = false;
+    function toggleAuthMode(){
+      isSignupMode = !isSignupMode;
+      document.getElementById('signup-extra-fields').classList.toggle('hidden', !isSignupMode);
+      document.getElementById('auth-title').innerText = isSignupMode ? 'Naya Account Banao' : 'Login Karo';
+      document.getElementById('auth-main-btn').innerText = isSignupMode ? 'Naya Account (Signup)' : 'Login';
+      document.getElementById('auth-main-btn').setAttribute('onclick', isSignupMode ? 'signup()' : 'login()');
+      document.getElementById('toggle-text').innerText = isSignupMode ? 'Pehle se account hai? ' : 'Naya account nahi hai? ';
+      document.getElementById('toggle-link').innerText = isSignupMode ? 'Login Karo' : 'Naya Account Banao';
+    }
+    </script>
+    </main>
+  <script>
 const API = "https://localkirana-production.up.railway.app"; 
 let token = null, myRole = null, myUserId = null, ws = null;
 let catalogItems = [], cart = {}, matchedLines = [], activeShopOrderIds = [];
