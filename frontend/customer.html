@@ -113,16 +113,23 @@
 
   <!-- ============ AUTH ============ -->
   <section id="auth-panel" class="panel">
-    <h2>Login / Naya Account</h2>
-    <label>Naam</label>
-    <input id="reg-name" placeholder="Ravi Kumar" />
+    <h2 id="auth-title">Login Karo</h2>
     <label>Phone Number</label>
     <input id="phone" placeholder="9876543210" />
     <label>Password</label>
     <input id="password" type="password" placeholder="••••••" />
-    <button class="btn-primary" onclick="login()">Login</button>
-    <div style="height:8px;"></div>
-    <button class="btn-outline" style="width:100%" onclick="signup()">Naya Account Banao</button>
+  
+    <div id="signup-extra-fields" class="hidden">
+      <label>Naam</label>
+      <input id="reg-name" placeholder="Ravi Kumar" />
+    </div>
+  
+    <button class="btn-primary" id="auth-main-btn" onclick="login()">Login</button>
+  
+    <div style="text-align:center; margin-top:14px; font-size:.85rem;">
+      <span id="toggle-text">Naya account nahi hai? </span>
+      <a href="#" id="toggle-link" onclick="toggleAuthMode(); return false;" style="color:#1B4332; font-weight:600;">Naya Account Banao</a>
+    </div>
   </section>
 
   <!-- ============ CATALOG / CART ============ -->
@@ -146,7 +153,16 @@
     <h2>Aapka Order</h2>
     <div id="order-cards"></div>
   </section>
-
+  let isSignupMode = false;
+  function toggleAuthMode(){
+    isSignupMode = !isSignupMode;
+    document.getElementById('signup-extra-fields').classList.toggle('hidden', !isSignupMode);
+    document.getElementById('auth-title').innerText = isSignupMode ? 'Naya Account Banao' : 'Login Karo';
+    document.getElementById('auth-main-btn').innerText = isSignupMode ? 'Naya Account (Signup)' : 'Login';
+    document.getElementById('auth-main-btn').setAttribute('onclick', isSignupMode ? 'signup()' : 'login()');
+    document.getElementById('toggle-text').innerText = isSignupMode ? 'Pehle se account hai? ' : 'Naya account nahi hai? ';
+    document.getElementById('toggle-link').innerText = isSignupMode ? 'Login Karo' : 'Naya Account Banao';
+  }
 </main>
 
 <script>
