@@ -338,6 +338,7 @@ function renderOrderCard(so){
       if(!err) document.getElementById(`qr-box-${so.id}`).appendChild(canvas);
     });
   }
+}
 
 // ---------------- PAYMENT ----------------
 async function payOnline(shopOrderId, amount){
