@@ -136,16 +136,52 @@ input::-webkit-credentials-auto-fill-button { visibility: hidden; display: none 
       <input id="password" type="text" placeholder="••••••" />
       
   
-    <div id="signup-extra-fields" class="hidden">
-      <label>Naam</label>
-      <input id="reg-name" placeholder="Ravi Kumar" />
-    </div>
+      <div id="signup-extra-fields" class="hidden">
+        <label>Naam</label>
+        <input id="reg-name" placeholder="Ravi Kumar" />
+        <label>Gmail</label>
+        <input id="reg-email" type="email" placeholder="ravi@gmail.com" />
+      </div>
   
     <button class="btn-primary" id="auth-main-btn" onclick="login()">Login</button>
   
     <div style="text-align:center; margin-top:14px; font-size:.85rem;">
       <span id="toggle-text">Naya account nahi hai? </span>
       <a href="#" id="toggle-link" onclick="toggleAuthMode(); return false;" style="color:#1B4332; font-weight:600;">Naya Account Banao</a>
+    </div>
+
+    <div style="text-align:center; margin-top:8px; font-size:.85rem;">
+      <a href="#" onclick="openForgotPassword(); return false;" style="color:#1B4332; font-weight:600;">Password Bhool Gaye?</a>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div id="forgot-modal" class="hidden" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:999; display:flex; align-items:center; justify-content:center;">
+      <div style="background:#fff; padding:24px; border-radius:12px; width:90%; max-width:340px;">
+
+        <div id="forgot-step1">
+          <h3 style="margin-bottom:12px;">Password Reset Karo</h3>
+          <label>Phone Number</label>
+          <input id="forgot-phone" placeholder="9876543210" style="width:100%; margin-bottom:12px;" />
+          <button class="btn-primary" style="width:100%;" onclick="sendForgotOtp()">OTP Bhejo</button>
+          <div style="text-align:center; margin-top:12px;">
+            <a href="#" onclick="closeForgotPassword(); return false;">Cancel</a>
+          </div>
+        </div>
+
+        <div id="forgot-step2" class="hidden">
+          <h3 style="margin-bottom:12px;">OTP Verify Karo</h3>
+          <div class="hint" style="margin-bottom:10px;">Aapke Gmail par OTP bhej diya gaya hai.</div>
+          <label>OTP</label>
+          <input id="forgot-otp" placeholder="6-digit OTP" style="width:100%; margin-bottom:12px;" />
+          <label>Naya Password</label>
+          <input id="forgot-new-password" type="text" placeholder="Naya password" style="width:100%; margin-bottom:12px;" />
+          <button class="btn-primary" style="width:100%;" onclick="submitResetPassword()">Password Badlo</button>
+          <div style="text-align:center; margin-top:12px;">
+            <a href="#" onclick="closeForgotPassword(); return false;">Cancel</a>
+          </div>
+        </div>
+
+      </div>
     </div>
   </section>
 
@@ -209,6 +245,7 @@ async function signup(){
   const body = {
     name: document.getElementById('reg-name').value,
     phone: document.getElementById('phone').value,
+    email: document.getElementById('reg-email').value,
     password: document.getElementById('password').value,
     role: "customer"
   };
@@ -222,6 +259,44 @@ async function login(){
   const res = await fetch(`${API}/auth/login`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
   if(!res.ok){ toast('Login fail: phone ya password galat hai'); return; }
   onLoggedIn(await res.json());
+}
+function openForgotPassword(){
+  document.getElementById('forgot-modal').classList.remove('hidden');
+  document.getElementById('forgot-step1').classList.remove('hidden');
+  document.getElementById('forgot-step2').classList.add('hidden');
+}
+function closeForgotPassword(){
+  document.getElementById('forgot-modal').classList.add('hidden');
+  document.getElementById('forgot-phone').value = '';
+  document.getElementById('forgot-otp').value = '';
+  document.getElementById('forgot-new-password').value = '';
+}
+async function sendForgotOtp(){
+  const phone = document.getElementById('forgot-phone').value;
+  if(!phone){ toast('Phone number daalo'); return; }
+  const res = await fetch(`${API}/auth/forgot-password`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({phone})
+  });
+  const data = await res.json();
+  if(!res.ok){ toast(data.detail || 'Kuch galat ho gaya'); return; }
+  toast('OTP Gmail par bhej diya gaya hai');
+  document.getElementById('forgot-step1').classList.add('hidden');
+  document.getElementById('forgot-step2').classList.remove('hidden');
+}
+async function submitResetPassword(){
+  const phone = document.getElementById('forgot-phone').value;
+  const otp = document.getElementById('forgot-otp').value;
+  const new_password = document.getElementById('forgot-new-password').value;
+  if(!otp || !new_password){ toast('OTP aur naya password daalo'); return; }
+  const res = await fetch(`${API}/auth/reset-password`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({phone, otp, new_password})
+  });
+  const data = await res.json();
+  if(!res.ok){ toast(data.detail || 'Kuch galat ho gaya'); return; }
+  toast('Password badal gaya! Ab login karo');
+  closeForgotPassword();
 }
 
 function onLoggedIn(data){
