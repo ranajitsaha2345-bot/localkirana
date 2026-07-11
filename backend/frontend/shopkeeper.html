@@ -228,11 +228,12 @@ async function loadMyShopQR(){
   document.getElementById('my-qr-name').innerText = data.shop_name;
   const box = document.getElementById('my-qr-box');
   box.innerHTML = '';
-  const canvas = document.createElement('canvas');
-  box.appendChild(canvas);
-  QRCode.toCanvas(canvas, data.qr_data, {width: 220}, (err) => {
-    if(err) toast('QR banane mein dikkat: ' + err);
-  });
+  const img = document.createElement('img');
+  img.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(data.qr_data)}`;
+  img.alt = 'Dukan QR Code';
+  img.style.width = '220px';
+  img.style.height = '220px';
+  box.appendChild(img);
   myShopQRLoaded = true;
 }
 
