@@ -12,6 +12,18 @@ from .services.realtime import manager
 from .routers import auth_router, customer_router, shop_router
 
 Base.metadata.create_all(bind=engine)
+from sqlalchemy import text
+
+def _run_migrations():
+    with engine.begin() as conn:
+        try:
+            conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR"))
+            conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_code VARCHAR"))
+            conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_code_expiry TIMESTAMP"))
+        except Exception as e:
+            print("Migration warning:", e)
+
+_run_migrations()
 
 app = FastAPI(title="LocalKirana API", version="1.0.0")
 
