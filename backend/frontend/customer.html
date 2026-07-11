@@ -47,10 +47,7 @@
     padding:16px; margin-bottom:14px;
   }
   .panel h2{font-size:1rem; margin-bottom:10px; color:var(--forest-dark);}
-  input, select{
-    width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:10px;
-    font-size:1rem; margin-bottom:10px; background:#fff;
-  }
+   
   label{font-size:.82rem; color:#6b6b5f; display:block; margin-bottom:4px;}
   button{
     border:none; border-radius:10px; padding:11px 16px; font-size:.95rem;
@@ -119,7 +116,10 @@
     <label>Phone Number</label>
     <input id="phone" placeholder="9876543210" />
     <label>Password</label>
-    <input id="password" type="password" placeholder="••••••" />
+    <div class="pw-wrap">
+      <input id="password" type="password" placeholder="••••••" />
+      <button type="button" class="pw-toggle" onclick="togglePasswordVisibility()">👁️</button>
+    </div>
   
     <div id="signup-extra-fields" class="hidden">
       <label>Naam</label>
@@ -165,6 +165,10 @@
 </section>
   <script>
     let isSignupMode = false;
+    function togglePasswordVisibility(){
+  const pw = document.getElementById('password');
+  pw.type = pw.type === 'password' ? 'text' : 'password';
+}
     function toggleAuthMode(){
       isSignupMode = !isSignupMode;
       document.getElementById('signup-extra-fields').classList.toggle('hidden', !isSignupMode);
