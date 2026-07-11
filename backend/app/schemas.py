@@ -9,6 +9,7 @@ from .models import UserRole, ShopOrderStatus, ItemAvailability, PaymentMode, Pa
 class UserCreate(BaseModel):
     name: str
     phone: str
+    email: Optional[str] = None
     password: str
     role: UserRole
     # agar shopkeeper hai to yeh bhi bhejna
@@ -16,6 +17,23 @@ class UserCreate(BaseModel):
     shop_address: Optional[str] = None
     shop_latitude: Optional[float] = None
     shop_longitude: Optional[float] = None
+    
+    # ---------- Forgot Password ----------
+
+class ForgotPasswordRequest(BaseModel):
+    phone: str
+
+
+class VerifyOTPRequest(BaseModel):
+    phone: str
+    otp: str
+
+
+class ResetPasswordRequest(BaseModel):
+    phone: str
+    otp: str
+    new_password: str
+
 
 
 class UserLogin(BaseModel):

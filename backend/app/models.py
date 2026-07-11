@@ -48,12 +48,17 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
     phone = Column(String, unique=True, index=True, nullable=False)
+    email = Column(String, nullable=True)
     password_hash = Column(String, nullable=False)
     role = Column(Enum(UserRole), nullable=False)
 
     # cash-eligibility rule: pehle N online payments ke baad hi cash allowed
     online_payment_count = Column(Integer, default=0)
     cash_unlocked = Column(Boolean, default=False)
+
+    # forgot-password OTP
+    reset_code = Column(String, nullable=True)
+    reset_code_expiry = Column(DateTime, nullable=True)
 
     created_at = Column(DateTime, default=datetime.utcnow)
 
