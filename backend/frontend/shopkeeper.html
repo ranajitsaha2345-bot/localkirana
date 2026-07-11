@@ -113,25 +113,18 @@
       </section>
     </div>
 
-    <!-- SCAN TAB -->
-    <div id="tab-content-scan" class="hidden">
-      <section class="panel">
-        <h2>QR Scan Karo (Pickup Confirm)</h2>
-        <label>Order ID</label>
-        <input id="scan-order-id" placeholder="Shop Order ID" />
-        <button class="btn-primary" onclick="startScanner()">Camera Se QR Scan Karo</button>
-        <div id="qr-reader"></div>
-      </section>
-      <section class="panel">
-        <h2>Ya 4-Digit Code Se Verify Karo</h2>
-        <label>Order ID</label>
-        <input id="code-order-id" placeholder="Shop Order ID" />
-        <label>Customer Ne Bataya Code</label>
-        <input id="code-input" maxlength="4" placeholder="1234" />
-        <button class="btn-accent" onclick="verifyByCode()">Code Se Confirm Karo</button>
-      </section>
-    </div>
-
+  <!-- SCAN TAB -->
+<div id="tab-content-scan" class="hidden">
+  <section class="panel">
+    <h2>Pickup Confirm Karo (4-Digit Code)</h2>
+    <label>Order ID</label>
+    <input id="code-order-id" placeholder="Shop Order ID" />
+    <label>Customer Ne Bataya Code</label>
+    <input id="code-input" maxlength="4" placeholder="1234" />
+    <button class="btn-accent" onclick="verifyByCode()">Code Se Confirm Karo</button>
+  </section>
+</div>
+ 
     <!-- MY SHOP QR TAB -->
     <div id="tab-content-myqr" class="hidden">
       <section class="panel">
