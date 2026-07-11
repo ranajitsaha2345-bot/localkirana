@@ -279,7 +279,7 @@ function renderOrderCard(so){
     el.className = 'order-card panel';
     document.getElementById('order-cards').prepend(el);
   }
-
+  el.dataset.orderId = so.order_id;
   const itemsHtml = so.items.map(i => `
     <div class="receipt-line">
       <span>${i.item_name} × ${i.quantity} ${i.availability === 'not_available' ? '❌' : i.availability === 'available' ? '✅' : '⏳'}</span>
@@ -379,9 +379,16 @@ function connectWS(){
 }
 
 async function refreshOrders(){
+  const orderIds = new Set();
   for(const soId of activeShopOrderIds){
-    // simplest: refetch via order endpoint using order_id would need mapping;
-    // is demo mein hum orders/{order_id}/shop-orders ka istemal karte hain
+    const el = document.getElementById(`order-${soId}`);
+    if(el && el.dataset.orderId) orderIds.add(el.dataset.orderId);
+  }
+  for(const orderId of orderIds){
+    const res = await fetch(`${API}/customer/orders/${orderId}/shop-orders`, {headers: authHeaders()});
+    if(!res.ok) continue;
+    const shopOrders = await res.json();
+    shopOrders.forEach(renderOrderCard);
   }
 }
 
