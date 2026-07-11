@@ -322,12 +322,11 @@ function renderOrderCard(so){
     ${actionHtml}
   `;
 
-  if(so.status === 'ready'){
+  if(so.status === 'ready' && typeof QRCode !== 'undefined'){
     QRCode.toCanvas(document.createElement('canvas'), so.qr_token, {width:180}, (err, canvas) => {
       if(!err) document.getElementById(`qr-box-${so.id}`).appendChild(canvas);
     });
   }
-}
 
 // ---------------- PAYMENT ----------------
 async function payOnline(shopOrderId, amount){
