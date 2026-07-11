@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#1B4332" />
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
 .hidden { display: none; }
   :root{
@@ -149,11 +150,19 @@
     <button class="btn-accent" onclick="placeOrder()">Done — Order Bhejo</button>
   </section>
 
-  <!-- ============ LIVE ORDER TRACKING ============ -->
-  <section id="order-tracker" class="panel hidden">
-    <h2>Aapka Order</h2>
-    <div id="order-cards"></div>
-  </section>
+<!-- ============ LIVE ORDER TRACKING ============ -->
+<section id="order-tracker" class="panel hidden">
+  <h2>Aapka Order</h2>
+  <div id="order-cards"></div>
+</section>
+
+<!-- ============ SHOP QR SCAN ============ -->
+<section id="shop-scan-panel" class="panel hidden">
+  <h2>Dukan Pahunch Gaye?</h2>
+  <div class="hint" style="margin-bottom:10px;">Dukan mein lage QR ko scan karo, dukandar ko turant pata chal jaayega.</div>
+  <button class="btn-primary" onclick="startShopScanner()">Dukan Ka QR Scan Karo</button>
+  <div id="shop-qr-reader" style="width:100%; margin-top:10px;"></div>
+</section>
   <script>
     let isSignupMode = false;
     function toggleAuthMode(){
@@ -198,6 +207,7 @@ function onLoggedIn(data){
   document.getElementById('auth-panel').classList.add('hidden');
   document.getElementById('shop-panel').classList.remove('hidden');
   document.getElementById('order-tracker').classList.remove('hidden');
+  document.getElementById('shop-scan-panel').classList.remove('hidden');
   loadCatalog();
   connectWS();
 }
@@ -399,6 +409,27 @@ function showMap(data){
   mapDiv.innerHTML = `<iframe id="map" style="border:0" loading="lazy"
     src="https://www.google.com/maps/embed/v1/place?key=YOUR_GOOGLE_MAPS_API_KEY&q=${data.shop_latitude},${data.shop_longitude}">
     </iframe>`;
+}
+
+ 
+
+let shopHtml5QrCode = null;
+function startShopScanner(){
+  if(shopHtml5QrCode){ shopHtml5QrCode.stop(); }
+  shopHtml5QrCode = new Html5Qrcode("shop-qr-reader");
+  shopHtml5QrCode.start(
+    { facingMode: "environment" }, { fps: 10, qrbox: 220 },
+    async (decodedText) => {
+      shopHtml5QrCode.stop();
+      const res = await fetch(`${API}/customer/scan-shop`, {
+        method:'POST', headers: authHeaders(), body: JSON.stringify({qr_data: decodedText})
+      });
+      const data = await res.json();
+      if(res.ok){ toast(data.message || 'Dukandar ko bata diya gaya!'); }
+      else{ toast(data.detail || 'Scan fail ho gaya'); }
+    },
+    () => {}
+  );
 }
 
 function toast(msg){
