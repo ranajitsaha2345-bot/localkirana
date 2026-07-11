@@ -117,8 +117,8 @@
 <div id="tab-content-scan" class="hidden">
   <section class="panel">
     <h2>Pickup Confirm Karo (4-Digit Code)</h2>
-    <label>Order ID</label>
-    <input id="code-order-id" placeholder="Shop Order ID" />
+  
+
     <label>Customer Ne Bataya Code</label>
     <input id="code-input" maxlength="4" placeholder="1234" />
     <button class="btn-accent" onclick="verifyByCode()">Code Se Confirm Karo</button>
@@ -342,15 +342,19 @@ function startScanner(){
 }
 
 async function verifyByCode(){
-  const orderId = document.getElementById('code-order-id').value;
   const code = document.getElementById('code-input').value;
-  const res = await fetch(`${API}/shop/orders/${orderId}/verify-code`, {
+  if(!code || code.length !== 4){ toast('4-digit code daalo'); return; }
+  const res = await fetch(`${API}/orders/verify-code-only`, {
     method:'POST', headers: authHeaders(), body: JSON.stringify({code})
   });
-  if(res.ok){ toast('Pickup confirm ho gaya! ✅'); loadOrders(); }
-  else{ toast('Code galat hai: ' + (await res.text())); }
+  if(res.ok){
+    toast('Pickup confirm ho gaya! ✅');
+    document.getElementById('code-input').value = '';
+    loadOrders();
+  } else {
+    toast('Galat code: ' + (await res.text()));
+  }
 }
-
 // ---------------- WEBSOCKET ----------------
 function connectWS(){
   const wsUrl = API.replace('http', 'ws') + `/ws?token=${token}`;

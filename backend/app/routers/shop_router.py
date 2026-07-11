@@ -315,6 +315,25 @@ async def verify_pickup_code(shop_order_id: int, payload: schemas.VerifyCodeRequ
         raise HTTPException(400, "Code galat hai, dobara try karo")
 
     return await _complete_pickup(db, so)
+    @router.post("/orders/verify-code-only", response_model=schemas.ShopOrderOut)
+async def verify_pickup_code_only(payload: schemas.VerifyCodeRequest,
+                                   db: Session = Depends(get_db),
+                                   user: models.User = Depends(require_shopkeeper)):
+    """
+    Sirf code se pickup verify karo - Order ID daalne ki zaroorat nahi.
+    Shop ke saare 'ready' orders mein se code match karke dhoondta hai.
+    """
+    shop = _get_owned_shop(db, user)
+    so = db.query(models.ShopOrder).filter(
+        models.ShopOrder.shop_id == shop.id,
+        models.ShopOrder.status == models.ShopOrderStatus.ready,
+        models.ShopOrder.verification_code == payload.code
+    ).first()
+
+    if not so:
+        raise HTTPException(400, "Is code se koi order nahi mila")
+
+    return await _complete_pickup(db, so)
 
 
 async def _complete_pickup(db: Session, so: models.ShopOrder) -> schemas.ShopOrderOut:
