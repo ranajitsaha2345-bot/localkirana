@@ -58,6 +58,12 @@
 .pw-toggle svg{ display:block; }
 
 .pw-toggle:active{transform:none;}
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear { display: none; }
+input::-webkit-credentials-auto-fill-button { visibility: hidden; display: none !important; }
+.pw-toggle{ z-index: 2; }
+.pw-toggle svg{ pointer-events: none; }
+
   label{font-size:.82rem; color:#6b6b5f; display:block; margin-bottom:4px;}
   button{
     border:none; border-radius:10px; padding:11px 16px; font-size:.95rem;
