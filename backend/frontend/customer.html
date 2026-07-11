@@ -248,6 +248,17 @@ async function doMatch(lines, lat, lng){
     method:'POST', headers: authHeaders(),
     body: JSON.stringify({lines, latitude: lat, longitude: lng})
   });
+  if(!res.ok){
+    if(res.status === 401){
+      toast('Session expire ho gaya, dobara login karo');
+      document.getElementById('auth-panel').classList.remove('hidden');
+      document.getElementById('shop-panel').classList.add('hidden');
+      token = null;
+    } else {
+      toast('Kuch galat hua: ' + (await res.text()));
+    }
+    return;
+  }
   const data = await res.json();
   matchedLines = data.lines;
   window._lastLat = lat; window._lastLng = lng;
