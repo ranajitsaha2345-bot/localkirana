@@ -16,6 +16,14 @@ def _get_owned_shop(db: Session, user: models.User) -> models.Shop:
         raise HTTPException(404, "Tumhari dukan register nahi hai")
     return shop
 
+    
+@router.get("/my-qr")
+def get_my_shop_qr(db: Session = Depends(get_db),
+                    user: models.User = Depends(require_shopkeeper)):
+    """Dukandar ka apna shop QR data - isse ek baar print/display karo dukan mein."""
+    shop = _get_owned_shop(db, user)
+    return {"shop_id": shop.id, "shop_name": shop.name, "qr_data": f"shop:{shop.id}"}
+
 
 def _to_shop_order_out(db: Session, so: models.ShopOrder) -> schemas.ShopOrderOut:
     shop = db.query(models.Shop).get(so.shop_id)

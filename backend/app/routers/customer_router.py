@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-
+from pydantic import BaseModel
 from .. import models, schemas, auth
 from ..database import get_db
 from ..services import matching, payment, realtime
 
 router = APIRouter(prefix="/customer", tags=["customer"])
 require_customer = auth.require_role(models.UserRole.customer)
-
+class ScanShopRequest(BaseModel):
+    qr_data: str
 
 @router.get("/items", response_model=list[schemas.ItemOut])
 def list_items(db: Session = Depends(get_db)):
@@ -236,3 +237,78 @@ def _to_shop_order_out(db: Session, so: models.ShopOrder) -> schemas.ShopOrderOu
         amount=so.amount, verification_code=so.verification_code, qr_token=so.qr_token,
         items=items, created_at=so.created_at, ready_at=so.ready_at,
     )
+
+
+@router.post("/scan-shop")
+async def scan_shop_qr(
+    payload: ScanShopRequest,
+    db: Session = Depends(get_db),
+    user: models.User = Depends(require_customer),
+):
+    """
+    Customer dukan mein pahunch kar shop ka static QR scan karta hai.
+    Isse dukandar ko turant customer ke active order ki poori details
+    ek notification mein mil jaati hai.
+    """
+    qr_data = payload.qr_data or ""
+    if not qr_data.startswith("shop:"):
+        raise HTTPException(400, "Yeh LocalKirana dukan ka QR nahi hai")
+
+    try:
+        shop_id = int(qr_data.split("shop:")[1])
+    except (IndexError, ValueError):
+        raise HTTPException(400, "QR data samajh nahi aaya")
+
+    shop = db.query(models.Shop).get(shop_id)
+    if not shop:
+        raise HTTPException(404, "Yeh dukan LocalKirana mein registered nahi hai")
+
+    active_statuses = [
+        models.ShopOrderStatus.pending_shop_review,
+        models.ShopOrderStatus.partially_unavailable,
+        models.ShopOrderStatus.awaiting_payment,
+        models.ShopOrderStatus.confirmed,
+        models.ShopOrderStatus.ready,
+    ]
+    so = (
+        db.query(models.ShopOrder)
+        .join(models.Order)
+        .filter(
+            models.ShopOrder.shop_id == shop_id,
+            models.Order.customer_id == user.id,
+            models.ShopOrder.status.in_(active_statuses),
+        )
+        .order_by(models.ShopOrder.created_at.desc())
+        .first()
+    )
+
+    if not so:
+        raise HTTPException(404, f"Aapka koi active order {shop.name} mein nahi mila")
+
+    items_summary = [
+        {"item_name": i.item.name, "quantity": i.quantity}
+        for i in so.items
+        if i.availability != models.ItemAvailability.not_available
+    ]
+
+    await realtime.manager.send_to_user(
+        shop.owner_id,
+        "customer_arrived",
+        {
+            "shop_order_id": so.id,
+            "customer_name": user.name,
+            "customer_phone": user.phone,
+            "items": items_summary,
+            "amount": so.amount,
+            "payment_mode": so.payment_mode,
+            "payment_status": so.payment_status,
+            "status": so.status,
+        },
+    )
+
+    return {
+        "status": "ok",
+        "message": f"{shop.name} ko aapke aane ki suchna bhej di gayi",
+        "shop_order_id": so.id,
+        "shop_order_status": so.status,
+    }
