@@ -344,7 +344,7 @@ function startScanner(){
 async function verifyByCode(){
   const code = document.getElementById('code-input').value;
   if(!code || code.length !== 4){ toast('4-digit code daalo'); return; }
-  const res = await fetch(`${API}/orders/verify-code-only`, {
+  const res = await fetch(`${API}/shop/orders/verify-code-only`, {
     method:'POST', headers: authHeaders(), body: JSON.stringify({code})
   });
   if(res.ok){

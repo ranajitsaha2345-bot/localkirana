@@ -295,26 +295,7 @@ async def verify_pickup_qr(shop_order_id: int, payload: schemas.VerifyQRRequest,
     return await _complete_pickup(db, so)
 
 
-@router.post("/orders/{shop_order_id}/verify-code", response_model=schemas.ShopOrderOut)
-async def verify_pickup_code(shop_order_id: int, payload: schemas.VerifyCodeRequest,
-                              db: Session = Depends(get_db),
-                              user: models.User = Depends(require_shopkeeper)):
-    """
-    Fallback jab customer ke paas phone/internet na ho:
-    customer verbally 4-digit code bolta hai, dukandar type karta hai.
-    """
-    shop = _get_owned_shop(db, user)
-    so = db.query(models.ShopOrder).get(shop_order_id)
-    if not so or so.shop_id != shop.id:
-        raise HTTPException(404, "Order nahi mila")
 
-    if so.status != models.ShopOrderStatus.ready:
-        raise HTTPException(400, "Order abhi pickup ke liye ready nahi hai")
-
-    if payload.code != so.verification_code:
-        raise HTTPException(400, "Code galat hai, dobara try karo")
-
-    return await _complete_pickup(db, so)
 @router.post("/orders/verify-code-only", response_model=schemas.ShopOrderOut)
 async def verify_pickup_code_only(payload: schemas.VerifyCodeRequest, db: Session = Depends(get_db), user: models.User = Depends(require_shopkeeper)):
     """
