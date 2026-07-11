@@ -1,7 +1,9 @@
 {
-  "name": "LocalKirana",
-  "short_name": "LocalKirana",
+  "id": "/customer.html",
+  "name": "Wait",
+  "short_name": "Wait",
   "start_url": "./customer.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#F7F5EF",
   "theme_color": "#1B4332",

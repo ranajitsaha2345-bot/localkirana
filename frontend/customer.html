@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>LocalKirana — Apna Saman</title>
+<title>Wait — Apna Saman</title>
 <link rel="manifest" href="manifest.json" />
 <meta name="theme-color" content="#1B4332" />
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
@@ -328,7 +328,7 @@ async function payOnline(shopOrderId, amount){
     amount: rp.amount_paise,
     currency: rp.currency,
     order_id: rp.razorpay_order_id,
-    name: "LocalKirana",
+    name: "Wait",
     description: "Order Payment",
     handler: async function(response){
       const verifyRes = await fetch(`${API}/customer/shop-orders/${shopOrderId}/pay/verify`, {

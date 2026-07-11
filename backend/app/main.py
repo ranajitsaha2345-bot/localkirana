@@ -25,7 +25,7 @@ def _run_migrations():
 
 _run_migrations()
 
-app = FastAPI(title="LocalKirana API", version="1.0.0")
+app = FastAPI(title="Wait API", version="1.0.0")
 
 # Production mein allow_origins ko apni actual domain tak limit karna
 app.add_middleware(

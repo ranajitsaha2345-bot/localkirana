@@ -252,7 +252,7 @@ async def scan_shop_qr(
     """
     qr_data = payload.qr_data or ""
     if not qr_data.startswith("shop:"):
-        raise HTTPException(400, "Yeh LocalKirana dukan ka QR nahi hai")
+        raise HTTPException(400, "Yeh Wait dukan ka QR nahi hai")
 
     try:
         shop_id = int(qr_data.split("shop:")[1])
@@ -261,7 +261,7 @@ async def scan_shop_qr(
 
     shop = db.query(models.Shop).get(shop_id)
     if not shop:
-        raise HTTPException(404, "Yeh dukan LocalKirana mein registered nahi hai")
+        raise HTTPException(404, "Yeh dukan Wait mein registered nahi hai")
 
     active_statuses = [
         models.ShopOrderStatus.pending_shop_review,

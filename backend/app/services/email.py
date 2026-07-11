@@ -3,7 +3,7 @@ import random
 import resend
 
 resend.api_key = os.getenv("RESEND_API_KEY")
-FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL")  # jaise: "LocalKirana <otp@yourdomain.com>"
+FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL")  # jaise: "Wait <otp@yourdomain.com>"
 
 
 def generate_otp() -> str:
@@ -11,16 +11,16 @@ def generate_otp() -> str:
 
 
 def send_otp_email(to_email: str, otp: str, name: str = ""):
-    subject = "LocalKirana - Password Reset OTP"
+    subject = "Wait - Password Reset OTP"
     body = f"""Namaste {name},
 
-Aapka LocalKirana password reset OTP hai: {otp}
+Aapka Wait password reset OTP hai: {otp}
 
 Yeh OTP agle 10 minute tak valid hai. Kisi ke saath share mat karna.
 
 Agar aapne yeh request nahi ki, to is email ko ignore kar sakte hain.
 
-- LocalKirana Team
+- Wait Team
 """
     resend.Emails.send({
         "from": FROM_EMAIL,

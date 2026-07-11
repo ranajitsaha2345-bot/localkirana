@@ -1,4 +1,4 @@
-# LocalKirana — Hyperlocal Kirana Order + Pickup App
+# Wait — Hyperlocal Kirana Order + Pickup App
 
 Ye poora system 3 hisso mein hai:
 ```
