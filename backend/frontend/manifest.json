@@ -1,5 +1,5 @@
 {
-   "id": "/",
+  "id": "/",
   "name": "Wait",
   "short_name": "Wait",
   "description": "Wait - manage your local kirana store orders",
@@ -35,14 +35,14 @@
   "screenshots": [
     {
       "src": "/static/screenshot-wide.png",
-      "sizes": "1280x720",
+      "sizes": "3839x2159",
       "type": "image/png",
       "form_factor": "wide"
     },
     {
       "src": "/static/screenshot-mobile.png",
       "sizes": "720x1600",
-      "type": "image/png",
+      "type": "image/jpeg",
       "form_factor": "narrow"
     }
   ]
