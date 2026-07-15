@@ -168,16 +168,22 @@ input::-webkit-credentials-auto-fill-button { visibility: hidden; display: none 
     </div>
 
   <!-- SCAN TAB -->
-<div id="tab-content-scan" class="hidden">
-  <section class="panel">
-    <h2>Pickup Confirm Karo (4-Digit Code)</h2>
-  
-
-    <label>Customer Ne Bataya Code</label>
-    <input id="code-input" maxlength="4" placeholder="1234" />
-    <button class="btn-accent" onclick="verifyByCode()">Code Se Confirm Karo</button>
-  </section>
-</div>
+  <div id="tab-content-scan" class="hidden">
+    <section class="panel">
+      <h2>Pickup Confirm Karo</h2>
+      
+      <label>Order ID</label>
+      <input id="scan-order-id" placeholder="Order ID daalo" />
+      
+      <label>Customer Ne Bataya Code</label>
+      <input id="code-input" maxlength="4" placeholder="1234" />
+      
+      <button class="btn-accent" onclick="verifyByCode()">Code Se Confirm Karo</button>
+      
+      <div id="qr-reader"></div>
+      <button class="btn-outline" style="width:100%; margin-top:10px;" onclick="startScanner()">QR Scan Karo</button>
+    </section>
+  </div>
  
     <!-- MY SHOP QR TAB -->
     <div id="tab-content-myqr" class="hidden">
