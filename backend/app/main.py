@@ -112,6 +112,10 @@ def serve_root():
 def serve_manifest():
     return FileResponse(os.path.join(FRONTEND_DIR, "manifest.json"))
 
+@app.get("/shop-manifest.json")
+def serve_shop_manifest():
+    return FileResponse(os.path.join(FRONTEND_DIR, "shop-manifest.json"))  
+
 @app.get("/sw.js")
 def serve_sw():
     return FileResponse(os.path.join(FRONTEND_DIR, "sw.js"), media_type="application/javascript")
