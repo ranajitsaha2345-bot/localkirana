@@ -152,49 +152,33 @@
 <main>
 
   <!-- ============ AUTH CONTAINER ============ -->
-    <div id="auth-panel" class="panel">
+  <div id="auth-panel" class="panel">
 
-      <div id="g_id_onload"
-           data-client_id="331552152118-9kbvonm08obtu4fjepnvc46b4lkdjid8.apps.googleusercontent.com"
-           data-callback="handleGoogleLogin">
-      </div>
-      <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="continue_with" data-size="large" data-width="300" style="margin-bottom:14px;"></div>
-      <p style="text-align:center; color:#999; margin:10px 0; font-size:.85rem;">— OR —</p>
-    
-      <h2 class="auth-heading">Enter your number</h2>
-     
-    <div id="otp-step1">
-      <div class="phone-box" style="margin-bottom: 16px; position:relative;">
-        <span class="flag-code" id="country-code-btn" onclick="toggleCountryList()"><img src="https://flagcdn.com/w20/in.png"> +91 ▾</span>
-<label class="floating-label">Mobile Number</label>
-<div id="phone-error" class="field-error hidden">Please use a real phone number</div>
-<input type="text" id="phone" placeholder=" " oninput="updateContinueState()">
-<div id="country-list" class="country-list hidden">
-  <input type="text" id="country-search" placeholder="Search country" oninput="renderCountryList(this.value)" style="width:92%;margin:6px auto;display:block;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font-size:.82rem;">
-  <div id="country-list-items"></div>
-</div> 
-      </div>
+    <h2 class="auth-heading" style="text-align:center; margin-bottom:20px;">Login karo shuru karne ke liye</h2>
   
-      <h2 class="auth-heading">Enter your Gmail</h2>
-      <div id="email-error" class="field-error hidden">Please use a real email</div>
-      <div class="phone-box" style="margin-bottom: 20px;">
-          <input type="email" id="reg-email" placeholder="Gmail Address" style="padding:6px 0;" oninput="updateContinueState()">
+    <div class="phone-box" style="margin-bottom: 16px; position:relative;">
+      <span class="flag-code" id="country-code-btn" onclick="toggleCountryList()"><img src="https://flagcdn.com/w20/in.png"> +91 ▾</span>
+      <label class="floating-label">Mobile Number</label>
+      <div id="phone-error" class="field-error hidden">Please use a real phone number</div>
+      <input type="text" id="phone" placeholder=" ">
+      <div id="country-list" class="country-list hidden">
+        <input type="text" id="country-search" placeholder="Search country" oninput="renderCountryList(this.value)" style="width:92%;margin:6px auto;display:block;padding:6px 8px;border:1px solid var(--line);">
+        <div id="country-list-items"></div>
       </div>
+    </div>
   
-      <button onclick="handleSendOTP()" class="btn-primary" id="continue-btn" disabled>Continue</button>
+    <button onclick="handlePhoneLogin()" class="btn-primary" id="continue-btn" style="margin-bottom:16px;">Continue</button>
+  
+    <p style="text-align:center; color:#999; margin:14px 0; font-size:.85rem;">— OR —</p>
+  
+    <div id="g_id_onload"
+         data-client_id="331552152118-9kbvonm08obtu4fjepnvc46b4lkdjid8.apps.googleusercontent.com"
+         data-callback="handleGoogleLogin">
+    </div>
+    <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="continue_with" data-size="large" data-width="300"></div>
+  
   </div>
-    </div>
-
-    <div id="otp-step2" class="hidden">
-        <p class="hint" style="margin-bottom: 14px;">Aapke Gmail par ek 6-digit OTP bheja gaya hai.</p>
-        <div style="margin-bottom: 20px;">
-            <label>Enter OTP</label>
-            <input type="text" id="login-otp" placeholder="Enter OTP Here" style="text-align: center; letter-spacing: 4px; font-size: 1.2rem;">
-        </div>
-        <button onclick="handleVerifyOTP()" class="btn-primary" style="margin-bottom: 10px;">Verify & Login</button>
-        <button onclick="showStep1()" class="btn-outline" style="width: 100%;">Back</button>
-    </div>
-</div>
+      
   <!-- ============ CATALOG / CART ============ -->
   <section id="shop-panel" class="panel hidden">
     <h2>Saman Chuno</h2>
@@ -341,7 +325,6 @@ function isValidEmail(email){
 
 function updateContinueState(){
   const phone = document.getElementById('phone').value.trim();
-  const email = document.getElementById('reg-email').value.trim();
 
   const phoneError = document.getElementById('phone-error');
   const emailError = document.getElementById('email-error');
@@ -402,11 +385,9 @@ async function handleSendOTP() {
   const email = document.getElementById('reg-email').value.trim();
 
   if (!phone || phone.length !== 10) { toast('Kripya sahi 10-digit phone number daalein'); return; }
-  if (!email) { toast('Gmail address daalna zaroori hai'); return; }
 
   const body = {
     phone: phone,
-    email: email,
     name: "User",
     role: "customer"
   };
