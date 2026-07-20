@@ -136,6 +136,7 @@
 .phone-box{ position:relative; border:1.5px solid var(--line); border-radius:8px; }
 .phone-box:focus-within{ border-color:#FF5200; }
 .floating-label{ position:absolute; top:-9px; left:12px; background:#fff; padding:0 4px; font-size:.72rem; color:#8a8674; }
+.field-error{ color:#D33; font-size:.72rem; margin-top:4px; padding-left:4px; }
 .phone-box:focus-within .floating-label{ color:#FF5200; }
 .country-list img, .flag-code img{ width:20px; height:14px; object-fit:cover; vertical-align:middle; margin-right:4px; }
 </style>
@@ -157,6 +158,7 @@
       <div class="phone-box" style="margin-bottom: 16px; position:relative;">
         <span class="flag-code" id="country-code-btn" onclick="toggleCountryList()"><img src="https://flagcdn.com/w20/in.png"> +91 ▾</span>
 <label class="floating-label">Mobile Number</label>
+<div id="phone-error" class="field-error hidden">Please use a real phone number</div>
 <input type="text" id="phone" placeholder=" " oninput="updateContinueState()">
 <div id="country-list" class="country-list hidden">
   <input type="text" id="country-search" placeholder="Search country" oninput="renderCountryList(this.value)" style="width:92%;margin:6px auto;display:block;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font-size:.82rem;">
@@ -165,6 +167,7 @@
       </div>
   
       <h2 class="auth-heading">Enter your Gmail</h2>
+      <div id="email-error" class="field-error hidden">Please use a real email</div>
       <div class="phone-box" style="margin-bottom: 20px;">
           <input type="email" id="reg-email" placeholder="Gmail Address" style="padding:6px 0;" oninput="updateContinueState()">
       </div>
@@ -315,10 +318,35 @@ function selectCountry(flag, code){
   document.getElementById('country-list').classList.add('hidden');
 }
 
+function isValidIndianPhone(phone){
+  return /^[6-9]\d{9}$/.test(phone);
+}
+
+function isValidEmail(email){
+  const disposableDomains = ['tempmail.com','10minutemail.com','guerrillamail.com','mailinator.com','yopmail.com','trashmail.com','fakeinbox.com','throwawaymail.com'];
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if(!emailRegex.test(email)) return false;
+  const domain = email.split('@')[1].toLowerCase();
+  return !disposableDomains.includes(domain);
+}
+
 function updateContinueState(){
   const phone = document.getElementById('phone').value.trim();
   const email = document.getElementById('reg-email').value.trim();
-  document.getElementById('continue-btn').disabled = !(phone && email);
+
+  const phoneError = document.getElementById('phone-error');
+  const emailError = document.getElementById('email-error');
+
+  const phoneOk = phone === '' || isValidIndianPhone(phone);
+  const emailOk = email === '' || isValidEmail(email);
+
+  phoneError.classList.toggle('hidden', phoneOk);
+  emailError.classList.toggle('hidden', emailOk);
+
+  const bothFilled = phone && email;
+  const bothValid = isValidIndianPhone(phone) && isValidEmail(email);
+
+  document.getElementById('continue-btn').disabled = !(bothFilled && bothValid);
 }
 
 function skipToGuest() {
