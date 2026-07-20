@@ -154,9 +154,11 @@
   <!-- ============ AUTH CONTAINER ============ -->
   <div id="auth-panel" class="panel">
 
+    <h2 class="auth-heading" style="margin-bottom:14px;">Enter your number</h2>
+  
     <div class="phone-box" style="margin-bottom: 16px; position:relative;">
       <span class="flag-code" id="country-code-btn" onclick="toggleCountryList()"><img src="https://flagcdn.com/w20/in.png"> +91 ▾</span>
-      <label class="floating-label">Enter your number</label>
+      <label class="floating-label">Mobile Number</label>
       <div id="phone-error" class="field-error hidden">Please use a real phone number</div>
       <input type="text" id="phone" placeholder=" " oninput="updateGoogleButtonState()">
       <div id="country-list" class="country-list hidden">
@@ -165,7 +167,7 @@
       </div>
     </div>
   
-    <p id="phone-hint" style="text-align:center; color:#999; margin:12px 0; font-size:.85rem;">Number bharo, phir Google se login karo</p>
+    <p id="phone-hint" style="text-align:center; color:#999; margin:12px 0; font-size:.85rem;">Enter number, then continue with Google</p>
   
     <div id="google-btn-wrap" style="opacity:0.4; pointer-events:none;">
       <div id="g_id_onload"
@@ -360,11 +362,11 @@ function updateGoogleButtonState() {
   if (phone.length === 10) {
     wrap.style.opacity = '1';
     wrap.style.pointerEvents = 'auto';
-    document.getElementById('phone-hint').innerText = 'Ab Google se login karo';
+    document.getElementById('phone-hint').innerText = 'Now continue with Google';
   } else {
     wrap.style.opacity = '0.4';
     wrap.style.pointerEvents = 'none';
-    document.getElementById('phone-hint').innerText = 'Number bharo, phir Google se login karo';
+    document.getElementById('phone-hint').innerText = 'Enter number, then continue with Google';
   }
 }
 
