@@ -154,28 +154,26 @@
   <!-- ============ AUTH CONTAINER ============ -->
   <div id="auth-panel" class="panel">
 
-    <h2 class="auth-heading" style="text-align:center; margin-bottom:20px;">Login karo shuru karne ke liye</h2>
-  
     <div class="phone-box" style="margin-bottom: 16px; position:relative;">
       <span class="flag-code" id="country-code-btn" onclick="toggleCountryList()"><img src="https://flagcdn.com/w20/in.png"> +91 ▾</span>
-      <label class="floating-label">Mobile Number</label>
+      <label class="floating-label">Enter your number</label>
       <div id="phone-error" class="field-error hidden">Please use a real phone number</div>
-      <input type="text" id="phone" placeholder=" ">
+      <input type="text" id="phone" placeholder=" " oninput="updateGoogleButtonState()">
       <div id="country-list" class="country-list hidden">
         <input type="text" id="country-search" placeholder="Search country" oninput="renderCountryList(this.value)" style="width:92%;margin:6px auto;display:block;padding:6px 8px;border:1px solid var(--line);">
         <div id="country-list-items"></div>
       </div>
     </div>
   
-    <button onclick="handlePhoneLogin()" class="btn-primary" id="continue-btn" style="margin-bottom:16px;">Continue</button>
+    <p id="phone-hint" style="text-align:center; color:#999; margin:12px 0; font-size:.85rem;">Number bharo, phir Google se login karo</p>
   
-    <p style="text-align:center; color:#999; margin:14px 0; font-size:.85rem;">— OR —</p>
-  
-    <div id="g_id_onload"
-         data-client_id="331552152118-9kbvonm08obtu4fjepnvc46b4lkdjid8.apps.googleusercontent.com"
-         data-callback="handleGoogleLogin">
+    <div id="google-btn-wrap" style="opacity:0.4; pointer-events:none;">
+      <div id="g_id_onload"
+           data-client_id="331552152118-9kbvonm08obtu4fjepnvc46b4lkdjid8.apps.googleusercontent.com"
+           data-callback="handleGoogleLogin">
+      </div>
+      <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="continue_with" data-size="large" data-width="300"></div>
     </div>
-    <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="continue_with" data-size="large" data-width="300"></div>
   
   </div>
       
@@ -356,12 +354,29 @@ function skipToGuest() {
   toast('Guest mode active! Order ke liye login zaroori hoga.');
   loadCatalog();
 }
+function updateGoogleButtonState() {
+  const phone = document.getElementById('phone').value.trim();
+  const wrap = document.getElementById('google-btn-wrap');
+  if (phone.length === 10) {
+    wrap.style.opacity = '1';
+    wrap.style.pointerEvents = 'auto';
+    document.getElementById('phone-hint').innerText = 'Ab Google se login karo';
+  } else {
+    wrap.style.opacity = '0.4';
+    wrap.style.pointerEvents = 'none';
+    document.getElementById('phone-hint').innerText = 'Number bharo, phir Google se login karo';
+  }
+}
+
 async function handleGoogleLogin(response) {
+  const phone = document.getElementById('phone').value.trim();
+  if (!phone || phone.length !== 10) { toast('Pehle sahi phone number daalein'); return; }
+
   try {
     const res = await fetch(`${API}/auth/google`, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ credential: response.credential })
+      body: JSON.stringify({ credential: response.credential, phone: phone })
     });
     const data = await res.json();
     if (!res.ok) { toast(data.detail || 'Google login mein dikkat aayi'); return; }
