@@ -40,6 +40,15 @@ class UserLogin(BaseModel):
     phone: str
     password: str
 
+class RequestOTPLogin(BaseModel):
+    phone: str
+    email: Optional[str] = None
+    name: Optional[str] = None
+
+
+class VerifyLoginOTP(BaseModel):
+    phone: str
+    otp: str
 
 class Token(BaseModel):
     access_token: str

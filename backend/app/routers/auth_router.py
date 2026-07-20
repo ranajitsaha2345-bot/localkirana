@@ -59,6 +59,57 @@ def login(payload: schemas.UserLogin, db: Session = Depends(get_db)):
         cash_unlocked=user.cash_unlocked, online_payment_count=user.online_payment_count,
     )
 
+@router.post("/request-otp")
+def request_otp(payload: schemas.RequestOTPLogin, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.phone == payload.phone).first()
+    if not user:
+        # Naya customer hai - auto-create karo (password nahi chahiye)
+        user = models.User(
+            name=payload.name or "User",
+            phone=payload.phone,
+            email=payload.email,
+            password_hash=auth.hash_password(payload.phone),  # dummy, kabhi use nahi hoga
+            role=models.UserRole.customer,
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    else:
+        if payload.email and user.email != payload.email:
+            user.email = payload.email
+            db.commit()
+
+    if not user.email:
+        raise HTTPException(400, "Gmail address zaroori hai")
+
+    otp = generate_otp()
+    user.reset_code = otp
+    user.reset_code_expiry = datetime.utcnow() + timedelta(minutes=10)
+    db.commit()
+
+    send_otp_email(user.email, otp, user.name)
+    return {"message": "OTP aapke Gmail par bhej diya gaya hai"}
+
+
+@router.post("/verify-login-otp", response_model=schemas.Token)
+def verify_login_otp(payload: schemas.VerifyLoginOTP, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.phone == payload.phone).first()
+    if not user or not user.reset_code:
+        raise HTTPException(400, "Pehle OTP mangwao")
+    if user.reset_code != payload.otp:
+        raise HTTPException(400, "OTP galat hai")
+    if datetime.utcnow() > user.reset_code_expiry:
+        raise HTTPException(400, "OTP expire ho gaya, dobara try karo")
+
+    user.reset_code = None
+    user.reset_code_expiry = None
+    db.commit()
+
+    token = auth.create_access_token({"sub": str(user.id)})
+    return schemas.Token(
+        access_token=token, role=user.role, user_id=user.id, name=user.name,
+        cash_unlocked=user.cash_unlocked, online_payment_count=user.online_payment_count,
+    )
 
 @router.post("/forgot-password")
 def forgot_password(payload: schemas.ForgotPasswordRequest, db: Session = Depends(get_db)):
