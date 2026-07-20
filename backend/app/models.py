@@ -47,9 +47,10 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
-    phone = Column(String, unique=True, index=True, nullable=False)
+    phone = Column(String, unique=True, index=True, nullable=True)
     email = Column(String, nullable=True)
-    password_hash = Column(String, nullable=False)
+    password_hash = Column(String, nullable=True)
+    google_id = Column(String, unique=True, index=True, nullable=True)
     role = Column(Enum(UserRole), nullable=False)
 
     # cash-eligibility rule: pehle N online payments ke baad hi cash allowed
