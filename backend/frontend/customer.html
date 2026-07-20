@@ -108,6 +108,23 @@
   .auth-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
   .auth-header h2 { font-size: 1.2rem; font-weight: 700; color: var(--forest); }
   .skip-btn { color: var(--forest); background: none; padding: 0; font-size: 0.88rem; text-decoration: underline; }
+  .phone-box {
+  border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px;
+  display: flex; align-items: center; gap: 10px;
+}
+.phone-box .flag-code {
+  font-size: 0.95rem; color: var(--ink); white-space: nowrap;
+  border-right: 1px solid var(--line); padding-right: 10px;
+}
+.phone-box input {
+  border: none; outline: none; padding: 6px 0; font-size: 0.95rem; flex: 1;
+}
+.auth-heading {
+  color: var(--ink); font-size: 1.25rem; font-weight: 700; margin-bottom: 14px;
+}
+.guest-line {
+  text-align: center; font-size: 0.82rem; color: #6b6b5f; margin-top: 12px;
+}
 </style>
 </head>
 <body>
@@ -121,29 +138,25 @@
 
   <!-- ============ AUTH CONTAINER ============ -->
   <div id="auth-panel" class="panel">
-    <div class="auth-header">
-        <h2 id="auth-title">Login / Signup</h2>
-        <button onclick="skipToGuest()" class="skip-btn">Skip (Guest)</button>
-    </div>
+    <h2 class="auth-heading">Enter your number</h2>
 
-    <!-- STEP 1: Phone & Gmail Input -->
     <div id="otp-step1">
-        <div style="margin-bottom: 14px;">
-            <label>Phone Number</label>
-            <input type="text" id="phone" placeholder="9876543210">
+        <div class="phone-box" style="margin-bottom: 16px;">
+            <span class="flag-code">🇮🇳 +91</span>
+            <input type="text" id="phone" placeholder="Mobile Number">
         </div>
-        <div style="margin-bottom: 14px;">
-            <label>Gmail Address</label>
-            <input type="email" id="reg-email" placeholder="example@gmail.com">
+
+        <h2 class="auth-heading">Enter your Gmail</h2>
+        <div class="phone-box" style="margin-bottom: 20px;">
+            <input type="email" id="reg-email" placeholder="Gmail Address" style="padding:6px 0;">
         </div>
-        <div style="margin-bottom: 20px;">
-            <label>Name (Optional)</label>
-            <input type="text" id="reg-name" placeholder="Apna Naam Daalein">
-        </div>
+
         <button onclick="handleSendOTP()" class="btn-primary">OTP Mangwaye</button>
+        <div class="guest-line">
+            <button onclick="skipToGuest()" class="skip-btn">Bina login kiye bhi dekh sakte ho</button>
+        </div>
     </div>
 
-    <!-- STEP 2: Verification Input -->
     <div id="otp-step2" class="hidden">
         <p class="hint" style="margin-bottom: 14px;">Aapke Gmail par ek 6-digit OTP bheja gaya hai.</p>
         <div style="margin-bottom: 20px;">
@@ -153,8 +166,7 @@
         <button onclick="handleVerifyOTP()" class="btn-primary" style="margin-bottom: 10px;">Verify & Login</button>
         <button onclick="showStep1()" class="btn-outline" style="width: 100%;">Back</button>
     </div>
-  </div>
-
+</div>
   <!-- ============ CATALOG / CART ============ -->
   <section id="shop-panel" class="panel hidden">
     <h2>Saman Chuno</h2>
@@ -213,7 +225,6 @@ function skipToGuest() {
 async function handleSendOTP() {
   const phone = document.getElementById('phone').value.trim();
   const email = document.getElementById('reg-email').value.trim();
-  const name = document.getElementById('reg-name').value.trim();
 
   if (!phone || phone.length !== 10) { toast('Kripya sahi 10-digit phone number daalein'); return; }
   if (!email) { toast('Gmail address daalna zaroori hai'); return; }
@@ -221,7 +232,7 @@ async function handleSendOTP() {
   const body = {
     phone: phone,
     email: email,
-    name: name || "User",
+    name: "User",
     role: "customer"
   };
 
