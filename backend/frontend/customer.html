@@ -127,75 +127,44 @@ input::-webkit-credentials-auto-fill-button { visibility: hidden; display: none 
 <main>
 
   <!-- ============ AUTH ============ -->
-  <!-- ============ AUTH ============ -->
-  <section id="auth-panel" class="panel" style="position: relative;">
-    <!-- Top Right: Swiggy Style Skip Button -->
-    <div style="position: absolute; top: 10px; right: 10px;">
-      <button onclick="skipToGuest()" style="background: var(--line); color: var(--forest-dark); padding: 5px 14px; font-size: 0.8rem; border-radius: 20px;">
-        Skip
+  <!-- Auth Container (2-Step Gmail OTP) -->
+<div id="auth-panel" class="max-w-md mx-auto bg-white rounded-lg shadow-md p-6 mt-10">
+  <div class="flex justify-between items-center mb-6">
+      <h2 id="auth-title" class="text-xl font-bold text-gray-800">Login / Signup</h2>
+      <button onclick="skipToGuest()" class="text-sm text-green-700 font-medium hover:underline">Skip (Guest)</button>
+  </div>
+
+  <!-- STEP 1: Phone, Gmail, & Name Input -->
+  <div id="otp-step1">
+      <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2">Phone Number</label>
+          <input type="text" id="reg-phone" placeholder="9876543210" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+      </div>
+      <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2">Gmail Address</label>
+          <input type="email" id="reg-email" placeholder="example@gmail.com" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+      </div>
+      <div class="mb-6">
+          <label class="block text-gray-700 text-sm font-bold mb-2">Name (Optional)</label>
+          <input type="text" id="reg-name" placeholder="Apna Naam Daalein" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+      </div>
+      <button onclick="handleSendOTP()" class="w-full bg-green-800 text-white font-bold py-2 px-4 rounded hover:bg-green-700 focus:outline-none focus:shadow-outline">
+          OTP Mangwaye
       </button>
-    </div>
+  </div>
 
-    <!-- Step 1: Login Details Form -->
-    <div id="otp-step1">
-      <h2 id="auth-title">Login / Signup</h2>
-      
-      <label>Phone Number</label>
-      <input id="phone" type="tel" placeholder="9876543210" style="width:100%; margin-bottom: 12px; padding: 10px; border: 1px solid var(--line); border-radius: 8px;" />
-      
-      <label>Gmail Address</label>
-      <input id="reg-email" type="email" placeholder="ravi@gmail.com" style="width:100%; margin-bottom: 12px; padding: 10px; border: 1px solid var(--line); border-radius: 8px;" />
-      
-      <label>Naam (Naye account ke liye)</label>
-      <input id="reg-name" placeholder="Ravi Kumar" style="width:100%; margin-bottom: 16px; padding: 10px; border: 1px solid var(--line); border-radius: 8px;" />
-      
-      <button class="btn-primary" onclick="handleSendOTP()">Send OTP on Gmail</button>
-    </div>
-
-    <!-- Step 2: OTP Verification Form (Initially Hidden) -->
-    <div id="otp-step2" class="hidden">
-      <h2>OTP Verify Karo</h2>
-      <div class="hint" style="margin-bottom:12px;">Humne aapke Gmail par ek 6-digit OTP bheja hai.</div>
-      
-      <label>Enter OTP</label>
-      <input id="login-otp" placeholder="Enter 6-digit OTP" maxlength="6" style="width:100%; text-align:center; font-size:1.5rem; letter-spacing:4px; margin-bottom: 16px; padding: 10px; border: 1px solid var(--line); border-radius: 8px;" />
-      
-      <button class="btn-accent" onclick="handleVerifyOTP()">Verify & Login</button>
-      
-      <div style="text-align:center; margin-top:14px; font-size:.85rem;">
-        <a href="#" onclick="showStep1(); return false;" style="color:var(--forest); font-weight:600;">Details Badlein / Back</a>
+  <!-- STEP 2: Verification (Shuru me hidden rahega) -->
+  <div id="otp-step2" class="hidden">
+      <p class="text-sm text-gray-600 mb-4">Aapke Gmail par ek OTP bheja gaya hai. Kripya niche darj karein.</p>
+      <div class="mb-6">
+          <label class="block text-gray-700 text-sm font-bold mb-2">Enter OTP</label>
+          <input type="text" id="login-otp" placeholder="6-digit OTP" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
       </div>
-    </div>
-
-    <!-- Forgot Password Modal -->
-    <div id="forgot-modal" class="hidden" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:999; display:flex; align-items:center; justify-content:center;">
-      <div style="background:#fff; padding:24px; border-radius:12px; width:90%; max-width:340px;">
-
-        <div id="forgot-step1">
-          <h3 style="margin-bottom:12px;">Password Reset Karo</h3>
-          <label>Phone Number</label>
-          <input id="forgot-phone" placeholder="9876543210" style="width:100%; margin-bottom:12px;" />
-          <button class="btn-primary" style="width:100%;" onclick="sendForgotOtp()">OTP Bhejo</button>
-          <div style="text-align:center; margin-top:12px;">
-            <a href="#" onclick="closeForgotPassword(); return false;">Cancel</a>
-          </div>
-        </div>
-
-        <div id="forgot-step2" class="hidden">
-          <h3 style="margin-bottom:12px;">OTP Verify Karo</h3>
-          <div class="hint" style="margin-bottom:10px;">Aapke Gmail par OTP bhej diya gaya hai.</div>
-          <label>OTP</label>
-          <input id="forgot-otp" placeholder="6-digit OTP" style="width:100%; margin-bottom:12px;" />
-          <label>Naya Password</label>
-          <input id="forgot-new-password" type="text" placeholder="Naya password" style="width:100%; margin-bottom:12px;" />
-          <button class="btn-primary" style="width:100%;" onclick="submitResetPassword()">Password Badlo</button>
-          <div style="text-align:center; margin-top:12px;">
-            <a href="#" onclick="closeForgotPassword(); return false;">Cancel</a>
-          </div>
-        </div>
-
-      </div>
-    </div>
+      <button onclick="handleVerifyOTP()" class="w-full bg-green-800 text-white font-bold py-2 px-4 rounded hover:bg-green-700 focus:outline-none focus:shadow-outline">
+          Verify & Login
+      </button>
+  </div>
+</div>
   </section>
 
   <!-- ============ CATALOG / CART ============ -->
