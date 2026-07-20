@@ -47,23 +47,7 @@
     padding:16px; margin-bottom:14px;
   }
   .panel h2{font-size:1rem; margin-bottom:10px; color:var(--forest-dark);}
-   
-  .pw-wrap{ position:relative; }
-.pw-wrap input{ padding-right:40px; }
-.pw-toggle{
-  position:absolute; right:10px; top:50%; transform:translateY(-50%);
-  background:none; border:none; padding:0; margin:0; cursor:pointer;
-  color:#8a8a8a; display:flex; align-items:center; justify-content:center;
-}
-.pw-toggle svg{ display:block; }
-
-.pw-toggle:active{transform:none;}
-input[type="password"]::-ms-reveal,
-input[type="password"]::-ms-clear { display: none; }
-input::-webkit-credentials-auto-fill-button { visibility: hidden; display: none !important; }
-.pw-toggle{ z-index: 2; }
-.pw-toggle svg{ pointer-events: none; }
-
+  
   label{font-size:.82rem; color:#6b6b5f; display:block; margin-bottom:4px;}
   button{
     border:none; border-radius:10px; padding:11px 16px; font-size:.95rem;
@@ -115,6 +99,15 @@ input::-webkit-credentials-auto-fill-button { visibility: hidden; display: none 
     background:var(--forest-dark); color:#fff; padding:10px 18px; border-radius:30px;
     font-size:.85rem; z-index:50; box-shadow:0 4px 14px rgba(0,0,0,.2);
   }
+  
+  /* Input box enhancements */
+  input[type="text"], input[type="email"], input[type="number"] {
+    width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 0.95rem; outline: none;
+  }
+  input:focus { border-color: var(--forest); }
+  .auth-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .auth-header h2 { font-size: 1.2rem; font-weight: 700; color: var(--forest); }
+  .skip-btn { color: var(--forest); background: none; padding: 0; font-size: 0.88rem; text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -126,46 +119,41 @@ input::-webkit-credentials-auto-fill-button { visibility: hidden; display: none 
 
 <main>
 
-  <!-- ============ AUTH ============ -->
-  <!-- Auth Container (2-Step Gmail OTP) -->
-<div id="auth-panel" class="max-w-md mx-auto bg-white rounded-lg shadow-md p-6 mt-10">
-  <div class="flex justify-between items-center mb-6">
-      <h2 id="auth-title" class="text-xl font-bold text-gray-800">Login / Signup</h2>
-      <button onclick="skipToGuest()" class="text-sm text-green-700 font-medium hover:underline">Skip (Guest)</button>
-  </div>
+  <!-- ============ AUTH CONTAINER ============ -->
+  <div id="auth-panel" class="panel">
+    <div class="auth-header">
+        <h2 id="auth-title">Login / Signup</h2>
+        <button onclick="skipToGuest()" class="skip-btn">Skip (Guest)</button>
+    </div>
 
-  <!-- STEP 1: Phone, Gmail, & Name Input -->
-  <div id="otp-step1">
-      <div class="mb-4">
-          <label class="block text-gray-700 text-sm font-bold mb-2">Phone Number</label>
-          <input type="text" id="reg-phone" placeholder="9876543210" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-      </div>
-      <div class="mb-4">
-          <label class="block text-gray-700 text-sm font-bold mb-2">Gmail Address</label>
-          <input type="email" id="reg-email" placeholder="example@gmail.com" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-      </div>
-      <div class="mb-6">
-          <label class="block text-gray-700 text-sm font-bold mb-2">Name (Optional)</label>
-          <input type="text" id="reg-name" placeholder="Apna Naam Daalein" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-      </div>
-      <button onclick="handleSendOTP()" class="w-full bg-green-800 text-white font-bold py-2 px-4 rounded hover:bg-green-700 focus:outline-none focus:shadow-outline">
-          OTP Mangwaye
-      </button>
-  </div>
+    <!-- STEP 1: Phone & Gmail Input -->
+    <div id="otp-step1">
+        <div style="margin-bottom: 14px;">
+            <label>Phone Number</label>
+            <input type="text" id="phone" placeholder="9876543210">
+        </div>
+        <div style="margin-bottom: 14px;">
+            <label>Gmail Address</label>
+            <input type="email" id="reg-email" placeholder="example@gmail.com">
+        </div>
+        <div style="margin-bottom: 20px;">
+            <label>Name (Optional)</label>
+            <input type="text" id="reg-name" placeholder="Apna Naam Daalein">
+        </div>
+        <button onclick="handleSendOTP()" class="btn-primary">OTP Mangwaye</button>
+    </div>
 
-  <!-- STEP 2: Verification (Shuru me hidden rahega) -->
-  <div id="otp-step2" class="hidden">
-      <p class="text-sm text-gray-600 mb-4">Aapke Gmail par ek OTP bheja gaya hai. Kripya niche darj karein.</p>
-      <div class="mb-6">
-          <label class="block text-gray-700 text-sm font-bold mb-2">Enter OTP</label>
-          <input type="text" id="login-otp" placeholder="6-digit OTP" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-      </div>
-      <button onclick="handleVerifyOTP()" class="w-full bg-green-800 text-white font-bold py-2 px-4 rounded hover:bg-green-700 focus:outline-none focus:shadow-outline">
-          Verify & Login
-      </button>
+    <!-- STEP 2: Verification Input -->
+    <div id="otp-step2" class="hidden">
+        <p class="hint" style="margin-bottom: 14px;">Aapke Gmail par ek 6-digit OTP bheja gaya hai.</p>
+        <div style="margin-bottom: 20px;">
+            <label>Enter OTP</label>
+            <input type="text" id="login-otp" placeholder="Enter OTP Here" style="text-align: center; letter-spacing: 4px; font-size: 1.2rem;">
+        </div>
+        <button onclick="handleVerifyOTP()" class="btn-primary" style="margin-bottom: 10px;">Verify & Login</button>
+        <button onclick="showStep1()" class="btn-outline" style="width: 100%;">Back</button>
+    </div>
   </div>
-</div>
-  </section>
 
   <!-- ============ CATALOG / CART ============ -->
   <section id="shop-panel" class="panel hidden">
@@ -183,49 +171,29 @@ input::-webkit-credentials-auto-fill-button { visibility: hidden; display: none 
     <button class="btn-accent" onclick="placeOrder()">Done — Order Bhejo</button>
   </section>
 
-<!-- ============ LIVE ORDER TRACKING ============ -->
-<section id="order-tracker" class="panel hidden">
-  <h2>Aapka Order</h2>
-  <div id="order-cards"></div>
-</section>
+  <!-- ============ LIVE ORDER TRACKING ============ -->
+  <section id="order-tracker" class="panel hidden">
+    <h2>Aapka Order</h2>
+    <div id="order-cards"></div>
+  </section>
 
-<!-- ============ SHOP QR SCAN ============ -->
-<section id="shop-scan-panel" class="panel hidden">
-  <h2>Dukan Pahunch Gaye?</h2>
-  <div class="hint" style="margin-bottom:10px;">Dukan mein lage QR ko scan karo, dukandar ko turant pata chal jaayega.</div>
-  <button class="btn-primary" onclick="startShopScanner()">Dukan Ka QR Scan Karo</button>
-  <div id="shop-qr-reader" style="width:100%; margin-top:10px;"></div>
-</section>
-  <script>
-    let isSignupMode = false;
-    function togglePasswordVisibility(){
-  const pw = document.getElementById('password');
-  const willShow = pw.type === 'password';
-  pw.type = willShow ? 'text' : 'password';
-  document.getElementById('pw-toggle-icon').innerHTML = willShow
-    ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>'
-    : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
-}
-    function toggleAuthMode(){
-      isSignupMode = !isSignupMode;
-      document.getElementById('signup-extra-fields').classList.toggle('hidden', !isSignupMode);
-      document.getElementById('auth-title').innerText = isSignupMode ? 'Naya Account Banao' : 'Login Karo';
-      document.getElementById('auth-main-btn').innerText = isSignupMode ? 'Naya Account (Signup)' : 'Login';
-      document.getElementById('auth-main-btn').setAttribute('onclick', isSignupMode ? 'signup()' : 'login()');
-      document.getElementById('toggle-text').innerText = isSignupMode ? 'Pehle se account hai? ' : 'Naya account nahi hai? ';
-      document.getElementById('toggle-link').innerText = isSignupMode ? 'Login Karo' : 'Naya Account Banao';
-    }
-    </script>
-    </main>
-  <script>
+  <!-- ============ SHOP QR SCAN ============ -->
+  <section id="shop-scan-panel" class="panel hidden">
+    <h2>Dukan Pahunch Gaye?</h2>
+    <div class="hint" style="margin-bottom:10px;">Dukan mein lage QR ko scan karo, dukandar ko turant pata chal jaayega.</div>
+    <button class="btn-primary" onclick="startShopScanner()">Dukan Ka QR Scan Karo</button>
+    <div id="shop-qr-reader" style="width:100%; margin-top:10px;"></div>
+  </section>
+  
+</main>
+
+<script>
 const API = "https://localkirana-production.up.railway.app"; 
 let token = null, myRole = null, myUserId = null, ws = null;
 let catalogItems = [], cart = {}, matchedLines = [], activeShopOrderIds = [];
 
-// ---------------- AUTH ----------------
 // ---------------- NEW AUTH LOGIC (FREE GMAIL OTP) ----------------
 
-// 1. Swiggy Style Skip/Guest Button Logic
 function skipToGuest() {
   token = null; 
   myRole = "customer"; 
@@ -242,7 +210,6 @@ function skipToGuest() {
   loadCatalog();
 }
 
-// 2. Step 1: Backend se Gmail par OTP mangwana
 async function handleSendOTP() {
   const phone = document.getElementById('phone').value.trim();
   const email = document.getElementById('reg-email').value.trim();
@@ -276,7 +243,6 @@ async function handleSendOTP() {
   }
 }
 
-// 3. Step 2: OTP verify karke application mein aage badhna
 async function handleVerifyOTP() {
   const phone = document.getElementById('phone').value.trim();
   const otp = document.getElementById('login-otp').value.trim();
@@ -307,7 +273,6 @@ async function handleVerifyOTP() {
   }
 }
 
-// Back button function
 function showStep1() {
   document.getElementById('otp-step1').classList.remove('hidden');
   document.getElementById('otp-step2').classList.add('hidden');
@@ -528,13 +493,10 @@ async function refreshOrders(){
 function showMap(data){
   const mapDiv = document.getElementById(`map-${data.shop_order_id}`);
   if(!mapDiv) return;
-  // Google Maps Embed - GOOGLE_MAPS_API_KEY .env se backend proxy ya frontend config se aayegi
   mapDiv.innerHTML = `<iframe id="map" style="border:0" loading="lazy"
     src="https://www.google.com/maps/embed/v1/place?key=YOUR_GOOGLE_MAPS_API_KEY&q=${data.shop_latitude},${data.shop_longitude}">
     </iframe>`;
 }
-
- 
 
 let shopHtml5QrCode = null;
 function startShopScanner(){
