@@ -359,14 +359,17 @@ function skipToGuest() {
 function updateGoogleButtonState() {
   const phone = document.getElementById('phone').value.trim();
   const wrap = document.getElementById('google-btn-wrap');
+  const phoneBox = document.querySelector('.phone-box');
   if (phone.length === 10) {
     wrap.style.opacity = '1';
     wrap.style.pointerEvents = 'auto';
     document.getElementById('phone-hint').innerText = 'Now continue with Google';
+    phoneBox.style.borderColor = 'var(--green-ok)';
   } else {
     wrap.style.opacity = '0.4';
     wrap.style.pointerEvents = 'none';
     document.getElementById('phone-hint').innerText = 'Enter number, then continue with Google';
+    phoneBox.style.borderColor = '';
   }
 }
 
