@@ -21,8 +21,8 @@ def _run_migrations():
             conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_code VARCHAR"))
             conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_code_expiry TIMESTAMP"))
             conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id VARCHAR"))
-conn.execute(text("ALTER TABLE users ALTER COLUMN phone DROP NOT NULL"))
-conn.execute(text("ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL"))
+            conn.execute(text("ALTER TABLE users ALTER COLUMN phone DROP NOT NULL"))
+            conn.execute(text("ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL"))
         except Exception as e:
             print("Migration warning:", e)
 
