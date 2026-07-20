@@ -130,6 +130,11 @@
 .country-list{ position:absolute; top:110%; left:0; background:#fff; border:1px solid var(--line); border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,.15); max-height:240px; overflow-y:auto; width:220px; z-index:20; }
 .country-list div{ padding:8px 12px; font-size:.88rem; cursor:pointer; display:flex; gap:8px; }
 .country-list div:hover{ background:#F3F1E8; }
+.phone-box{ position:relative; border:1.5px solid var(--line); border-radius:8px; }
+.phone-box:focus-within{ border-color:#FF5200; }
+.floating-label{ position:absolute; top:-9px; left:12px; background:#fff; padding:0 4px; font-size:.72rem; color:#8a8674; }
+.phone-box:focus-within .floating-label{ color:#FF5200; }
+.country-list img, .flag-code img{ width:20px; height:14px; object-fit:cover; vertical-align:middle; margin-right:4px; }
 </style>
 </head>
 <body>
@@ -147,8 +152,9 @@
 
     <div id="otp-step1">
       <div class="phone-box" style="margin-bottom: 16px; position:relative;">
-          <span class="flag-code" id="country-code-btn" onclick="toggleCountryList()">🇮🇳 +91 ▾</span>
-          <input type="text" id="phone" placeholder="Mobile Number" oninput="updateContinueState()">
+        <span class="flag-code" id="country-code-btn" onclick="toggleCountryList()"><img src="https://flagcdn.com/w20/in.png"> +91 ▾</span>
+<label class="floating-label">Mobile Number</label>
+<input type="text" id="phone" placeholder=" " oninput="updateContinueState()">
           <div id="country-list" class="country-list hidden"></div>
       </div>
   
@@ -210,31 +216,96 @@ let catalogItems = [], cart = {}, matchedLines = [], activeShopOrderIds = [];
 
 // ---------------- NEW AUTH LOGIC (FREE GMAIL OTP) ----------------
 const countries = [
-  {flag:"🇮🇳", code:"+91", name:"India"},
-  {flag:"🇦🇺", code:"+61", name:"Australia"},
-  {flag:"🇨🇦", code:"+1", name:"Canada"},
-  {flag:"🇭🇰", code:"+852", name:"Hong Kong"},
-  {flag:"🇮🇩", code:"+62", name:"Indonesia"},
-  {flag:"🇮🇱", code:"+972", name:"Israel"},
-  {flag:"🇯🇵", code:"+81", name:"Japan"},
-  {flag:"🇰🇼", code:"+965", name:"Kuwait"},
-  {flag:"🇲🇾", code:"+60", name:"Malaysia"},
-  {flag:"🇺🇸", code:"+1", name:"USA"},
-  {flag:"🇬🇧", code:"+44", name:"UK"},
+{flag:"af",code:"+93",name:"Afghanistan"},{flag:"al",code:"+355",name:"Albania"},{flag:"dz",code:"+213",name:"Algeria"},
+{flag:"ad",code:"+376",name:"Andorra"},{flag:"ao",code:"+244",name:"Angola"},{flag:"ag",code:"+1268",name:"Antigua and Barbuda"},
+{flag:"ar",code:"+54",name:"Argentina"},{flag:"am",code:"+374",name:"Armenia"},{flag:"au",code:"+61",name:"Australia"},
+{flag:"at",code:"+43",name:"Austria"},{flag:"az",code:"+994",name:"Azerbaijan"},{flag:"bs",code:"+1242",name:"Bahamas"},
+{flag:"bh",code:"+973",name:"Bahrain"},{flag:"bd",code:"+880",name:"Bangladesh"},{flag:"bb",code:"+1246",name:"Barbados"},
+{flag:"by",code:"+375",name:"Belarus"},{flag:"be",code:"+32",name:"Belgium"},{flag:"bz",code:"+501",name:"Belize"},
+{flag:"bj",code:"+229",name:"Benin"},{flag:"bt",code:"+975",name:"Bhutan"},{flag:"bo",code:"+591",name:"Bolivia"},
+{flag:"ba",code:"+387",name:"Bosnia and Herzegovina"},{flag:"bw",code:"+267",name:"Botswana"},{flag:"br",code:"+55",name:"Brazil"},
+{flag:"bn",code:"+673",name:"Brunei"},{flag:"bg",code:"+359",name:"Bulgaria"},{flag:"bf",code:"+226",name:"Burkina Faso"},
+{flag:"bi",code:"+257",name:"Burundi"},{flag:"cv",code:"+238",name:"Cabo Verde"},{flag:"kh",code:"+855",name:"Cambodia"},
+{flag:"cm",code:"+237",name:"Cameroon"},{flag:"ca",code:"+1",name:"Canada"},{flag:"cf",code:"+236",name:"Central African Republic"},
+{flag:"td",code:"+235",name:"Chad"},{flag:"cl",code:"+56",name:"Chile"},{flag:"cn",code:"+86",name:"China"},
+{flag:"co",code:"+57",name:"Colombia"},{flag:"km",code:"+269",name:"Comoros"},{flag:"cg",code:"+242",name:"Congo"},
+{flag:"cd",code:"+243",name:"DR Congo"},{flag:"cr",code:"+506",name:"Costa Rica"},{flag:"ci",code:"+225",name:"Cote d'Ivoire"},
+{flag:"hr",code:"+385",name:"Croatia"},{flag:"cu",code:"+53",name:"Cuba"},{flag:"cy",code:"+357",name:"Cyprus"},
+{flag:"cz",code:"+420",name:"Czech Republic"},{flag:"dk",code:"+45",name:"Denmark"},{flag:"dj",code:"+253",name:"Djibouti"},
+{flag:"dm",code:"+1767",name:"Dominica"},{flag:"do",code:"+1809",name:"Dominican Republic"},{flag:"ec",code:"+593",name:"Ecuador"},
+{flag:"eg",code:"+20",name:"Egypt"},{flag:"sv",code:"+503",name:"El Salvador"},{flag:"gq",code:"+240",name:"Equatorial Guinea"},
+{flag:"er",code:"+291",name:"Eritrea"},{flag:"ee",code:"+372",name:"Estonia"},{flag:"sz",code:"+268",name:"Eswatini"},
+{flag:"et",code:"+251",name:"Ethiopia"},{flag:"fj",code:"+679",name:"Fiji"},{flag:"fi",code:"+358",name:"Finland"},
+{flag:"fr",code:"+33",name:"France"},{flag:"ga",code:"+241",name:"Gabon"},{flag:"gm",code:"+220",name:"Gambia"},
+{flag:"ge",code:"+995",name:"Georgia"},{flag:"de",code:"+49",name:"Germany"},{flag:"gh",code:"+233",name:"Ghana"},
+{flag:"gr",code:"+30",name:"Greece"},{flag:"gd",code:"+1473",name:"Grenada"},{flag:"gt",code:"+502",name:"Guatemala"},
+{flag:"gn",code:"+224",name:"Guinea"},{flag:"gw",code:"+245",name:"Guinea-Bissau"},{flag:"gy",code:"+592",name:"Guyana"},
+{flag:"ht",code:"+509",name:"Haiti"},{flag:"hn",code:"+504",name:"Honduras"},{flag:"hk",code:"+852",name:"Hong Kong"},
+{flag:"hu",code:"+36",name:"Hungary"},{flag:"is",code:"+354",name:"Iceland"},{flag:"in",code:"+91",name:"India"},
+{flag:"id",code:"+62",name:"Indonesia"},{flag:"ir",code:"+98",name:"Iran"},{flag:"iq",code:"+964",name:"Iraq"},
+{flag:"ie",code:"+353",name:"Ireland"},{flag:"il",code:"+972",name:"Israel"},{flag:"it",code:"+39",name:"Italy"},
+{flag:"jm",code:"+1876",name:"Jamaica"},{flag:"jp",code:"+81",name:"Japan"},{flag:"jo",code:"+962",name:"Jordan"},
+{flag:"kz",code:"+7",name:"Kazakhstan"},{flag:"ke",code:"+254",name:"Kenya"},{flag:"ki",code:"+686",name:"Kiribati"},
+{flag:"kw",code:"+965",name:"Kuwait"},{flag:"kg",code:"+996",name:"Kyrgyzstan"},{flag:"la",code:"+856",name:"Laos"},
+{flag:"lv",code:"+371",name:"Latvia"},{flag:"lb",code:"+961",name:"Lebanon"},{flag:"ls",code:"+266",name:"Lesotho"},
+{flag:"lr",code:"+231",name:"Liberia"},{flag:"ly",code:"+218",name:"Libya"},{flag:"li",code:"+423",name:"Liechtenstein"},
+{flag:"lt",code:"+370",name:"Lithuania"},{flag:"lu",code:"+352",name:"Luxembourg"},{flag:"mo",code:"+853",name:"Macao"},
+{flag:"mg",code:"+261",name:"Madagascar"},{flag:"mw",code:"+265",name:"Malawi"},{flag:"my",code:"+60",name:"Malaysia"},
+{flag:"mv",code:"+960",name:"Maldives"},{flag:"ml",code:"+223",name:"Mali"},{flag:"mt",code:"+356",name:"Malta"},
+{flag:"mh",code:"+692",name:"Marshall Islands"},{flag:"mr",code:"+222",name:"Mauritania"},{flag:"mu",code:"+230",name:"Mauritius"},
+{flag:"mx",code:"+52",name:"Mexico"},{flag:"fm",code:"+691",name:"Micronesia"},{flag:"md",code:"+373",name:"Moldova"},
+{flag:"mc",code:"+377",name:"Monaco"},{flag:"mn",code:"+976",name:"Mongolia"},{flag:"me",code:"+382",name:"Montenegro"},
+{flag:"ma",code:"+212",name:"Morocco"},{flag:"mz",code:"+258",name:"Mozambique"},{flag:"mm",code:"+95",name:"Myanmar"},
+{flag:"na",code:"+264",name:"Namibia"},{flag:"nr",code:"+674",name:"Nauru"},{flag:"np",code:"+977",name:"Nepal"},
+{flag:"nl",code:"+31",name:"Netherlands"},{flag:"nz",code:"+64",name:"New Zealand"},{flag:"ni",code:"+505",name:"Nicaragua"},
+{flag:"ne",code:"+227",name:"Niger"},{flag:"ng",code:"+234",name:"Nigeria"},{flag:"kp",code:"+850",name:"North Korea"},
+{flag:"mk",code:"+389",name:"North Macedonia"},{flag:"no",code:"+47",name:"Norway"},{flag:"om",code:"+968",name:"Oman"},
+{flag:"pk",code:"+92",name:"Pakistan"},{flag:"pw",code:"+680",name:"Palau"},{flag:"ps",code:"+970",name:"Palestine"},
+{flag:"pa",code:"+507",name:"Panama"},{flag:"pg",code:"+675",name:"Papua New Guinea"},{flag:"py",code:"+595",name:"Paraguay"},
+{flag:"pe",code:"+51",name:"Peru"},{flag:"ph",code:"+63",name:"Philippines"},{flag:"pl",code:"+48",name:"Poland"},
+{flag:"pt",code:"+351",name:"Portugal"},{flag:"qa",code:"+974",name:"Qatar"},{flag:"ro",code:"+40",name:"Romania"},
+{flag:"ru",code:"+7",name:"Russia"},{flag:"rw",code:"+250",name:"Rwanda"},{flag:"kn",code:"+1869",name:"Saint Kitts and Nevis"},
+{flag:"lc",code:"+1758",name:"Saint Lucia"},{flag:"vc",code:"+1784",name:"Saint Vincent and the Grenadines"},
+{flag:"ws",code:"+685",name:"Samoa"},{flag:"sm",code:"+378",name:"San Marino"},{flag:"st",code:"+239",name:"Sao Tome and Principe"},
+{flag:"sa",code:"+966",name:"Saudi Arabia"},{flag:"sn",code:"+221",name:"Senegal"},{flag:"rs",code:"+381",name:"Serbia"},
+{flag:"sc",code:"+248",name:"Seychelles"},{flag:"sl",code:"+232",name:"Sierra Leone"},{flag:"sg",code:"+65",name:"Singapore"},
+{flag:"sk",code:"+421",name:"Slovakia"},{flag:"si",code:"+386",name:"Slovenia"},{flag:"sb",code:"+677",name:"Solomon Islands"},
+{flag:"so",code:"+252",name:"Somalia"},{flag:"za",code:"+27",name:"South Africa"},{flag:"kr",code:"+82",name:"South Korea"},
+{flag:"ss",code:"+211",name:"South Sudan"},{flag:"es",code:"+34",name:"Spain"},{flag:"lk",code:"+94",name:"Sri Lanka"},
+{flag:"sd",code:"+249",name:"Sudan"},{flag:"sr",code:"+597",name:"Suriname"},{flag:"se",code:"+46",name:"Sweden"},
+{flag:"ch",code:"+41",name:"Switzerland"},{flag:"sy",code:"+963",name:"Syria"},{flag:"tw",code:"+886",name:"Taiwan"},
+{flag:"tj",code:"+992",name:"Tajikistan"},{flag:"tz",code:"+255",name:"Tanzania"},{flag:"th",code:"+66",name:"Thailand"},
+{flag:"tl",code:"+670",name:"Timor-Leste"},{flag:"tg",code:"+228",name:"Togo"},{flag:"to",code:"+676",name:"Tonga"},
+{flag:"tt",code:"+1868",name:"Trinidad and Tobago"},{flag:"tn",code:"+216",name:"Tunisia"},{flag:"tr",code:"+90",name:"Turkey"},
+{flag:"tm",code:"+993",name:"Turkmenistan"},{flag:"tv",code:"+688",name:"Tuvalu"},{flag:"ug",code:"+256",name:"Uganda"},
+{flag:"ua",code:"+380",name:"Ukraine"},{flag:"ae",code:"+971",name:"UAE"},{flag:"gb",code:"+44",name:"UK"},
+{flag:"us",code:"+1",name:"USA"},{flag:"uy",code:"+598",name:"Uruguay"},{flag:"uz",code:"+998",name:"Uzbekistan"},
+{flag:"vu",code:"+678",name:"Vanuatu"},{flag:"va",code:"+379",name:"Vatican City"},{flag:"ve",code:"+58",name:"Venezuela"},
+{flag:"vn",code:"+84",name:"Vietnam"},{flag:"ye",code:"+967",name:"Yemen"},{flag:"zm",code:"+260",name:"Zambia"},
+{flag:"zw",code:"+263",name:"Zimbabwe"}
 ];
+
+function renderCountryList(filter=""){
+  const items = document.getElementById('country-list-items');
+  const f = filter.toLowerCase();
+  const filtered = countries.filter(c => c.name.toLowerCase().includes(f) || c.code.includes(f));
+  items.innerHTML = filtered.map(c => `<div onclick="selectCountry('${c.flag}','${c.code}')"><img src="https://flagcdn.com/w20/${c.flag}.png"> ${c.code} ${c.name}</div>`).join('');
+}
 
 function toggleCountryList(){
   const list = document.getElementById('country-list');
   if(list.classList.contains('hidden')){
-    list.innerHTML = countries.map(c => `<div onclick="selectCountry('${c.flag}','${c.code}')">${c.flag} ${c.code} ${c.name}</div>`).join('');
+    renderCountryList();
     list.classList.remove('hidden');
+    document.getElementById('country-search').value = "";
+    document.getElementById('country-search').focus();
   } else {
     list.classList.add('hidden');
   }
 }
 
 function selectCountry(flag, code){
-  document.getElementById('country-code-btn').innerHTML = `${flag} ${code} ▾`;
+  document.getElementById('country-code-btn').innerHTML = `<img src="https://flagcdn.com/w20/${flag}.png"> ${code} ▾`;
   document.getElementById('country-list').classList.add('hidden');
 }
 
