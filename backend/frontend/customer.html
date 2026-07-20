@@ -127,31 +127,44 @@ input::-webkit-credentials-auto-fill-button { visibility: hidden; display: none 
 <main>
 
   <!-- ============ AUTH ============ -->
-  <section id="auth-panel" class="panel">
-    <h2 id="auth-title">Login Karo</h2>
-    <label>Phone Number</label>
-    <input id="phone" placeholder="9876543210" />
-    <label>Password</label>
-    <div class="pw-wrap">
-      <input id="password" type="text" placeholder="••••••" />
-      
-  
-      <div id="signup-extra-fields" class="hidden">
-        <label>Naam</label>
-        <input id="reg-name" placeholder="Ravi Kumar" />
-        <label>Gmail</label>
-        <input id="reg-email" type="email" placeholder="ravi@gmail.com" />
-      </div>
-  
-    <button class="btn-primary" id="auth-main-btn" onclick="login()">Login</button>
-  
-    <div style="text-align:center; margin-top:14px; font-size:.85rem;">
-      <span id="toggle-text">Naya account nahi hai? </span>
-      <a href="#" id="toggle-link" onclick="toggleAuthMode(); return false;" style="color:#1B4332; font-weight:600;">Naya Account Banao</a>
+  <!-- ============ AUTH ============ -->
+  <section id="auth-panel" class="panel" style="position: relative;">
+    <!-- Top Right: Swiggy Style Skip Button -->
+    <div style="position: absolute; top: 10px; right: 10px;">
+      <button onclick="skipToGuest()" style="background: var(--line); color: var(--forest-dark); padding: 5px 14px; font-size: 0.8rem; border-radius: 20px;">
+        Skip
+      </button>
     </div>
 
-    <div style="text-align:center; margin-top:8px; font-size:.85rem;">
-      <a href="#" onclick="openForgotPassword(); return false;" style="color:#1B4332; font-weight:600;">Password Bhool Gaye?</a>
+    <!-- Step 1: Login Details Form -->
+    <div id="otp-step1">
+      <h2 id="auth-title">Login / Signup</h2>
+      
+      <label>Phone Number</label>
+      <input id="phone" type="tel" placeholder="9876543210" style="width:100%; margin-bottom: 12px; padding: 10px; border: 1px solid var(--line); border-radius: 8px;" />
+      
+      <label>Gmail Address</label>
+      <input id="reg-email" type="email" placeholder="ravi@gmail.com" style="width:100%; margin-bottom: 12px; padding: 10px; border: 1px solid var(--line); border-radius: 8px;" />
+      
+      <label>Naam (Naye account ke liye)</label>
+      <input id="reg-name" placeholder="Ravi Kumar" style="width:100%; margin-bottom: 16px; padding: 10px; border: 1px solid var(--line); border-radius: 8px;" />
+      
+      <button class="btn-primary" onclick="handleSendOTP()">Send OTP on Gmail</button>
+    </div>
+
+    <!-- Step 2: OTP Verification Form (Initially Hidden) -->
+    <div id="otp-step2" class="hidden">
+      <h2>OTP Verify Karo</h2>
+      <div class="hint" style="margin-bottom:12px;">Humne aapke Gmail par ek 6-digit OTP bheja hai.</div>
+      
+      <label>Enter OTP</label>
+      <input id="login-otp" placeholder="Enter 6-digit OTP" maxlength="6" style="width:100%; text-align:center; font-size:1.5rem; letter-spacing:4px; margin-bottom: 16px; padding: 10px; border: 1px solid var(--line); border-radius: 8px;" />
+      
+      <button class="btn-accent" onclick="handleVerifyOTP()">Verify & Login</button>
+      
+      <div style="text-align:center; margin-top:14px; font-size:.85rem;">
+        <a href="#" onclick="showStep1(); return false;" style="color:var(--forest); font-weight:600;">Details Badlein / Back</a>
+      </div>
     </div>
 
     <!-- Forgot Password Modal -->
@@ -241,62 +254,94 @@ let token = null, myRole = null, myUserId = null, ws = null;
 let catalogItems = [], cart = {}, matchedLines = [], activeShopOrderIds = [];
 
 // ---------------- AUTH ----------------
-async function signup(){
-  const body = {
-    name: document.getElementById('reg-name').value,
-    phone: document.getElementById('phone').value,
-    email: document.getElementById('reg-email').value,
-    password: document.getElementById('password').value,
-    role: "customer"
-  };
-  const res = await fetch(`${API}/auth/signup`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
-  if(!res.ok){ toast('Signup fail ho gaya: ' + (await res.text())); return; }
-  onLoggedIn(await res.json());
+// ---------------- NEW AUTH LOGIC (FREE GMAIL OTP) ----------------
+
+// 1. Swiggy Style Skip/Guest Button Logic
+function skipToGuest() {
+  token = null; 
+  myRole = "customer"; 
+  myUserId = null;
+  
+  localStorage.setItem("is_guest", "true");
+  localStorage.removeItem("access_token");
+  document.getElementById('user-badge').innerText = "Guest User";
+  
+  document.getElementById('auth-panel').classList.add('hidden');
+  document.getElementById('shop-panel').classList.remove('hidden');
+  
+  toast('Guest mode active! Order ke liye login zaroori hoga.');
+  loadCatalog();
 }
 
-async function login(){
-  const body = { phone: document.getElementById('phone').value, password: document.getElementById('password').value };
-  const res = await fetch(`${API}/auth/login`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
-  if(!res.ok){ toast('Login fail: phone ya password galat hai'); return; }
-  onLoggedIn(await res.json());
+// 2. Step 1: Backend se Gmail par OTP mangwana
+async function handleSendOTP() {
+  const phone = document.getElementById('phone').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const name = document.getElementById('reg-name').value.trim();
+
+  if (!phone || phone.length !== 10) { toast('Kripya sahi 10-digit phone number daalein'); return; }
+  if (!email) { toast('Gmail address daalna zaroori hai'); return; }
+
+  const body = {
+    phone: phone,
+    email: email,
+    name: name || "User",
+    role: "customer"
+  };
+
+  try {
+    const res = await fetch(`${API}/auth/request-otp`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    
+    const data = await res.json();
+    if (!res.ok) { toast(data.detail || 'OTP bhejne mein dikkat aayi'); return; }
+
+    toast('OTP aapke Gmail par bhej diya gaya hai!');
+    document.getElementById('otp-step1').classList.add('hidden');
+    document.getElementById('otp-step2').classList.remove('hidden');
+  } catch (err) {
+    toast('Backend server se connection nahi ho paya.');
+  }
 }
-function openForgotPassword(){
-  document.getElementById('forgot-modal').classList.remove('hidden');
-  document.getElementById('forgot-step1').classList.remove('hidden');
-  document.getElementById('forgot-step2').classList.add('hidden');
+
+// 3. Step 2: OTP verify karke application mein aage badhna
+async function handleVerifyOTP() {
+  const phone = document.getElementById('phone').value.trim();
+  const otp = document.getElementById('login-otp').value.trim();
+
+  if (!otp || otp.length !== 6) { toast('6-digit OTP daalein'); return; }
+
+  const body = {
+    phone: phone,
+    otp: otp,
+    role: "customer"
+  };
+
+  try {
+    const res = await fetch(`${API}/auth/verify-login-otp`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    
+    const data = await res.json();
+    if (!res.ok) { toast(data.detail || 'Galat OTP ya expire ho chuka hai'); return; }
+
+    localStorage.removeItem("is_guest");
+    onLoggedIn(data);
+    toast('Login successful! Welcome.');
+  } catch (err) {
+    toast('Verification failed.');
+  }
 }
-function closeForgotPassword(){
-  document.getElementById('forgot-modal').classList.add('hidden');
-  document.getElementById('forgot-phone').value = '';
-  document.getElementById('forgot-otp').value = '';
-  document.getElementById('forgot-new-password').value = '';
-}
-async function sendForgotOtp(){
-  const phone = document.getElementById('forgot-phone').value;
-  if(!phone){ toast('Phone number daalo'); return; }
-  const res = await fetch(`${API}/auth/forgot-password`, {
-    method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({phone})
-  });
-  const data = await res.json();
-  if(!res.ok){ toast(data.detail || 'Kuch galat ho gaya'); return; }
-  toast('OTP Gmail par bhej diya gaya hai');
-  document.getElementById('forgot-step1').classList.add('hidden');
-  document.getElementById('forgot-step2').classList.remove('hidden');
-}
-async function submitResetPassword(){
-  const phone = document.getElementById('forgot-phone').value;
-  const otp = document.getElementById('forgot-otp').value;
-  const new_password = document.getElementById('forgot-new-password').value;
-  if(!otp || !new_password){ toast('OTP aur naya password daalo'); return; }
-  const res = await fetch(`${API}/auth/reset-password`, {
-    method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({phone, otp, new_password})
-  });
-  const data = await res.json();
-  if(!res.ok){ toast(data.detail || 'Kuch galat ho gaya'); return; }
-  toast('Password badal gaya! Ab login karo');
-  closeForgotPassword();
+
+// Back button function
+function showStep1() {
+  document.getElementById('otp-step1').classList.remove('hidden');
+  document.getElementById('otp-step2').classList.add('hidden');
 }
 
 function onLoggedIn(data){
