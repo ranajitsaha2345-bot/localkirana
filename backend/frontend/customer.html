@@ -358,10 +358,11 @@ function skipToGuest() {
 }
 function updateGoogleButtonState() {
   const phone = document.getElementById('phone').value.trim();
+  const validPhone = /^[6-9]\d{9}$/.test(phone) && !/^(\d)\1{9}$/.test(phone);
   const wrap = document.getElementById('google-btn-wrap');
   const phoneBox = document.querySelector('.phone-box');
   const label = document.querySelector('.floating-label');
-  if (phone.length === 10) {
+  if (validPhone) {
     wrap.style.opacity = '1';
     wrap.style.pointerEvents = 'auto';
     document.getElementById('phone-hint').innerText = 'Now continue with Google';
@@ -377,7 +378,10 @@ function updateGoogleButtonState() {
 }
 async function handleGoogleLogin(response) {
   const phone = document.getElementById('phone').value.trim();
-  if (!phone || phone.length !== 10) { toast('Pehle sahi phone number daalein'); return; }
+  const validPhone = /^[6-9]\d{9}$/.test(phone);
+const isRepeated = /^(\d)\1{9}$/.test(phone);
+const isSequential = phone === '1234567890' || phone === '0123456789';
+if (!validPhone || isRepeated || isSequential) { toast('Kripya valid phone number daalein'); return; }
 
   try {
     const res = await fetch(`${API}/auth/google`, {
