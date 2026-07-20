@@ -358,7 +358,7 @@ function skipToGuest() {
 }
 function updateGoogleButtonState() {
   const phone = document.getElementById('phone').value.trim();
-  const validPhone = /^[6-9]\d{9}$/.test(phone) && !/^(\d)\1{9}$/.test(phone);
+  const validPhone = /^\d{6,15}$/.test(phone) && !/^(\d)\1+$/.test(phone);
   const wrap = document.getElementById('google-btn-wrap');
   const phoneBox = document.querySelector('.phone-box');
   const label = document.querySelector('.floating-label');
@@ -378,8 +378,8 @@ function updateGoogleButtonState() {
 }
 async function handleGoogleLogin(response) {
   const phone = document.getElementById('phone').value.trim();
-  const validPhone = /^[6-9]\d{9}$/.test(phone);
-const isRepeated = /^(\d)\1{9}$/.test(phone);
+  const validPhone = /^\d{6,15}$/.test(phone);
+  const isRepeated = /^(\d)\1+$/.test(phone);
 const isSequential = phone === '1234567890' || phone === '0123456789';
 if (!validPhone || isRepeated || isSequential) { toast('Kripya valid phone number daalein'); return; }
 
