@@ -155,7 +155,10 @@
         <span class="flag-code" id="country-code-btn" onclick="toggleCountryList()"><img src="https://flagcdn.com/w20/in.png"> +91 ▾</span>
 <label class="floating-label">Mobile Number</label>
 <input type="text" id="phone" placeholder=" " oninput="updateContinueState()">
-          <div id="country-list" class="country-list hidden"></div>
+<div id="country-list" class="country-list hidden">
+  <input type="text" id="country-search" placeholder="Search country" oninput="renderCountryList(this.value)" style="width:92%;margin:6px auto;display:block;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font-size:.82rem;">
+  <div id="country-list-items"></div>
+</div> 
       </div>
   
       <h2 class="auth-heading">Enter your Gmail</h2>
