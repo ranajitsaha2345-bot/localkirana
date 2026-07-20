@@ -360,19 +360,21 @@ function updateGoogleButtonState() {
   const phone = document.getElementById('phone').value.trim();
   const wrap = document.getElementById('google-btn-wrap');
   const phoneBox = document.querySelector('.phone-box');
+  const label = document.querySelector('.floating-label');
   if (phone.length === 10) {
     wrap.style.opacity = '1';
     wrap.style.pointerEvents = 'auto';
     document.getElementById('phone-hint').innerText = 'Now continue with Google';
     phoneBox.style.borderColor = 'var(--green-ok)';
+    label.style.color = 'var(--green-ok)';
   } else {
     wrap.style.opacity = '0.4';
     wrap.style.pointerEvents = 'none';
     document.getElementById('phone-hint').innerText = 'Enter number, then continue with Google';
     phoneBox.style.borderColor = '';
+    label.style.color = '';
   }
 }
-
 async function handleGoogleLogin(response) {
   const phone = document.getElementById('phone').value.trim();
   if (!phone || phone.length !== 10) { toast('Pehle sahi phone number daalein'); return; }
