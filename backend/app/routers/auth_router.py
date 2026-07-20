@@ -7,6 +7,56 @@ from datetime import datetime, timedelta
 from ..services.email import generate_otp, send_otp_email
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+import os
+from google.oauth2 import id_token as google_id_token
+from google.auth.transport import requests as google_requests
+from pydantic import BaseModel
+
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+
+class GoogleLogin(BaseModel):
+    credential: str
+
+
+@router.post("/google", response_model=schemas.Token)
+def google_login(payload: GoogleLogin, db: Session = Depends(get_db)):
+    try:
+        idinfo = google_id_token.verify_oauth2_token(
+            payload.credential, google_requests.Request(), GOOGLE_CLIENT_ID
+        )
+    except ValueError:
+        raise HTTPException(400, "Google verification fail ho gaya, dobara try karo")
+
+    google_id = idinfo["sub"]
+    email = idinfo.get("email")
+    name = idinfo.get("name", "User")
+
+    user = db.query(models.User).filter(models.User.google_id == google_id).first()
+    if not user and email:
+        user = db.query(models.User).filter(models.User.email == email).first()
+
+    if not user:
+        user = models.User(
+            name=name,
+            phone=None,
+            email=email,
+            google_id=google_id,
+            password_hash=auth.hash_password(google_id),
+            role=models.UserRole.customer,
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    else:
+        if not user.google_id:
+            user.google_id = google_id
+            db.commit()
+
+    token = auth.create_access_token({"sub": str(user.id)})
+    return schemas.Token(
+        access_token=token, role=user.role, user_id=user.id, name=user.name,
+        cash_unlocked=user.cash_unlocked, online_payment_count=user.online_payment_count,
+    )
 
 
 @router.post("/signup", response_model=schemas.Token)
