@@ -125,13 +125,18 @@
 .guest-line {
   text-align: center; font-size: 0.82rem; color: #6b6b5f; margin-top: 12px;
 }
+#user-badge{ cursor:pointer; background:rgba(255,255,255,.12); color:#fff; border-radius:20px; padding:4px 12px; font-size:.78rem; font-weight:400; }
+.btn-primary:disabled{ background:#C9C5B4; color:#8a8674; cursor:not-allowed; }
+.country-list{ position:absolute; top:110%; left:0; background:#fff; border:1px solid var(--line); border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,.15); max-height:240px; overflow-y:auto; width:220px; z-index:20; }
+.country-list div{ padding:8px 12px; font-size:.88rem; cursor:pointer; display:flex; gap:8px; }
+.country-list div:hover{ background:#F3F1E8; }
 </style>
 </head>
 <body>
 
 <header>
   <h1>Wait</h1>
-  <div class="badge" id="user-badge">Guest</div>
+  <button class="badge" id="user-badge" onclick="skipToGuest()">Guest</button>
 </header>
 
 <main>
@@ -141,20 +146,19 @@
     <h2 class="auth-heading">Enter your number</h2>
 
     <div id="otp-step1">
-        <div class="phone-box" style="margin-bottom: 16px;">
-            <span class="flag-code">🇮🇳 +91</span>
-            <input type="text" id="phone" placeholder="Mobile Number">
-        </div>
-
-        <h2 class="auth-heading">Enter your Gmail</h2>
-        <div class="phone-box" style="margin-bottom: 20px;">
-            <input type="email" id="reg-email" placeholder="Gmail Address" style="padding:6px 0;">
-        </div>
-
-        <button onclick="handleSendOTP()" class="btn-primary">OTP Mangwaye</button>
-        <div class="guest-line">
-            <button onclick="skipToGuest()" class="skip-btn">Bina login kiye bhi dekh sakte ho</button>
-        </div>
+      <div class="phone-box" style="margin-bottom: 16px; position:relative;">
+          <span class="flag-code" id="country-code-btn" onclick="toggleCountryList()">🇮🇳 +91 ▾</span>
+          <input type="text" id="phone" placeholder="Mobile Number" oninput="updateContinueState()">
+          <div id="country-list" class="country-list hidden"></div>
+      </div>
+  
+      <h2 class="auth-heading">Enter your Gmail</h2>
+      <div class="phone-box" style="margin-bottom: 20px;">
+          <input type="email" id="reg-email" placeholder="Gmail Address" style="padding:6px 0;" oninput="updateContinueState()">
+      </div>
+  
+      <button onclick="handleSendOTP()" class="btn-primary" id="continue-btn" disabled>Continue</button>
+  </div>
     </div>
 
     <div id="otp-step2" class="hidden">
@@ -205,6 +209,40 @@ let token = null, myRole = null, myUserId = null, ws = null;
 let catalogItems = [], cart = {}, matchedLines = [], activeShopOrderIds = [];
 
 // ---------------- NEW AUTH LOGIC (FREE GMAIL OTP) ----------------
+const countries = [
+  {flag:"🇮🇳", code:"+91", name:"India"},
+  {flag:"🇦🇺", code:"+61", name:"Australia"},
+  {flag:"🇨🇦", code:"+1", name:"Canada"},
+  {flag:"🇭🇰", code:"+852", name:"Hong Kong"},
+  {flag:"🇮🇩", code:"+62", name:"Indonesia"},
+  {flag:"🇮🇱", code:"+972", name:"Israel"},
+  {flag:"🇯🇵", code:"+81", name:"Japan"},
+  {flag:"🇰🇼", code:"+965", name:"Kuwait"},
+  {flag:"🇲🇾", code:"+60", name:"Malaysia"},
+  {flag:"🇺🇸", code:"+1", name:"USA"},
+  {flag:"🇬🇧", code:"+44", name:"UK"},
+];
+
+function toggleCountryList(){
+  const list = document.getElementById('country-list');
+  if(list.classList.contains('hidden')){
+    list.innerHTML = countries.map(c => `<div onclick="selectCountry('${c.flag}','${c.code}')">${c.flag} ${c.code} ${c.name}</div>`).join('');
+    list.classList.remove('hidden');
+  } else {
+    list.classList.add('hidden');
+  }
+}
+
+function selectCountry(flag, code){
+  document.getElementById('country-code-btn').innerHTML = `${flag} ${code} ▾`;
+  document.getElementById('country-list').classList.add('hidden');
+}
+
+function updateContinueState(){
+  const phone = document.getElementById('phone').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  document.getElementById('continue-btn').disabled = !(phone && email);
+}
 
 function skipToGuest() {
   token = null; 
