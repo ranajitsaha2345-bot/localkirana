@@ -356,24 +356,33 @@ function skipToGuest() {
   toast('Guest mode active! Order ke liye login zaroori hoga.');
   loadCatalog();
 }
+let lastInvalidToastPhone = '';
+
 function updateGoogleButtonState() {
   const phone = document.getElementById('phone').value.trim();
   const validPhone = /^\d{6,15}$/.test(phone) && !/^(\d)\1+$/.test(phone);
   const wrap = document.getElementById('google-btn-wrap');
   const phoneBox = document.querySelector('.phone-box');
   const label = document.querySelector('.floating-label');
+
   if (validPhone) {
     wrap.style.opacity = '1';
     wrap.style.pointerEvents = 'auto';
     document.getElementById('phone-hint').innerText = 'Now continue with Google';
     phoneBox.style.borderColor = 'var(--green-ok)';
     label.style.color = 'var(--green-ok)';
+    lastInvalidToastPhone = '';
   } else {
     wrap.style.opacity = '0.4';
     wrap.style.pointerEvents = 'none';
     document.getElementById('phone-hint').innerText = 'Enter number, then continue with Google';
     phoneBox.style.borderColor = '';
     label.style.color = '';
+
+    if (phone.length >= 6 && phone !== lastInvalidToastPhone) {
+      toast('Enter valid number');
+      lastInvalidToastPhone = phone;
+    }
   }
 }
 async function handleGoogleLogin(response) {
