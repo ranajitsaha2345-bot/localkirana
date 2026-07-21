@@ -37,12 +37,12 @@
     linear-gradient(180deg, #F7E8D4, #EFD6AE);
   background-attachment: fixed;
 }
-  header h1{font-size:1.15rem; font-weight:700; letter-spacing:.2px;}
+header h1{font-size:1.05rem; font-weight:600; letter-spacing:.2px;}
   header h1 span{color:var(--turmeric);}
   .badge{
-    background:rgba(255,255,255,.12); border-radius:20px; padding:4px 12px;
-    font-size:.78rem;
-  }
+  background:rgba(255,255,255,.12); border-radius:20px; padding:4px 12px;
+  font-size:.78rem; margin-left:auto; flex-shrink:0;
+}
   main{max-width:520px; margin:0 auto; padding:16px;}
   .panel{
   background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
@@ -147,7 +147,7 @@
 <body>
 
 <header>
-  <h1>Wait</h1>
+  <h1>Save Time, No More Waiting</h1>
   <button class="badge" id="user-badge" onclick="skipToGuest()">Guest</button>
 </header>
 
