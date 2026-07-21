@@ -176,24 +176,26 @@
   <button class="badge" id="user-badge" onclick="skipToGuest()">Guest</button>
 </header>
 
-<div id="auth-panel" class="panel"></div>
+<!-- ... Line 178 content ... -->
+
+<div id="auth-panel" class="panel">
 
   <div class="illustration-area">
       <!-- SVG for Citrus Punch Man & Mango Twist Girl Combined -->
       <svg width="240" height="120" viewBox="0 0 240 120" xmlns="http://www.w3.org/2000/svg">
-          <!-- Background Sunburst/Waves -->
+          <!-- Background Sunburst/Waves (combined gold/orange/blue) -->
           <circle cx="120" cy="60" r="50" fill="#D4A25F"/>
           <path d="M 0 60 Q 60 20 120 60" stroke="#B7C9D6" stroke-width="2" fill="none"/>
           <path d="M 120 60 Q 180 100 240 60" stroke="#E74C3C" stroke-width="2" fill="none"/>
 
-          <!-- Citrus Punch Man -->
+          <!-- Citrus Punch Man (re-colored) -->
           <g id="citrus-man" transform="translate(40, 20)">
               <ellipse cx="25" cy="40" rx="15" ry="35" fill="#D4A25F"/>
               <circle cx="25" cy="15" r="12" fill="#FFFFFF"/>
               <rect x="23" y="38" width="4" height="20" fill="#FFFFFF"/>
           </g>
 
-          <!-- Mango Twist Girl -->
+          <!-- Mango Twist Girl (re-colored) -->
           <g id="mango-girl" transform="translate(160, 20)">
               <ellipse cx="25" cy="40" rx="15" ry="35" fill="#1A253A"/>
               <circle cx="25" cy="15" r="12" fill="#FFFFFF"/>
@@ -201,6 +203,10 @@
           </g>
       </svg>
   </div>
+
+  <h2 class="auth-heading" style="margin-bottom:14px;">Enter your number</h2>
+
+</div> <!-- Close #auth-panel -->
 
   <h2 class="auth-heading" style="margin-bottom:14px;">Enter your number</h2>
   
