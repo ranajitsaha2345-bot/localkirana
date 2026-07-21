@@ -181,12 +181,9 @@ input:focus { border-color: var(--red); }
 <body>
 
 <header>
-  <div class="hdr-top">
-    <div>
-      <h1>Wait <span style="color:var(--orange)">🛒</span></h1>
-      <div class="sub">Save Time, No More Waiting</div>
-    </div>
-    <button class="badge" id="user-badge" onclick="skipToGuest()">Guest</button>
+  <div class="hdr-top" style="justify-content:center; position:relative;">
+    <h1 style="margin:0 auto;">Wait <span style="color:var(--orange)">🛒</span></h1>
+    <button class="badge" id="user-badge" onclick="skipToGuest()" style="position:absolute; right:0;">Guest</button>
   </div>
 </header>
 
