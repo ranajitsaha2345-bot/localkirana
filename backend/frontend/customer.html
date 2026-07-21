@@ -5,161 +5,189 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Wait — Apna Saman</title>
 <link rel="manifest" href="manifest.json" />
-<meta name="theme-color" content="#1B4332" />
+<meta name="theme-color" content="#E6372F">
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
-.hidden { display: none; }
 :root{
-  --ink:#3D2B1F;
-  --forest:#8B5E34;
-  --forest-dark:#6B4423;
-  --paper:#F7E8D4;
-  --card:#FFF8EF;
-  --turmeric:#E8A33D;
-  --turmeric-dark:#C97F1E;
-  --line:#E0C9A6;
-  --red:#B3432B;
-  --green-ok:#2F6B3A;
-  --radius:14px;
+  --ink:#2B1810;
+  --red:#E6372F;
+  --red-dark:#B3221D;
+  --orange:#FF8A3D;
+  --pink:#FF5B7F;
+  --plum:#5B1A3A;
+  --paper:#FFF3E9;
+  --card:#FFFFFF;
+  --line:#F1DFCF;
+  --green-ok:#1E8E4A;
+  --muted:#8A7A6E;
+  --radius:16px;
 }
-  *{box-sizing:border-box;}
-  body{
+*{box-sizing:border-box;}
+body{
   margin:0; font-family:'Segoe UI', system-ui, -apple-system, sans-serif;
   color:var(--ink);
-  background:
-    radial-gradient(circle at 15% 20%, rgba(232,163,61,.55), transparent 40%),
-    radial-gradient(circle at 85% 15%, rgba(139,94,52,.45), transparent 45%),
-    radial-gradient(circle at 30% 80%, rgba(201,127,30,.4), transparent 45%),
-    radial-gradient(circle at 90% 85%, rgba(139,94,52,.35), transparent 40%),
-    linear-gradient(180deg, #F7E8D4, #EFD6AE);
-  background-attachment: fixed;
+  background: var(--paper);
 }
 header{
-  background: linear-gradient(135deg, #C97F1E, #8B5E34);
-  color:#fff; padding:18px 20px;
-  display:flex; align-items:center; justify-content:flex-end;
+  background: linear-gradient(135deg, var(--plum), var(--red-dark));
+  color:#fff; padding:18px 20px 26px;
   position:sticky; top:0; z-index:10;
-  position:relative;
+  border-bottom-left-radius:20px; border-bottom-right-radius:20px;
 }
-header h1{
-  position:absolute; left:50%; transform:translateX(-50%);
-  font-size:.85rem; font-weight:600; letter-spacing:.2px;
-  white-space:nowrap;
+.hdr-top{ display:flex; align-items:center; justify-content:space-between; }
+header h1{ font-size:1.05rem; font-weight:800; letter-spacing:.2px; margin:0; }
+header .sub{ font-size:.78rem; opacity:.75; margin-top:2px; }
+.badge{
+  background:rgba(255,255,255,.15); border-radius:20px; padding:6px 14px;
+  font-size:.78rem; border:none; color:#fff; cursor:pointer; font-weight:600;
 }
-  header h1 span{color:var(--turmeric);}
-  .badge{
-  background:rgba(255,255,255,.12); border-radius:20px; padding:4px 12px;
-  font-size:.78rem; margin-left:auto; flex-shrink:0;
-}
-  main{max-width:520px; margin:0 auto; padding:16px;}
-  .panel{
+main{max-width:520px; margin:0 auto; padding:16px; padding-top:0;}
+.panel{
   background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
   padding:16px; margin-bottom:14px;
-  box-shadow: 0 10px 30px rgba(107,68,35,.25);
+  box-shadow: 0 8px 24px rgba(179,34,29,.08);
 }
-  .panel h2{font-size:1rem; margin-bottom:10px; color:var(--forest-dark);}
-  
-  label{font-size:.82rem; color:#6b6b5f; display:block; margin-bottom:4px;}
-  button{
-    border:none; border-radius:10px; padding:11px 16px; font-size:.95rem;
-    font-weight:600; cursor:pointer; transition:transform .08s ease;
-  }
-  button:active{transform:scale(.97);}
-  .btn-primary{background: linear-gradient(135deg, #4B2470, #6B3AA0); color:#fff; width:100%;}
-  .btn-accent{background:var(--turmeric); color:#3a2600; width:100%;}
-  .btn-outline{background:#fff; border:1px solid var(--forest); color:var(--forest);}
-  .btn-sm{padding:6px 12px; font-size:.82rem;}
-  .item-row{
-    display:flex; align-items:center; gap:10px; padding:8px 0;
-    border-bottom:1px dashed var(--line);
-  }
-  .item-row:last-child{border-bottom:none;}
-  .item-row span.name{flex:1; font-size:.92rem;}
-  .item-row input[type=number]{width:70px; margin:0; padding:6px;}
-  .receipt-line{
-    display:flex; justify-content:space-between; font-size:.88rem; padding:6px 0;
-    border-bottom:1px dotted var(--line);
-  }
-  .receipt-line .shop{color:#6b6b5f; font-size:.78rem;}
-  .total-line{
-    display:flex; justify-content:space-between; font-weight:700; padding-top:10px;
-    font-size:1.05rem; color:var(--forest-dark);
-  }
-  .status-pill{
-    display:inline-block; padding:3px 10px; border-radius:20px; font-size:.72rem;
-    font-weight:700; text-transform:uppercase; letter-spacing:.4px;
-  }
-  .status-pending_shop_review{background:#FDF0DC; color:var(--turmeric-dark);}
-  .status-partially_unavailable{background:#FBE3DD; color:var(--red);}
-  .status-awaiting_payment{background:#E6EEE8; color:var(--forest);}
-  .status-confirmed{background:#E6EEE8; color:var(--green-ok);}
-  .status-ready{background:#1B4332; color:#fff;}
-  .status-completed{background:#22281F; color:#fff;}
-  #order-tracker .order-card{margin-bottom:12px;}
-  #qr-box{text-align:center; padding:10px;}
-  #qr-box canvas{margin:0 auto;}
-  .code-box{
-    text-align:center; font-size:2rem; letter-spacing:10px; font-weight:800;
-    color:var(--forest); background:#EFEADA; border-radius:12px; padding:14px; margin:10px 0;
-  }
-  .hint{font-size:.78rem; color:#847f6f; margin-top:4px;}
-  .hidden{display:none !important;}
-  #map{width:100%; height:220px; border-radius:12px; margin-top:10px; border:1px solid var(--line);}
-  .toast{
-    position:fixed; bottom:16px; left:50%; transform:translateX(-50%);
-    background:var(--forest-dark); color:#fff; padding:10px 18px; border-radius:30px;
-    font-size:.85rem; z-index:50; box-shadow:0 4px 14px rgba(0,0,0,.2);
-  }
-  
-  /* Input box enhancements */
-  input[type="text"], input[type="email"], input[type="number"] {
-    width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 0.95rem; outline: none;
-  }
-  input:focus { border-color: var(--forest); }
-  .auth-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-  .auth-header h2 { font-size: 1.2rem; font-weight: 700; color: var(--forest); }
-  .skip-btn { color: var(--forest); background: none; padding: 0; font-size: 0.88rem; text-decoration: underline; }
-  .phone-box {
-  border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px;
-  display: flex; align-items: center; gap: 10px;
+.panel h2{font-size:1rem; margin:0 0 10px; color:var(--red-dark); font-weight:800;}
+
+/* hero */
+.hero-wrap{ margin:-14px -4px 14px; padding:0 4px; }
+.hero-card{
+  background: linear-gradient(120deg, var(--red), var(--pink));
+  border-radius:20px; padding:18px; color:#fff; position:relative; overflow:hidden;
+  box-shadow:0 12px 28px rgba(230,55,47,.35);
 }
+.hero-card h3{ font-size:1.4rem; margin:0 0 4px; font-weight:800; }
+.hero-card span{ font-size:.85rem; opacity:.9; }
+.hero-emoji{ position:absolute; right:14px; top:14px; font-size:2.4rem; opacity:.85; }
+
+/* search */
+.search-box{
+  display:flex; align-items:center; gap:10px; background:#fff; border:1px solid var(--line);
+  border-radius:14px; padding:12px 14px; margin:-4px 0 14px;
+}
+.search-box input{ border:none; outline:none; flex:1; font-size:.95rem; }
+.search-box svg{ flex-shrink:0; }
+
+/* categories */
+.cat-row{ display:flex; gap:14px; overflow-x:auto; padding:4px 2px 16px; scrollbar-width:none; }
+.cat-row::-webkit-scrollbar{ display:none; }
+.cat-item{ flex-shrink:0; text-align:center; cursor:pointer; }
+.cat-circle{
+  width:58px; height:58px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:1.5rem; background:linear-gradient(135deg, var(--orange), var(--red));
+  color:#fff; margin:0 auto 6px; box-shadow:0 6px 14px rgba(255,138,61,.35);
+}
+.cat-item span{ font-size:.72rem; font-weight:600; color:var(--ink); }
+
+label{font-size:.82rem; color:var(--muted); display:block; margin-bottom:4px;}
+button{
+  border:none; border-radius:12px; padding:12px 16px; font-size:.95rem;
+  font-weight:700; cursor:pointer; transition:transform .08s ease;
+}
+button:active{transform:scale(.97);}
+.btn-primary{background: linear-gradient(135deg, var(--red), var(--red-dark)); color:#fff; width:100%;}
+.btn-accent{background: linear-gradient(135deg, var(--orange), var(--red)); color:#fff; width:100%;}
+.btn-outline{background:#fff; border:1.5px solid var(--red); color:var(--red-dark);}
+.btn-sm{padding:6px 12px; font-size:.82rem;}
+
+/* catalog grid */
+#catalog{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.item-card{
+  border:1px solid var(--line); border-radius:14px; padding:10px; background:#FFFCF9;
+  display:flex; flex-direction:column; gap:8px;
+}
+.item-card .icon{
+  width:100%; height:64px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+  font-size:1.8rem; background:linear-gradient(135deg, #FFE3D3, #FFD1DC);
+}
+.item-card .name{ font-size:.88rem; font-weight:700; }
+.item-card .unit{ font-size:.72rem; color:var(--muted); font-weight:400; }
+.item-card input[type=number]{ width:100%; }
+
+.item-row{
+  display:flex; align-items:center; gap:10px; padding:8px 0;
+  border-bottom:1px dashed var(--line);
+}
+.item-row:last-child{border-bottom:none;}
+.item-row span.name{flex:1; font-size:.92rem;}
+.item-row input[type=number]{width:70px; margin:0; padding:6px;}
+
+.receipt-line{
+  display:flex; justify-content:space-between; font-size:.88rem; padding:6px 0;
+  border-bottom:1px dotted var(--line);
+}
+.receipt-line .shop{color:var(--muted); font-size:.78rem;}
+.total-line{
+  display:flex; justify-content:space-between; font-weight:800; padding-top:10px;
+  font-size:1.05rem; color:var(--red-dark);
+}
+.status-pill{
+  display:inline-block; padding:3px 10px; border-radius:20px; font-size:.72rem;
+  font-weight:700; text-transform:uppercase; letter-spacing:.4px;
+}
+.status-pending_shop_review{background:#FFE9D6; color:var(--orange);}
+.status-partially_unavailable{background:#FBE3DD; color:var(--red);}
+.status-awaiting_payment{background:#FFE3EC; color:var(--pink);}
+.status-confirmed{background:#E3F5E9; color:var(--green-ok);}
+.status-ready{background:var(--plum); color:#fff;}
+.status-completed{background:#22281F; color:#fff;}
+#order-tracker .order-card{margin-bottom:12px;}
+#qr-box{text-align:center; padding:10px;}
+#qr-box canvas{margin:0 auto;}
+.code-box{
+  text-align:center; font-size:2rem; letter-spacing:10px; font-weight:800;
+  color:var(--red-dark); background:#FFF0E6; border-radius:12px; padding:14px; margin:10px 0;
+}
+.hint{font-size:.78rem; color:var(--muted); margin-top:4px;}
+.hidden{display:none !important;}
+#map{width:100%; height:220px; border-radius:12px; margin-top:10px; border:1px solid var(--line);}
+.toast{
+  position:fixed; bottom:16px; left:50%; transform:translateX(-50%);
+  background:var(--plum); color:#fff; padding:10px 18px; border-radius:30px;
+  font-size:.85rem; z-index:50; box-shadow:0 4px 14px rgba(0,0,0,.25);
+}
+
+/* auth */
+input[type="text"], input[type="email"], input[type="number"] {
+  width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 0.95rem; outline: none;
+}
+input:focus { border-color: var(--red); }
+.auth-heading { color: var(--ink); font-size: 1.25rem; font-weight: 800; margin-bottom: 14px; }
+.phone-box {
+  border: 1.5px solid var(--line); border-radius: 10px; padding: 8px 12px;
+  display: flex; align-items: center; gap: 10px; position:relative;
+}
+.phone-box:focus-within{ border-color: var(--red); }
 .phone-box .flag-code {
   font-size: 0.95rem; color: var(--ink); white-space: nowrap;
   border-right: 1px solid var(--line); padding-right: 10px;
 }
-.phone-box input {
-  border: none; outline: none; padding: 6px 0; font-size: 0.95rem; flex: 1;
-}
-.auth-heading {
-  color: var(--ink); font-size: 1.25rem; font-weight: 700; margin-bottom: 14px;
-}
-.guest-line {
-  text-align: center; font-size: 0.82rem; color: #6b6b5f; margin-top: 12px;
-}
-#user-badge{ cursor:pointer; background:rgba(255,255,255,.12); color:#fff; border-radius:20px; padding:4px 12px; font-size:.78rem; font-weight:400; }
-.btn-primary:disabled{ background:#C9C5B4; color:#8a8674; cursor:not-allowed; }
-.country-list{ position:absolute; top:110%; left:0; background:#fff; border:1px solid var(--line); border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,.15); max-height:240px; overflow-y:auto; width:220px; z-index:20; }
-.country-list div{ padding:8px 12px; font-size:.88rem; cursor:pointer; display:flex; gap:8px; }
-.country-list div:hover{ background:#F3F1E8; }
-#country-list-items{ display:flex; flex-direction:column; width:100%; }
-.country-list{ width:240px; }
-.country-list div{ white-space:nowrap; }
-.phone-box{ position:relative; border:1.5px solid var(--line); border-radius:8px; }
-.phone-box:focus-within{ border-color:#FF5200; }
-.floating-label{ position:absolute; top:-9px; left:12px; background:#fff; padding:0 4px; font-size:.72rem; color:#8a8674; }
+.phone-box input { border: none; outline: none; padding: 6px 0; font-size: 0.95rem; flex: 1; }
+.floating-label{ position:absolute; top:-9px; left:12px; background:#fff; padding:0 4px; font-size:.72rem; color:var(--muted); }
+.phone-box:focus-within .floating-label{ color:var(--red); }
 .field-error{ color:#D33; font-size:.72rem; margin-top:4px; padding-left:4px; }
-.phone-box:focus-within .floating-label{ color:#FF5200; }
+.country-list{ position:absolute; top:110%; left:0; background:#fff; border:1px solid var(--line); border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,.15); max-height:240px; overflow-y:auto; width:240px; z-index:20; }
+.country-list div{ padding:8px 12px; font-size:.88rem; cursor:pointer; display:flex; gap:8px; white-space:nowrap; }
+.country-list div:hover{ background:#FFF3E9; }
+#country-list-items{ display:flex; flex-direction:column; width:100%; }
 .country-list img, .flag-code img{ width:20px; height:14px; object-fit:cover; vertical-align:middle; margin-right:4px; }
+.btn-primary:disabled{ background:#E7D9CD; color:#a89686; cursor:not-allowed; }
+#user-badge{ cursor:pointer; }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>Save Time, No More Waiting</h1>
-  <button class="badge" id="user-badge" onclick="skipToGuest()">Guest</button>
+  <div class="hdr-top">
+    <div>
+      <h1>Wait <span style="color:var(--orange)">🛒</span></h1>
+      <div class="sub">Save Time, No More Waiting</div>
+    </div>
+    <button class="badge" id="user-badge" onclick="skipToGuest()">Guest</button>
+  </div>
 </header>
 
 <main>
@@ -168,8 +196,8 @@ header h1{
   <div id="auth-panel" class="panel">
 
     <h2 class="auth-heading" style="margin-bottom:14px;">Enter your number</h2>
-  
-    <div class="phone-box" style="margin-bottom: 16px; position:relative;">
+
+    <div class="phone-box" style="margin-bottom: 16px;">
       <span class="flag-code" id="country-code-btn" onclick="toggleCountryList()"><img src="https://flagcdn.com/w20/in.png"> +91 ▾</span>
       <label class="floating-label">Mobile Number</label>
       <div id="phone-error" class="field-error hidden">Please use a real phone number</div>
@@ -179,9 +207,9 @@ header h1{
         <div id="country-list-items"></div>
       </div>
     </div>
-  
-    <p id="phone-hint" style="text-align:center; color:#999; margin:12px 0; font-size:.85rem;">Enter number, then continue with Google</p>
-  
+
+    <p id="phone-hint" style="text-align:center; color:var(--muted); margin:12px 0; font-size:.85rem;">Enter number, then continue with Google</p>
+
     <div id="google-btn-wrap" style="opacity:0.4; pointer-events:none;">
       <div id="g_id_onload"
            data-client_id="331552152118-9kbvonm08obtu4fjepnvc46b4lkdjid8.apps.googleusercontent.com"
@@ -189,11 +217,27 @@ header h1{
       </div>
       <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="continue_with" data-size="large" data-width="300"></div>
     </div>
-  
+
   </div>
-      
+
   <!-- ============ CATALOG / CART ============ -->
   <section id="shop-panel" class="panel hidden">
+
+    <div class="hero-wrap">
+      <div class="hero-card">
+        <span class="hero-emoji">🧺</span>
+        <h3>Welcome, ghar ke boss!</h3>
+        <span>Saman chuno, sabse sasti dukan turant milegi</span>
+      </div>
+    </div>
+
+    <div class="search-box">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B3221D" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="item-search" placeholder="Search for 'Chawal'" oninput="filterCatalog(this.value)">
+    </div>
+
+    <div class="cat-row" id="cat-row"></div>
+
     <h2>Saman Chuno</h2>
     <div id="catalog"></div>
     <div style="height:10px;"></div>
@@ -221,15 +265,55 @@ header h1{
     <button class="btn-primary" onclick="startShopScanner()">Dukan Ka QR Scan Karo</button>
     <div id="shop-qr-reader" style="width:100%; margin-top:10px;"></div>
   </section>
-  
+
 </main>
 
 <script>
-const API = "https://localkirana-production.up.railway.app"; 
+const API = "https://localkirana-production.up.railway.app";
 let token = null, myRole = null, myUserId = null, ws = null;
 let catalogItems = [], cart = {}, matchedLines = [], activeShopOrderIds = [];
 
-// ---------------- NEW AUTH LOGIC (FREE GMAIL OTP) ----------------
+// ---------------- ICON + CATEGORY HELPERS (visual only, no backend change) ----------------
+const ICONS = [
+  {kw:['dal','chana','rajma','moong'], icon:'🫘'},
+  {kw:['chini','sugar'], icon:'🍬'},
+  {kw:['tel','oil','ghee'], icon:'🫗'},
+  {kw:['biskut','biscuit','parle'], icon:'🍪'},
+  {kw:['atta','flour','maida'], icon:'🌾'},
+  {kw:['chawal','rice'], icon:'🍚'},
+  {kw:['namak','salt'], icon:'🧂'},
+  {kw:['chai','tea'], icon:'🍵'},
+  {kw:['doodh','milk','dahi','paneer'], icon:'🥛'},
+  {kw:['sabzi','vegetable','aloo','pyaz','tamatar'], icon:'🥔'},
+  {kw:['masala','mirch','haldi'], icon:'🌶️'},
+];
+function iconFor(name){
+  const n = (name||'').toLowerCase();
+  for(const g of ICONS){ if(g.kw.some(k => n.includes(k))) return g.icon; }
+  return '🛒';
+}
+const CATEGORIES = [
+  {icon:'🌾', label:'Anaj'}, {icon:'🥛', label:'Dairy'}, {icon:'🥔', label:'Sabzi'},
+  {icon:'🌶️', label:'Masala'}, {icon:'🍵', label:'Chai/Coffee'}, {icon:'🍪', label:'Snacks'}
+];
+function renderCategories(){
+  const row = document.getElementById('cat-row');
+  if(!row) return;
+  row.innerHTML = CATEGORIES.map(c => `
+    <div class="cat-item" onclick="document.getElementById('item-search').value='${c.label}'; filterCatalog('${c.label}');">
+      <div class="cat-circle">${c.icon}</div>
+      <span>${c.label}</span>
+    </div>`).join('');
+}
+function filterCatalog(q){
+  q = (q||'').toLowerCase();
+  document.querySelectorAll('#catalog .item-card').forEach(card => {
+    const match = card.dataset.name.toLowerCase().includes(q);
+    card.style.display = match ? '' : 'none';
+  });
+}
+
+// ---------------- AUTH LOGIC (FREE GMAIL OTP) ----------------
 const countries = [
 {flag:"af",code:"+93",name:"Afghanistan"},{flag:"al",code:"+355",name:"Albania"},{flag:"dz",code:"+213",name:"Algeria"},
 {flag:"ad",code:"+376",name:"Andorra"},{flag:"ao",code:"+244",name:"Angola"},{flag:"ag",code:"+1268",name:"Antigua and Barbuda"},
@@ -336,36 +420,19 @@ function isValidEmail(email){
   return !disposableDomains.includes(domain);
 }
 
-function updateContinueState(){
-  const phone = document.getElementById('phone').value.trim();
-
-  const phoneError = document.getElementById('phone-error');
-  const emailError = document.getElementById('email-error');
-
-  const phoneOk = phone === '' || isValidIndianPhone(phone);
-  const emailOk = email === '' || isValidEmail(email);
-
-  phoneError.classList.toggle('hidden', phoneOk);
-  emailError.classList.toggle('hidden', emailOk);
-
-  const bothFilled = phone && email;
-  const bothValid = isValidIndianPhone(phone) && isValidEmail(email);
-
-  document.getElementById('continue-btn').disabled = !(bothFilled && bothValid);
-}
-
 function skipToGuest() {
-  token = null; 
-  myRole = "customer"; 
+  token = null;
+  myRole = "customer";
   myUserId = null;
-  
+
   localStorage.setItem("is_guest", "true");
   localStorage.removeItem("access_token");
   document.getElementById('user-badge').innerText = "Guest User";
-  
+
   document.getElementById('auth-panel').classList.add('hidden');
   document.getElementById('shop-panel').classList.remove('hidden');
-  
+
+  renderCategories();
   toast('Guest mode active! Order ke liye login zaroori hoga.');
   loadCatalog();
 }
@@ -402,8 +469,8 @@ async function handleGoogleLogin(response) {
   const phone = document.getElementById('phone').value.trim();
   const validPhone = /^\d{6,15}$/.test(phone);
   const isRepeated = /^(\d)\1+$/.test(phone);
-const isSequential = phone === '1234567890' || phone === '0123456789';
-if (!validPhone || isRepeated || isSequential) { toast('Kripya valid phone number daalein'); return; }
+  const isSequential = phone === '1234567890' || phone === '0123456789';
+  if (!validPhone || isRepeated || isSequential) { toast('Kripya valid phone number daalein'); return; }
 
   try {
     const res = await fetch(`${API}/auth/google`, {
@@ -423,6 +490,7 @@ if (!validPhone || isRepeated || isSequential) { toast('Kripya valid phone numbe
 
     document.getElementById('auth-panel').classList.add('hidden');
     document.getElementById('shop-panel').classList.remove('hidden');
+    renderCategories();
     loadCatalog();
   } catch (err) {
     toast('Google login fail ho gaya, dobara try karo');
@@ -434,11 +502,7 @@ async function handleSendOTP() {
 
   if (!phone || phone.length !== 10) { toast('Kripya sahi 10-digit phone number daalein'); return; }
 
-  const body = {
-    phone: phone,
-    name: "User",
-    role: "customer"
-  };
+  const body = { phone: phone, name: "User", role: "customer" };
 
   try {
     const res = await fetch(`${API}/auth/request-otp`, {
@@ -446,7 +510,7 @@ async function handleSendOTP() {
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify(body)
     });
-    
+
     const data = await res.json();
     if (!res.ok) { toast(data.detail || 'OTP bhejne mein dikkat aayi'); return; }
 
@@ -464,11 +528,7 @@ async function handleVerifyOTP() {
 
   if (!otp || otp.length !== 6) { toast('6-digit OTP daalein'); return; }
 
-  const body = {
-    phone: phone,
-    otp: otp,
-    role: "customer"
-  };
+  const body = { phone: phone, otp: otp, role: "customer" };
 
   try {
     const res = await fetch(`${API}/auth/verify-login-otp`, {
@@ -476,7 +536,7 @@ async function handleVerifyOTP() {
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify(body)
     });
-    
+
     const data = await res.json();
     if (!res.ok) { toast(data.detail || 'Galat OTP ya expire ho chuka hai'); return; }
 
@@ -500,6 +560,7 @@ function onLoggedIn(data){
   document.getElementById('shop-panel').classList.remove('hidden');
   document.getElementById('order-tracker').classList.remove('hidden');
   document.getElementById('shop-scan-panel').classList.remove('hidden');
+  renderCategories();
   loadCatalog();
   connectWS();
 }
@@ -512,8 +573,9 @@ async function loadCatalog(){
   catalogItems = await res.json();
   const el = document.getElementById('catalog');
   el.innerHTML = catalogItems.map(it => `
-    <div class="item-row">
-      <span class="name">${it.name} <span class="hint">(${it.unit})</span></span>
+    <div class="item-card" data-name="${it.name}">
+      <div class="icon">${iconFor(it.name)}</div>
+      <div class="name">${it.name}<div class="unit">${it.unit}</div></div>
       <input type="number" min="0" step="0.5" placeholder="0" data-item="${it.id}" onchange="updateCart(${it.id}, this.value)" />
     </div>
   `).join('');
@@ -656,7 +718,7 @@ async function payOnline(shopOrderId, amount){
       });
       if(verifyRes.ok){ toast('Payment ho gaya! ✅'); } else { toast('Payment verify nahi hua'); }
     },
-    theme: { color: "#1B4332" }
+    theme: { color: "#E6372F" }
   };
   const rzp = new Razorpay(options);
   rzp.open();
