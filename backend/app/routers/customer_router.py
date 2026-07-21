@@ -11,9 +11,21 @@ class ScanShopRequest(BaseModel):
     qr_data: str
 
 @router.get("/items", response_model=list[schemas.ItemOut])
-def list_items(db: Session = Depends(get_db)):
-    """Poora catalog - dal, chini, oil, biskut, etc."""
-    return db.query(models.Item).all()
+def list_items(category: str | None = None, search: str | None = None, db: Session = Depends(get_db)):
+    """Poora catalog - dal, chini, oil, biskut, etc. Category aur search se filter hota hai."""
+    query = db.query(models.Item)
+    if category and category != "all":
+        query = query.filter(models.Item.category == category)
+    if search:
+        query = query.filter(models.Item.name.ilike(f"%{search}%"))
+    return query.all()
+
+
+@router.get("/categories")
+def list_categories(db: Session = Depends(get_db)):
+    """Saare unique categories - tabs banane ke liye."""
+    rows = db.query(models.Item.category).distinct().all()
+    return sorted(set(r[0] for r in rows if r[0]))
 
 
 @router.post("/cart/match", response_model=schemas.CartMatchResponse)

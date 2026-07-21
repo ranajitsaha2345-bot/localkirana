@@ -66,6 +66,7 @@ class ItemOut(BaseModel):
     name: str
     unit: str
     category: str
+    image_url: Optional[str] = None
 
     class Config:
         from_attributes = True

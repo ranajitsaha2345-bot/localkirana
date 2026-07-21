@@ -89,6 +89,7 @@ class Item(Base):
     name = Column(String, nullable=False, unique=True)
     unit = Column(String, default="unit")  # kg, litre, piece
     category = Column(String, default="general")
+    image_url = Column(String, nullable=True)
 
 
 class ShopItem(Base):
