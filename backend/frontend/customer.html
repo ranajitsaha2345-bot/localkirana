@@ -37,7 +37,18 @@
     linear-gradient(180deg, #F7E8D4, #EFD6AE);
   background-attachment: fixed;
 }
-header h1{font-size:1.05rem; font-weight:600; letter-spacing:.2px;}
+header{
+  background: linear-gradient(135deg, #C97F1E, #8B5E34);
+  color:#fff; padding:18px 20px;
+  display:flex; align-items:center; justify-content:flex-end;
+  position:sticky; top:0; z-index:10;
+  position:relative;
+}
+header h1{
+  position:absolute; left:50%; transform:translateX(-50%);
+  font-size:.85rem; font-weight:600; letter-spacing:.2px;
+  white-space:nowrap;
+}
   header h1 span{color:var(--turmeric);}
   .badge{
   background:rgba(255,255,255,.12); border-radius:20px; padding:4px 12px;
