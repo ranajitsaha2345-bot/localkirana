@@ -27,15 +27,15 @@
 }
   *{box-sizing:border-box;}
   body{
-    margin:0; font-family:'Segoe UI', system-ui, -apple-system, sans-serif;
-    background:var(--paper); color:var(--ink);
-  }
-  h1,h2,h3{font-family:'Poppins', 'Segoe UI', sans-serif; margin:0;}
-  header{
-  background: linear-gradient(135deg, #C97F1E, #8B5E34);
-  color:#fff; padding:18px 20px;
-  display:flex; align-items:center; justify-content:space-between;
-  position:sticky; top:0; z-index:10;
+  margin:0; font-family:'Segoe UI', system-ui, -apple-system, sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(circle at 15% 20%, rgba(232,163,61,.55), transparent 40%),
+    radial-gradient(circle at 85% 15%, rgba(139,94,52,.45), transparent 45%),
+    radial-gradient(circle at 30% 80%, rgba(201,127,30,.4), transparent 45%),
+    radial-gradient(circle at 90% 85%, rgba(139,94,52,.35), transparent 40%),
+    linear-gradient(180deg, #F7E8D4, #EFD6AE);
+  background-attachment: fixed;
 }
   header h1{font-size:1.15rem; font-weight:700; letter-spacing:.2px;}
   header h1 span{color:var(--turmeric);}
@@ -45,9 +45,10 @@
   }
   main{max-width:520px; margin:0 auto; padding:16px;}
   .panel{
-    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
-    padding:16px; margin-bottom:14px;
-  }
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+  padding:16px; margin-bottom:14px;
+  box-shadow: 0 10px 30px rgba(107,68,35,.25);
+}
   .panel h2{font-size:1rem; margin-bottom:10px; color:var(--forest-dark);}
   
   label{font-size:.82rem; color:#6b6b5f; display:block; margin-bottom:4px;}
@@ -56,7 +57,7 @@
     font-weight:600; cursor:pointer; transition:transform .08s ease;
   }
   button:active{transform:scale(.97);}
-  .btn-primary{background: linear-gradient(135deg, #C97F1E, #8B5E34); color:#fff; width:100%;}
+  .btn-primary{background: linear-gradient(135deg, #4B2470, #6B3AA0); color:#fff; width:100%;}
   .btn-accent{background:var(--turmeric); color:#3a2600; width:100%;}
   .btn-outline{background:#fff; border:1px solid var(--forest); color:var(--forest);}
   .btn-sm{padding:6px 12px; font-size:.82rem;}
