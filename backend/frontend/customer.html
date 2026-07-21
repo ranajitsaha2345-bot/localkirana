@@ -290,14 +290,18 @@ function iconFor(name){
   return '🛒';
 }
 const CATEGORIES = [
-  {icon:'🌾', label:'Anaj'}, {icon:'🥛', label:'Dairy'}, {icon:'🥔', label:'Sabzi'},
-  {icon:'🌶️', label:'Masala'}, {icon:'🍵', label:'Chai/Coffee'}, {icon:'🍪', label:'Snacks'}
+  {icon:'🌾', label:'Anaj', keyword:'chawal'},
+  {icon:'🥛', label:'Dairy', keyword:'doodh'},
+  {icon:'🥔', label:'Sabzi', keyword:'sabzi'},
+  {icon:'🌶️', label:'Masala', keyword:'masala'},
+  {icon:'🍵', label:'Chai/Coffee', keyword:'chai'},
+  {icon:'🍪', label:'Snacks', keyword:'biskut'}
 ];
 function renderCategories(){
   const row = document.getElementById('cat-row');
   if(!row) return;
   row.innerHTML = CATEGORIES.map(c => `
-    <div class="cat-item" onclick="document.getElementById('item-search').value='${c.label}'; filterCatalog('${c.label}');">
+    <div class="cat-item" onclick="document.getElementById('item-search').value='${c.keyword}'; filterCatalog('${c.keyword}');">
       <div class="cat-circle">${c.icon}</div>
       <span>${c.label}</span>
     </div>`).join('');
