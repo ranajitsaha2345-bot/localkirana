@@ -140,6 +140,33 @@
 .field-error{ color:#D33; font-size:.72rem; margin-top:4px; padding-left:4px; }
 .phone-box:focus-within .floating-label{ color:#FF5200; }
 .country-list img, .flag-code img{ width:20px; height:14px; object-fit:cover; vertical-align:middle; margin-right:4px; }
+#auth-panel {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.auth-container {
+    background-color: #f7b731; /* "sunburst play" yellow background */
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    max-width: 400px;
+    width: 100%;
+}
+
+.illustration-area {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+#google-btn-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
 </style>
 </head>
 <body>
@@ -149,12 +176,33 @@
   <button class="badge" id="user-badge" onclick="skipToGuest()">Guest</button>
 </header>
 
-<main>
+<div id="auth-panel" class="panel"></div>
 
-  <!-- ============ AUTH CONTAINER ============ -->
-  <div id="auth-panel" class="panel">
+  <div class="illustration-area">
+      <!-- SVG for Citrus Punch Man & Mango Twist Girl Combined -->
+      <svg width="240" height="120" viewBox="0 0 240 120" xmlns="http://www.w3.org/2000/svg">
+          <!-- Background Sunburst/Waves -->
+          <circle cx="120" cy="60" r="50" fill="#D4A25F"/>
+          <path d="M 0 60 Q 60 20 120 60" stroke="#B7C9D6" stroke-width="2" fill="none"/>
+          <path d="M 120 60 Q 180 100 240 60" stroke="#E74C3C" stroke-width="2" fill="none"/>
 
-    <h2 class="auth-heading" style="margin-bottom:14px;">Enter your number</h2>
+          <!-- Citrus Punch Man -->
+          <g id="citrus-man" transform="translate(40, 20)">
+              <ellipse cx="25" cy="40" rx="15" ry="35" fill="#D4A25F"/>
+              <circle cx="25" cy="15" r="12" fill="#FFFFFF"/>
+              <rect x="23" y="38" width="4" height="20" fill="#FFFFFF"/>
+          </g>
+
+          <!-- Mango Twist Girl -->
+          <g id="mango-girl" transform="translate(160, 20)">
+              <ellipse cx="25" cy="40" rx="15" ry="35" fill="#1A253A"/>
+              <circle cx="25" cy="15" r="12" fill="#FFFFFF"/>
+              <rect x="10" y="38" width="4" height="20" fill="#FFFFFF"/>
+          </g>
+      </svg>
+  </div>
+
+  <h2 class="auth-heading" style="margin-bottom:14px;">Enter your number</h2>
   
     <div class="phone-box" style="margin-bottom: 16px; position:relative;">
       <span class="flag-code" id="country-code-btn" onclick="toggleCountryList()"><img src="https://flagcdn.com/w20/in.png"> +91 ▾</span>
