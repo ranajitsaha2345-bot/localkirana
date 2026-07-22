@@ -7,19 +7,21 @@
 <link rel="manifest" href="/shop-manifest.json" />
 <meta name="theme-color" content="#E6372F">
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-.phone-box {
-  border: 1.5px solid var(--line); border-radius: 10px; padding: 8px 12px;
-  display: flex; align-items: center; gap: 10px; position:relative;
-}
-.phone-box:focus-within{ border-color: var(--red); }
-.phone-box .flag-code {
-  font-size: 0.95rem; color: var(--ink); white-space: nowrap;
-  border-right: 1px solid var(--line); padding-right: 10px;
-}
-.phone-box input { border: none; outline: none; padding: 6px 0; font-size: 0.95rem; flex: 1; }
-.floating-label{ position:absolute; top:-9px; left:12px; background:#fff; padding:0 4px; font-size:.72rem; color:var(--muted); }
-.phone-box:focus-within .floating-label{ color:var(--red); }
+
 <style>
+  .phone-box {
+    border: 1.5px solid var(--line); border-radius: 10px; padding: 8px 12px;
+    display: flex; align-items: center; gap: 10px; position:relative;
+  }
+  .phone-box:focus-within{ border-color: var(--red); }
+  .phone-box .flag-code {
+    font-size: 0.95rem; color: var(--ink); white-space: nowrap;
+    border-right: 1px solid var(--line); padding-right: 10px;
+  }
+  .phone-box input { border: none; outline: none; padding: 6px 0; font-size: 0.95rem; flex: 1; }
+  .floating-label{ position:absolute; top:-9px; left:12px; background:#fff; padding:0 4px; font-size:.72rem; color:var(--muted); }
+  .phone-box:focus-within .floating-label{ color:var(--red); }
+
   :root{
     --ink:#2B1810; --red:#E6372F; --red-dark:#B3221D; --orange:#FF8A3D; --pink:#FF5B7F;
     --plum:#5B1A3A; --paper:#FFF3E9; --card:#FFFFFF; --line:#F1DFCF;
@@ -42,20 +44,20 @@
   input{width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:10px; font-size:1rem; margin-bottom:10px;}
   input:focus{ outline:none; border-color:var(--red); }
   .pw-wrap{ position:relative; }
-.pw-wrap input{ padding-right:40px; }
-.pw-toggle{
-  position:absolute; right:10px; top:50%; transform:translateY(-50%);
-  background:none; border:none; padding:0; margin:0; cursor:pointer;
-  color:var(--muted); display:flex; align-items:center; justify-content:center;
-}
-.pw-toggle svg{ display:block; width:20px; height:20px; }
-.pw-toggle:active{transform:none;}
+  .pw-wrap input{ padding-right:40px; }
+  .pw-toggle{
+    position:absolute; right:10px; top:50%; transform:translateY(-50%);
+    background:none; border:none; padding:0; margin:0; cursor:pointer;
+    color:var(--muted); display:flex; align-items:center; justify-content:center;
+  }
+  .pw-toggle svg{ display:block; width:20px; height:20px; }
+  .pw-toggle:active{transform:none;}
 
-input[type="password"]::-ms-reveal,
-input[type="password"]::-ms-clear { display: none; }
-input::-webkit-credentials-auto-fill-button { visibility: hidden; display: none !important; }
-.pw-toggle{ z-index: 2; }
-.pw-toggle svg{ pointer-events: none; }
+  input[type="password"]::-ms-reveal,
+  input[type="password"]::-ms-clear { display: none; }
+  input::-webkit-credentials-auto-fill-button { visibility: hidden; display: none !important; }
+  .pw-toggle{ z-index: 2; }
+  .pw-toggle svg{ pointer-events: none; }
 
   label{font-size:.82rem; color:var(--muted); display:block; margin-bottom:4px;}
   button{border:none; border-radius:12px; padding:12px 16px; font-size:.95rem; font-weight:700; cursor:pointer; transition:transform .08s ease;}
@@ -89,8 +91,8 @@ input::-webkit-credentials-auto-fill-button { visibility: hidden; display: none 
   .tabbar button{flex:1; background:#fff; border:1px solid var(--line); color:var(--ink);}
   .tabbar button.active{background: linear-gradient(135deg, var(--red), var(--red-dark)); color:#fff; border-color:var(--red);}
   .auth-heading{ color:var(--ink); font-size:1.25rem; font-weight:800; margin-bottom:14px; }
-  
 </style>
+
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
   window.onload = function() {
@@ -125,6 +127,7 @@ input::-webkit-credentials-auto-fill-button { visibility: hidden; display: none 
       <div id="g_id_signin"></div>
     </div>
   </section>
+
   <div id="app-content" class="hidden">
     <div class="tabbar">
       <button id="tab-orders" class="active" onclick="switchTab('orders')">Orders</button>
@@ -132,7 +135,6 @@ input::-webkit-credentials-auto-fill-button { visibility: hidden; display: none 
       <button id="tab-scan" onclick="switchTab('scan')">Pickup Verify</button>
       <button id="tab-myqr" onclick="switchTab('myqr')">Meri Dukan QR</button>
     </div>
-
 
     <!-- ORDERS TAB -->
     <div id="tab-content-orders">
@@ -153,23 +155,23 @@ input::-webkit-credentials-auto-fill-button { visibility: hidden; display: none 
       </section>
     </div>
 
-  <!-- SCAN TAB -->
-  <div id="tab-content-scan" class="hidden">
-    <section class="panel">
-      <h2>Pickup Confirm Karo</h2>
+    <!-- SCAN TAB -->
+    <div id="tab-content-scan" class="hidden">
+      <section class="panel">
+        <h2>Pickup Confirm Karo</h2>
 
-      <label>Order ID</label>
-      <input id="scan-order-id" placeholder="Order ID daalo" />
+        <label>Order ID</label>
+        <input id="scan-order-id" placeholder="Order ID daalo" />
 
-      <label>Customer Ne Bataya Code</label>
-      <input id="code-input" maxlength="4" placeholder="1234" />
+        <label>Customer Ne Bataya Code</label>
+        <input id="code-input" maxlength="4" placeholder="1234" />
 
-      <button class="btn-accent" onclick="verifyByCode()">Code Se Confirm Karo</button>
+        <button class="btn-accent" onclick="verifyByCode()">Code Se Confirm Karo</button>
 
-      <div id="qr-reader"></div>
-      <button class="btn-outline" style="width:100%; margin-top:10px;" onclick="startScanner()">QR Scan Karo</button>
-    </section>
-  </div>
+        <div id="qr-reader"></div>
+        <button class="btn-outline" style="width:100%; margin-top:10px;" onclick="startScanner()">QR Scan Karo</button>
+      </section>
+    </div>
 
     <!-- MY SHOP QR TAB -->
     <div id="tab-content-myqr" class="hidden">
@@ -190,6 +192,7 @@ input::-webkit-credentials-auto-fill-button { visibility: hidden; display: none 
 const API = "https://localkirana-production.up.railway.app";
 let token = null, myUserId = null, ws = null;
 let isSignupMode = false;
+
 function togglePasswordVisibility(){
   const pw = document.getElementById('password');
   const willShow = pw.type === 'password';
@@ -198,6 +201,7 @@ function togglePasswordVisibility(){
     ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>'
     : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
 }
+
 function toggleAuthMode(){
   isSignupMode = !isSignupMode;
   document.getElementById('signup-extra-fields').classList.toggle('hidden', !isSignupMode);
@@ -207,6 +211,7 @@ function toggleAuthMode(){
   document.getElementById('toggle-text').innerText = isSignupMode ? 'Pehle se account hai? ' : 'Naya account nahi hai? ';
   document.getElementById('toggle-link').innerText = isSignupMode ? 'Login Karo' : 'Naya Account Banao';
 }
+
 function getShopLocation(callback){
   if(!navigator.geolocation){
     toast('Location support nahi hai is browser mein');
@@ -254,6 +259,7 @@ async function requestOtp(){
     await sendOtpRequest(phone, name, email, 0, 0);
   });
 }
+
 async function sendOtpRequest(phone, name, email, lat, lng){
   const res = await fetch(`${API}/auth/request-otp`, {
     method:'POST', headers:{'Content-Type':'application/json'},
@@ -264,6 +270,7 @@ async function sendOtpRequest(phone, name, email, lat, lng){
   toast('OTP Gmail par bhej diya gaya hai');
   document.getElementById('otp-box').classList.remove('hidden');
 }
+
 async function verifyOtp(){
   const phone = document.getElementById('phone').value.trim();
   const otp = document.getElementById('login-otp').value.trim();
@@ -275,6 +282,7 @@ async function verifyOtp(){
   if(!res.ok){ toast(data.detail || 'OTP galat hai'); return; }
   onLoggedIn(data);
 }
+
 function updateGoogleButtonState(){
   const phone = document.getElementById('phone').value.trim();
   const validPhone = /^\d{6,15}$/.test(phone) && !/^(\d)\1+$/.test(phone);
@@ -301,6 +309,7 @@ async function handleGoogleLogin(response){
     await sendGoogleLogin(response.credential, phone, 0, 0);
   });
 }
+
 async function sendGoogleLogin(credential, phone, lat, lng){
   const res = await fetch(`${API}/auth/google`, {
     method:'POST', headers:{'Content-Type':'application/json'},
@@ -317,7 +326,7 @@ function onLoggedIn(data){
   document.getElementById('auth-panel').classList.add('hidden');
   document.getElementById('app-content').classList.remove('hidden');
   loadOrders(); loadCatalogAndInventory(); connectWS();
-  setInterval(loadOrders, 8000); // simple polling backup, WS bhi hai
+  setInterval(loadOrders, 8000);
 }
 
 function openForgotPassword(){
@@ -325,12 +334,14 @@ function openForgotPassword(){
   document.getElementById('forgot-step1').classList.remove('hidden');
   document.getElementById('forgot-step2').classList.add('hidden');
 }
+
 function closeForgotPassword(){
   document.getElementById('forgot-modal').classList.add('hidden');
   document.getElementById('forgot-phone').value = '';
   document.getElementById('forgot-otp').value = '';
   document.getElementById('forgot-new-password').value = '';
 }
+
 async function sendForgotOtp(){
   const phone = document.getElementById('forgot-phone').value;
   if(!phone){ toast('Phone number daalo'); return; }
@@ -344,6 +355,7 @@ async function sendForgotOtp(){
   document.getElementById('forgot-step1').classList.add('hidden');
   document.getElementById('forgot-step2').classList.remove('hidden');
 }
+
 async function submitResetPassword(){
   const phone = document.getElementById('forgot-phone').value;
   const otp = document.getElementById('forgot-otp').value;
@@ -360,6 +372,7 @@ async function submitResetPassword(){
 }
 
 function authHeaders(){ return {'Authorization': `Bearer ${token}`, 'Content-Type':'application/json'}; }
+
 function switchTab(name){
   ['orders','inventory','scan','myqr'].forEach(t => {
     document.getElementById(`tab-content-${t}`).classList.toggle('hidden', t !== name);
@@ -385,7 +398,6 @@ async function loadMyShopQR(){
   box.appendChild(img);
   myShopQRLoaded = true;
 }
-
 
 // ---------------- ORDERS ----------------
 async function loadOrders(){
@@ -511,6 +523,7 @@ async function verifyByCode(){
     toast('Galat code: ' + (await res.text()));
   }
 }
+
 // ---------------- WEBSOCKET ----------------
 function connectWS(){
   const wsUrl = API.replace('http', 'ws') + `/ws?token=${token}`;
@@ -530,6 +543,7 @@ function toast(msg){
   setTimeout(() => t.remove(), 3500);
 }
 </script>
+
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
