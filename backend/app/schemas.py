@@ -44,6 +44,10 @@ class RequestOTPLogin(BaseModel):
     phone: str
     email: Optional[str] = None
     name: Optional[str] = None
+    role: str = "customer"
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    role: str = "customer"
 
 
 class VerifyLoginOTP(BaseModel):

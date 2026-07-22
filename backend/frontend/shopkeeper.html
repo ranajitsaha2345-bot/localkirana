@@ -72,6 +72,16 @@ input::-webkit-credentials-auto-fill-button { visibility: hidden; display: none 
   .tabbar button{flex:1; background:#fff; border:1px solid var(--line); color:var(--ink);}
   .tabbar button.active{background:var(--forest); color:#fff; border-color:var(--forest);}
 </style>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+  window.onload = function() {
+    google.accounts.id.initialize({
+      client_id: "331552152118-9kbvonm08obtu4fjepnvc46b4lkdjid8.apps.googleusercontent.com",
+      callback: handleGoogleLogin
+    });
+    google.accounts.id.renderButton(document.getElementById("g_id_signin"), { theme: "outline", size: "large" });
+  };
+</script>
 </head>
 <body>
 
@@ -83,62 +93,31 @@ input::-webkit-credentials-auto-fill-button { visibility: hidden; display: none 
 <main>
   <section id="auth-panel" class="panel">
     <h2 id="auth-title">Login Karo</h2>
-
-    <label>Phone</label><input id="phone" placeholder="9876543210" />
-    <label>Password</label>
-<div class="pw-wrap">
-  <input id="password" type="text" placeholder="••••••" />
   
-
-    <div id="signup-extra-fields" class="hidden">
-      <label>Naam</label><input id="reg-name" placeholder="Ravi Kirana Store" />
-      <label>Gmail</label><input id="reg-email" type="email" placeholder="ravi@gmail.com" />
-      <label>Dukan ka Naam</label><input id="shop-name" placeholder="Ravi Kirana Store" />
-      <label>Dukan ka Address</label><input id="shop-address" placeholder="Main Market, Shrirampur" />
-      <div class="hint" style="margin-bottom:10px;">Location automatic browser se le li jaayegi.</div>
+    <div class="phone-box" style="margin-bottom:16px; position:relative;">
+      <label>Phone</label>
+      <input id="phone" placeholder="9876543210" />
     </div>
-
-    <button class="btn-primary" id="auth-main-btn" onclick="login()">Login</button>
-
-<div style="text-align:center; margin-top:14px; font-size:.85rem;">
-  <span id="toggle-text">Naya account nahi hai? </span>
-  <a href="#" id="toggle-link" onclick="toggleAuthMode(); return false;" style="color:#1B4332; font-weight:600;">Naya Account Banao</a>
-</div>
-
-<div style="text-align:center; margin-top:8px; font-size:.85rem;">
-  <a href="#" onclick="openForgotPassword(); return false;" style="color:#1B4332; font-weight:600;">Password Bhool Gaye?</a>
-</div>
-
-<!-- Forgot Password Modal -->
-<div id="forgot-modal" class="hidden" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:999; display:flex; align-items:center; justify-content:center;">
-  <div style="background:#fff; padding:24px; border-radius:12px; width:90%; max-width:340px;">
-
-    <div id="forgot-step1">
-      <h3 style="margin-bottom:12px;">Password Reset Karo</h3>
-      <label>Phone Number</label>
-      <input id="forgot-phone" placeholder="9876543210" style="width:100%; margin-bottom:12px;" />
-      <button class="btn-primary" style="width:100%;" onclick="sendForgotOtp()">OTP Bhejo</button>
-      <div style="text-align:center; margin-top:12px;">
-        <a href="#" onclick="closeForgotPassword(); return false;">Cancel</a>
-      </div>
+  
+    <label>Naam (naye account ke liye)</label>
+    <input id="reg-name" placeholder="Ravi Kirana Store" style="margin-bottom:16px;" />
+  
+    <label>Gmail</label>
+    <input id="reg-email" type="email" placeholder="ravi@gmail.com" style="margin-bottom:16px;" />
+  
+    <button class="btn-primary" id="continue-btn" onclick="requestOtp()">Continue</button>
+  
+    <div id="otp-box" class="hidden" style="margin-top:14px;">
+      <label>Enter OTP</label>
+      <input id="login-otp" placeholder="6-digit OTP" style="text-align:center; letter-spacing:4px; font-size:1.2rem;" />
+      <button class="btn-primary" style="margin-top:10px;" onclick="verifyOtp()">Verify & Login</button>
     </div>
-
-    <div id="forgot-step2" class="hidden">
-      <h3 style="margin-bottom:12px;">OTP Verify Karo</h3>
-      <div class="hint" style="margin-bottom:10px;">Aapke Gmail par OTP bhej diya gaya hai.</div>
-      <label>OTP</label>
-      <input id="forgot-otp" placeholder="6-digit OTP" style="width:100%; margin-bottom:12px;" />
-      <label>Naya Password</label>
-      <input id="forgot-new-password" type="text" placeholder="Naya password" style="width:100%; margin-bottom:12px;" />
-      <button class="btn-primary" style="width:100%;" onclick="submitResetPassword()">Password Badlo</button>
-      <div style="text-align:center; margin-top:12px;">
-        <a href="#" onclick="closeForgotPassword(); return false;">Cancel</a>
-      </div>
-    </div>
-
-  </div>
-</div>
-</section>
+  
+    <div style="text-align:center; margin:16px 0; font-size:.85rem; color:#8a8674;">— ya —</div>
+  
+    <div id="g_id_signin"></div>
+  
+  </section>
   <div id="app-content" class="hidden">
     <div class="tabbar">
       <button id="tab-orders" class="active" onclick="switchTab('orders')">Orders</button>
@@ -256,11 +235,54 @@ async function signup(){
   });
 }
 
-async function login(){
-  const body = { phone: document.getElementById('phone').value, password: document.getElementById('password').value };
-  const res = await fetch(`${API}/auth/login`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
-  if(!res.ok){ toast('Login fail'); return; }
-  onLoggedIn(await res.json());
+async function requestOtp(){
+  const phone = document.getElementById('phone').value.trim();
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  if(!phone){ toast('Phone number daalo'); return; }
+  if(!email){ toast('Gmail zaroori hai'); return; }
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    await sendOtpRequest(phone, name, email, pos.coords.latitude, pos.coords.longitude);
+  }, async () => {
+    await sendOtpRequest(phone, name, email, 0, 0);
+  });
+}
+async function sendOtpRequest(phone, name, email, lat, lng){
+  const res = await fetch(`${API}/auth/request-otp`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({phone, name, email, role:'shopkeeper', latitude:lat, longitude:lng})
+  });
+  const data = await res.json();
+  if(!res.ok){ toast(data.detail || 'Kuch galat hua'); return; }
+  toast('OTP Gmail par bhej diya gaya hai');
+  document.getElementById('otp-box').classList.remove('hidden');
+}
+async function verifyOtp(){
+  const phone = document.getElementById('phone').value.trim();
+  const otp = document.getElementById('login-otp').value.trim();
+  const res = await fetch(`${API}/auth/verify-login-otp`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({phone, otp})
+  });
+  const data = await res.json();
+  if(!res.ok){ toast(data.detail || 'OTP galat hai'); return; }
+  onLoggedIn(data);
+}
+async function handleGoogleLogin(response){
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    await sendGoogleLogin(response.credential, pos.coords.latitude, pos.coords.longitude);
+  }, async () => {
+    await sendGoogleLogin(response.credential, 0, 0);
+  });
+}
+async function sendGoogleLogin(credential, lat, lng){
+  const res = await fetch(`${API}/auth/google`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({credential, role:'shopkeeper', latitude:lat, longitude:lng})
+  });
+  const data = await res.json();
+  if(!res.ok){ toast(data.detail || 'Google login fail ho gaya'); return; }
+  onLoggedIn(data);
 }
 
 function onLoggedIn(data){

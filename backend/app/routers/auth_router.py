@@ -16,6 +16,10 @@ GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 
 class GoogleLogin(BaseModel):
     credential: str
+    role: str = "customer"
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    role: str = "customer"
 
 
 @router.post("/google", response_model=schemas.Token)
@@ -36,13 +40,14 @@ def google_login(payload: GoogleLogin, db: Session = Depends(get_db)):
         user = db.query(models.User).filter(models.User.email == email).first()
 
     if not user:
+        requested_role = models.UserRole.shopkeeper if payload.role == "shopkeeper" else models.UserRole.customer
         user = models.User(
             name=name,
             phone=None,
             email=email,
             google_id=google_id,
             password_hash=auth.hash_password(google_id),
-            role=models.UserRole.customer,
+            role=requested_role,
         )
         db.add(user)
         db.commit()
@@ -113,13 +118,14 @@ def login(payload: schemas.UserLogin, db: Session = Depends(get_db)):
 def request_otp(payload: schemas.RequestOTPLogin, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.phone == payload.phone).first()
     if not user:
-        # Naya customer hai - auto-create karo (password nahi chahiye)
+        # Naya user hai - auto-create karo (password nahi chahiye)
+        requested_role = models.UserRole.shopkeeper if payload.role == "shopkeeper" else models.UserRole.customer
         user = models.User(
             name=payload.name or "User",
             phone=payload.phone,
             email=payload.email,
             password_hash=auth.hash_password(payload.phone),  # dummy, kabhi use nahi hoga
-            role=models.UserRole.customer,
+            role=requested_role,
         )
         db.add(user)
         db.commit()
