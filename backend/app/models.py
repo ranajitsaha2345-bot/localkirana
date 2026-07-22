@@ -90,7 +90,7 @@ class Item(Base):
     unit = Column(String, default="unit")  # kg, litre, piece
     category = Column(String, default="general")
     image_url = Column(String, nullable=True)
-
+    created_by_shop_id = Column(Integer, ForeignKey("shops.id"), nullable=True)
 
 class ShopItem(Base):
     """Ek shop mein ek item ka price aur stock."""

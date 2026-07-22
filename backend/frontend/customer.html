@@ -306,11 +306,24 @@ function renderCategories(){
       <span>${c.label}</span>
     </div>`).join('');
 }
+const SEARCH_KEYWORD_CATEGORY = {
+  'biskut':'snacks','biscuit':'snacks','namkeen':'snacks','chips':'snacks',
+  'dal':'grocery','chawal':'grocery','atta':'grocery','chini':'grocery','tel':'grocery','sarson':'grocery',
+  'aloo':'vegetables','pyaz':'vegetables','tamatar':'vegetables','sabzi':'vegetables','bhindi':'vegetables','gobi':'vegetables',
+  'seb':'fruits','kela':'fruits','aam':'fruits','santra':'fruits',
+  'doodh':'dairy','dahi':'dairy','paneer':'dairy','ghee':'dairy',
+  'haldi':'masala','mirch':'masala','jeera':'masala','masala':'masala',
+  'chai':'beverages','coffee':'beverages','cold':'beverages',
+  'sabun':'personal_care','shampoo':'personal_care','tooth':'personal_care',
+};
 function filterCatalog(q){
-  q = (q||'').toLowerCase();
+  q = (q||'').toLowerCase().trim();
+  const matchedCategory = SEARCH_KEYWORD_CATEGORY[q];
   document.querySelectorAll('#catalog .item-card').forEach(card => {
-    const match = card.dataset.name.toLowerCase().includes(q);
-    card.style.display = match ? '' : 'none';
+    const nameMatch = card.dataset.name.toLowerCase().includes(q);
+    const categoryMatch = matchedCategory && card.dataset.category === matchedCategory;
+    const show = q === '' || nameMatch || categoryMatch;
+    card.style.display = show ? '' : 'none';
   });
 }
 
@@ -574,7 +587,7 @@ async function loadCatalog(){
   catalogItems = await res.json();
   const el = document.getElementById('catalog');
   el.innerHTML = catalogItems.map(it => `
-    <div class="item-card" data-name="${it.name}">
+    <div class="item-card" data-name="${it.name}" data-category="${it.category || ''}">
       <div class="icon">${iconFor(it.name)}</div>
       <div class="name">${it.name}<div class="unit">${it.unit}</div></div>
       <input type="number" min="0" step="0.5" placeholder="0" data-item="${it.id}" onchange="updateCart(${it.id}, this.value)" />
