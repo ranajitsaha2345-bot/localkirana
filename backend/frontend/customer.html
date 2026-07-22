@@ -286,15 +286,15 @@ const ICONS = [
 ];
 function iconFor(name){
   const map = {
-    "Biskut (Parle-G)": "https://m.media-amazon.com/images/I/71p5eL6-mVL._SL1500_.jpg",
-    "Biskut (Marie Gold)": "https://m.media-amazon.com/images/I/71QYK9zqYYL._SL1500_.jpg",
-    "Biskut (Britannia Good Day)": "https://m.media-amazon.com/images/I/71-3XSFyoLL._SL1500_.jpg",
-    "Biskut (Oreo)": "https://m.media-amazon.com/images/I/81ynxeh-lWL._SL1500_.jpg",
-    "Lays Chips": "https://m.media-amazon.com/images/I/81vJ+PSHNoL._SL1500_.jpg",
-    "Bingo Chips": "https://m.media-amazon.com/images/I/71K4v6vJTNL._SL1500_.jpg",
-    "Maggi": "https://m.media-amazon.com/images/I/71G94sDvR-L._SL1500_.jpg",
+    "Biskut (Parle-G)": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Parle-G_biscuits.jpg/240px-Parle-G_biscuits.jpg",
+    "Biskut (Marie Gold)": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Biscuits.jpg/240px-Biscuits.jpg",
+    "Biskut (Britannia Good Day)": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Biscuits.jpg/240px-Biscuits.jpg",
+    "Biskut (Oreo)": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Oreo-Two-Cookies.jpg/240px-Oreo-Two-Cookies.jpg",
+    "Lays Chips": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Potato-Chips.jpg/240px-Potato-Chips.jpg",
+    "Bingo Chips": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Potato-Chips.jpg/240px-Potato-Chips.jpg",
+    "Maggi": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Instant_noodles.jpg/240px-Instant_noodles.jpg",
   };
-  return map[name] ? `<img src="${map[name]}" style="width:36px;height:36px;object-fit:contain;border-radius:6px;">` : "🛒";
+  return map[name] ? `<img src="${map[name]}" style="width:36px;height:36px;object-fit:cover;border-radius:6px;">` : "🛒";
 }
 const CATEGORIES = [
   {icon:'🌾', label:'Anaj', keyword:'chawal'},
