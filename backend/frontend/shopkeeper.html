@@ -3,555 +3,329 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Wait — Dukandar</title>
-<link rel="manifest" href="/shop-manifest.json" />
-<meta name="theme-color" content="#E6372F">
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-
-<style>
-  .phone-box {
-    border: 1.5px solid var(--line); border-radius: 10px; padding: 8px 12px;
-    display: flex; align-items: center; gap: 10px; position:relative;
-  }
-  .phone-box:focus-within{ border-color: var(--red); }
-  .phone-box .flag-code {
-    font-size: 0.95rem; color: var(--ink); white-space: nowrap;
-    border-right: 1px solid var(--line); padding-right: 10px;
-  }
-  .phone-box input { border: none; outline: none; padding: 6px 0; font-size: 0.95rem; flex: 1; }
-  .floating-label{ position:absolute; top:-9px; left:12px; background:#fff; padding:0 4px; font-size:.72rem; color:var(--muted); }
-  .phone-box:focus-within .floating-label{ color:var(--red); }
-
-  :root{
-    --ink:#2B1810; --red:#E6372F; --red-dark:#B3221D; --orange:#FF8A3D; --pink:#FF5B7F;
-    --plum:#5B1A3A; --paper:#FFF3E9; --card:#FFFFFF; --line:#F1DFCF;
-    --green-ok:#1E8E4A; --muted:#8A7A6E; --radius:16px;
-  }
-  *{box-sizing:border-box;}
-  body{margin:0; font-family:'Segoe UI', system-ui, sans-serif; background:var(--paper); color:var(--ink);}
-  h1,h2{font-family:'Poppins','Segoe UI',sans-serif; margin:0;}
-  header{
-    background: linear-gradient(135deg, var(--plum), var(--red-dark));
-    color:#fff; padding:18px 20px 26px; display:flex; justify-content:space-between; align-items:center;
-    position:sticky; top:0; z-index:10;
-    border-bottom-left-radius:20px; border-bottom-right-radius:20px;
-  }
-  header h1{font-size:1.05rem; font-weight:800;} header h1 span{color:var(--orange);}
-  .badge{background:rgba(255,255,255,.15); border-radius:20px; padding:6px 14px; font-size:.78rem; font-weight:600;}
-  main{max-width:560px; margin:0 auto; padding:16px; padding-top:0;}
-  .panel{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:16px; margin-bottom:14px; box-shadow:0 8px 24px rgba(179,34,29,.08);}
-  .panel h2{font-size:1rem; margin-bottom:10px; color:var(--red-dark); font-weight:800;}
-  input{width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:10px; font-size:1rem; margin-bottom:10px;}
-  input:focus{ outline:none; border-color:var(--red); }
-  .pw-wrap{ position:relative; }
-  .pw-wrap input{ padding-right:40px; }
-  .pw-toggle{
-    position:absolute; right:10px; top:50%; transform:translateY(-50%);
-    background:none; border:none; padding:0; margin:0; cursor:pointer;
-    color:var(--muted); display:flex; align-items:center; justify-content:center;
-  }
-  .pw-toggle svg{ display:block; width:20px; height:20px; }
-  .pw-toggle:active{transform:none;}
-
-  input[type="password"]::-ms-reveal,
-  input[type="password"]::-ms-clear { display: none; }
-  input::-webkit-credentials-auto-fill-button { visibility: hidden; display: none !important; }
-  .pw-toggle{ z-index: 2; }
-  .pw-toggle svg{ pointer-events: none; }
-
-  label{font-size:.82rem; color:var(--muted); display:block; margin-bottom:4px;}
-  button{border:none; border-radius:12px; padding:12px 16px; font-size:.95rem; font-weight:700; cursor:pointer; transition:transform .08s ease;}
-  button:active{transform:scale(.97);}
-  .btn-primary{background: linear-gradient(135deg, var(--red), var(--red-dark)); color:#fff; width:100%;}
-  .btn-accent{background: linear-gradient(135deg, var(--orange), var(--red)); color:#fff; width:100%;}
-  .btn-outline{background:#fff; border:1.5px solid var(--red); color:var(--red-dark);}
-  .btn-row{display:flex; gap:8px;}
-  .btn-row button{flex:1;}
-  .item-check-row{display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px dashed var(--line);}
-  .item-check-row:last-child{border-bottom:none;}
-  .item-check-row .name{flex:1; font-size:.92rem;}
-  .avail-btn{width:42px; height:42px; border-radius:10px; font-size:1.1rem; font-weight:800;}
-  .avail-ok{background:#E3F5E9; color:var(--green-ok); border:2px solid var(--green-ok);}
-  .avail-no{background:#FBE3DD; color:var(--red); border:2px solid var(--red);}
-  .avail-ok.active{background:var(--green-ok); color:#fff;}
-  .avail-no.active{background:var(--red); color:#fff;}
-  .status-pill{display:inline-block; padding:3px 10px; border-radius:20px; font-size:.72rem; font-weight:700; text-transform:uppercase;}
-  .status-pending_shop_review{background:#FFE9D6; color:var(--orange);}
-  .status-partially_unavailable{background:#FBE3DD; color:var(--red);}
-  .status-awaiting_payment{background:#FFE3EC; color:var(--pink);}
-  .status-confirmed{background:#E3F5E9; color:var(--green-ok);}
-  .status-ready{background:var(--plum); color:#fff;}
-  .status-completed{background:#22281F; color:#fff;}
-  .order-card{margin-bottom:14px;}
-  .hint{font-size:.78rem; color:var(--muted); margin-top:4px;}
-  .hidden{display:none !important;}
-  .toast{position:fixed; bottom:16px; left:50%; transform:translateX(-50%); background:var(--plum); color:#fff; padding:10px 18px; border-radius:30px; font-size:.85rem; z-index:50; box-shadow:0 4px 14px rgba(0,0,0,.25);}
-  #qr-reader{width:100%; margin-top:10px;}
-  .tabbar{display:flex; gap:8px; margin-bottom:14px;}
-  .tabbar button{flex:1; background:#fff; border:1px solid var(--line); color:var(--ink);}
-  .tabbar button.active{background: linear-gradient(135deg, var(--red), var(--red-dark)); color:#fff; border-color:var(--red);}
-  .auth-heading{ color:var(--ink); font-size:1.25rem; font-weight:800; margin-bottom:14px; }
-</style>
-
+<title>LocalKirana — Dukandar Dashboard</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#1E8E4A">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script>
-  window.onload = function() {
-    google.accounts.id.initialize({
-      client_id: "331552152118-9kbvonm08obtu4fjepnvc46b4lkdjid8.apps.googleusercontent.com",
-      callback: handleGoogleLogin
-    });
-    google.accounts.id.renderButton(document.getElementById("g_id_signin"), { theme: "outline", size: "large" });
-  };
-</script>
+<style>
+:root {
+  --ink: #1C2826;
+  --green: #1E8E4A;
+  --green-dark: #145C30;
+  --green-light: #E8F5E9;
+  --amber: #D97706;
+  --red: #E6372F;
+  --paper: #F4F7F5;
+  --card: #FFFFFF;
+  --line: #D1E0D7;
+  --muted: #6B7280;
+  --radius: 16px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: var(--ink); background: var(--paper);
+}
+header {
+  background: linear-gradient(135deg, var(--green-dark), var(--green));
+  color: #fff; padding: 18px 20px;
+  position: sticky; top: 0; z-index: 10;
+  border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;
+  box-shadow: 0 4px 12px rgba(20, 92, 48, 0.2);
+}
+.hdr-top { display: flex; align-items: center; justify-content: space-between; }
+header h1 { font-size: 1.1rem; font-weight: 800; margin: 0; }
+.badge {
+  background: rgba(255,255,255,0.2); border-radius: 20px; padding: 6px 14px;
+  font-size: 0.78rem; border: none; color: #fff; font-weight: 600;
+}
+main { max-width: 520px; margin: 0 auto; padding: 16px; }
+.panel {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 16px; margin-bottom: 14px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+}
+.panel h2 { font-size: 1.1rem; margin: 0 0 12px; color: var(--green-dark); font-weight: 800; }
+
+/* Auth Styling */
+.phone-box {
+  border: 1.5px solid var(--line); border-radius: 10px; padding: 8px 12px;
+  display: flex; align-items: center; gap: 10px; position: relative; margin-bottom: 16px;
+}
+.phone-box .flag-code {
+  font-size: 0.95rem; color: var(--ink); white-space: nowrap;
+  border-right: 1px solid var(--line); padding-right: 10px; cursor: pointer;
+}
+.phone-box input { border: none; outline: none; padding: 6px 0; font-size: 0.95rem; flex: 1; }
+.floating-label { position: absolute; top: -9px; left: 12px; background: #fff; padding: 0 4px; font-size: 0.72rem; color: var(--muted); }
+.country-list { position: absolute; top: 110%; left: 0; background: #fff; border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 6px 18px rgba(0,0,0,0.15); max-height: 200px; overflow-y: auto; width: 240px; z-index: 20; }
+.country-list div { padding: 8px 12px; font-size: 0.88rem; cursor: pointer; display: flex; gap: 8px; }
+.country-list div:hover { background: var(--green-light); }
+
+/* Buttons */
+button {
+  border: none; border-radius: 12px; padding: 10px 14px; font-size: 0.9rem;
+  font-weight: 700; cursor: pointer; transition: transform .08s ease;
+}
+button:active { transform: scale(0.97); }
+.btn-green { background: linear-gradient(135deg, var(--green), var(--green-dark)); color: #fff; width: 100%; }
+.btn-red { background: var(--red); color: #fff; }
+.btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+
+/* Orders List */
+.order-card {
+  border: 1px solid var(--line); border-radius: 12px; padding: 14px;
+  margin-bottom: 12px; background: #FFF;
+}
+.order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.order-status {
+  padding: 4px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+}
+.status-pending { background: #FEF3C7; color: var(--amber); }
+.status-accepted { background: var(--green-light); color: var(--green-dark); }
+.status-rejected { background: #FEE2E2; color: var(--red); }
+
+.item-list { font-size: 0.88rem; margin: 8px 0; border-top: 1px dashed var(--line); border-bottom: 1px dashed var(--line); padding: 8px 0; }
+.item-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.actions { display: flex; gap: 8px; margin-top: 10px; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+  background: var(--ink); color: #fff; padding: 10px 18px; border-radius: 30px;
+  font-size: 0.85rem; z-index: 50; box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+}
+.hidden { display: none !important; }
+</style>
 </head>
 <body>
 
 <header>
-  <h1>Wait <span>🏪</span> · Dukandar</h1>
-  <div class="badge" id="user-badge">Guest</div>
+  <div class="hdr-top">
+    <h1>Dukandar Dashboard 🏪</h1>
+    <span class="badge" id="shop-status">Offline</span>
+  </div>
 </header>
 
 <main>
-  <section id="auth-panel" class="panel">
-    <h2 id="auth-title" class="auth-heading">Enter your number</h2>
 
-    <div class="phone-box" style="margin-bottom: 16px;">
-      <span class="flag-code"><img src="https://flagcdn.com/w20/in.png"> +91</span>
+  <!-- ============ AUTH PANEL ============ -->
+  <div id="auth-panel" class="panel">
+    <h2>Dukandar Login</h2>
+
+    <div class="phone-box">
+      <span class="flag-code" id="country-code-btn" onclick="toggleCountryList()"><img src="https://flagcdn.com/w20/in.png" alt="IN"> +91 ▾</span>
       <label class="floating-label">Mobile Number</label>
-      <input id="phone" type="text" placeholder=" " oninput="updateGoogleButtonState()">
+      <input type="text" id="phone" placeholder="9876543210" oninput="updateGoogleButtonState()">
+      <div id="country-list" class="country-list hidden">
+        <input type="text" id="country-search" placeholder="Search country" oninput="renderCountryList(this.value)" style="width:90%;margin:6px auto;display:block;padding:4px;">
+        <div id="country-list-items"></div>
+      </div>
     </div>
 
-    <p id="phone-hint" style="text-align:center; color:var(--muted); margin:12px 0; font-size:.85rem;">Enter number, then continue with Google</p>
+    <p id="phone-hint" style="text-align:center; color:var(--muted); font-size:0.82rem;">Pehle phone number daalein</p>
 
-    <div id="g_id_signin_wrap" style="opacity:0.4; pointer-events:none;">
-      <div id="g_id_signin"></div>
-    </div>
-  </section>
-
-  <div id="app-content" class="hidden">
-    <div class="tabbar">
-      <button id="tab-orders" class="active" onclick="switchTab('orders')">Orders</button>
-      <button id="tab-inventory" onclick="switchTab('inventory')">Inventory</button>
-      <button id="tab-scan" onclick="switchTab('scan')">Pickup Verify</button>
-      <button id="tab-myqr" onclick="switchTab('myqr')">Meri Dukan QR</button>
-    </div>
-
-    <!-- ORDERS TAB -->
-    <div id="tab-content-orders">
-      <div id="orders-list"></div>
-    </div>
-
-    <!-- INVENTORY TAB -->
-    <div id="tab-content-inventory" class="hidden">
-      <section class="panel">
-        <h2>Naya Item Catalog Mein Jodo</h2>
-        <label>Item Naam</label><input id="new-item-name" placeholder="Dal (Toor)" />
-        <label>Unit</label><input id="new-item-unit" placeholder="kg" />
-        <button class="btn-outline" style="width:100%" onclick="createItem()">Item Banao</button>
-      </section>
-      <section class="panel">
-        <h2>Apni Dukan Ka Price Set Karo</h2>
-        <div id="inventory-list"></div>
-      </section>
-    </div>
-
-    <!-- SCAN TAB -->
-    <div id="tab-content-scan" class="hidden">
-      <section class="panel">
-        <h2>Pickup Confirm Karo</h2>
-
-        <label>Order ID</label>
-        <input id="scan-order-id" placeholder="Order ID daalo" />
-
-        <label>Customer Ne Bataya Code</label>
-        <input id="code-input" maxlength="4" placeholder="1234" />
-
-        <button class="btn-accent" onclick="verifyByCode()">Code Se Confirm Karo</button>
-
-        <div id="qr-reader"></div>
-        <button class="btn-outline" style="width:100%; margin-top:10px;" onclick="startScanner()">QR Scan Karo</button>
-      </section>
-    </div>
-
-    <!-- MY SHOP QR TAB -->
-    <div id="tab-content-myqr" class="hidden">
-      <section class="panel">
-        <h2>Meri Dukan Ka QR</h2>
-        <div class="hint" style="margin-bottom:10px;">
-          Isko print karke ya screen pe dukan mein rakho. Jab customer pahunch ke isse scan karega,
-          aapko turant uske order ki poori details mil jaayengi.
-        </div>
-        <div id="my-qr-box" style="text-align:center; padding:16px;"></div>
-        <div id="my-qr-name" class="hint" style="text-align:center; font-weight:700; font-size:1rem; color:var(--red-dark);"></div>
-      </section>
+    <div id="google-btn-wrap" style="opacity:0.4; pointer-events:none;">
+      <div id="g_id_onload"
+           data-client_id="331552152118-9kbvonm08obtu4fjepnvc46b4lkdjid8.apps.googleusercontent.com"
+           data-callback="handleGoogleLogin">
+      </div>
+      <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="continue_with" data-size="large" data-width="300"></div>
     </div>
   </div>
+
+  <!-- ============ DASHBOARD PANEL ============ -->
+  <div id="dashboard-panel" class="panel hidden">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h2>Naye Orders</h2>
+      <button class="btn-green btn-sm" onclick="fetchOrders()" style="width:auto;">Refresh</button>
+    </div>
+
+    <div id="orders-container">
+      <p style="color:var(--muted); font-size:0.9rem;">Koi naya order nahi hai...</p>
+    </div>
+  </div>
+
 </main>
 
 <script>
 const API = "https://localkirana-production.up.railway.app";
-let token = null, myUserId = null, ws = null;
-let isSignupMode = false;
+let token = localStorage.getItem('shop_access_token') || null;
+let ws = null;
 
-function togglePasswordVisibility(){
-  const pw = document.getElementById('password');
-  const willShow = pw.type === 'password';
-  pw.type = willShow ? 'text' : 'password';
-  document.getElementById('pw-toggle-icon').innerHTML = willShow
-    ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>'
-    : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+function toast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerText = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
 }
 
-function toggleAuthMode(){
-  isSignupMode = !isSignupMode;
-  document.getElementById('signup-extra-fields').classList.toggle('hidden', !isSignupMode);
-  document.getElementById('auth-title').innerText = isSignupMode ? 'Naya Account Banao' : 'Login Karo';
-  document.getElementById('auth-main-btn').innerText = isSignupMode ? 'Naya Account (Signup)' : 'Login';
-  document.getElementById('auth-main-btn').setAttribute('onclick', isSignupMode ? 'signup()' : 'login()');
-  document.getElementById('toggle-text').innerText = isSignupMode ? 'Pehle se account hai? ' : 'Naya account nahi hai? ';
-  document.getElementById('toggle-link').innerText = isSignupMode ? 'Login Karo' : 'Naya Account Banao';
+// ---------------- COUNTRY SELECTOR ----------------
+const countries = [
+  {flag:"in",code:"+91",name:"India"},
+  {flag:"us",code:"+1",name:"USA"},
+  {flag:"gb",code:"+44",name:"UK"}
+];
+
+function renderCountryList(filter=""){
+  const items = document.getElementById('country-list-items');
+  const f = filter.toLowerCase();
+  const filtered = countries.filter(c => c.name.toLowerCase().includes(f) || c.code.includes(f));
+  items.innerHTML = filtered.map(c => `<div onclick="selectCountry('${c.flag}','${c.code}')"><img src="https://flagcdn.com/w20/${c.flag}.png"> ${c.code} ${c.name}</div>`).join('');
 }
 
-function getShopLocation(callback){
-  if(!navigator.geolocation){
-    toast('Location support nahi hai is browser mein');
-    callback(0, 0);
-    return;
-  }
-  navigator.geolocation.getCurrentPosition(
-    (position) => {
-      callback(position.coords.latitude, position.coords.longitude);
-    },
-    (error) => {
-      toast('Location allow karo, tabhi signup hoga');
-      console.error('Geolocation error:', error);
-    }
-  );
+function toggleCountryList(){
+  const list = document.getElementById('country-list');
+  list.classList.toggle('hidden');
+  if(!list.classList.contains('hidden')) renderCountryList();
 }
 
-async function signup(){
-  getShopLocation(async (lat, lng) => {
-    const body = {
-      name: document.getElementById('reg-name').value,
-      phone: document.getElementById('phone').value,
-      email: document.getElementById('reg-email').value,
-      password: document.getElementById('password').value,
-      role: "shopkeeper",
-      shop_name: document.getElementById('shop-name').value,
-      shop_address: document.getElementById('shop-address').value,
-      shop_latitude: lat, shop_longitude: lng
-    };
-    const res = await fetch(`${API}/auth/signup`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
-    if(!res.ok){ toast('Signup fail: ' + (await res.text())); return; }
-    onLoggedIn(await res.json());
-  });
+function selectCountry(flag, code){
+  document.getElementById('country-code-btn').innerHTML = `<img src="https://flagcdn.com/w20/${flag}.png"> ${code} ▾`;
+  document.getElementById('country-list').classList.add('hidden');
 }
 
-async function requestOtp(){
+// ---------------- AUTH LOGIC ----------------
+function updateGoogleButtonState() {
   const phone = document.getElementById('phone').value.trim();
-  const name = document.getElementById('reg-name').value.trim();
-  const email = document.getElementById('reg-email').value.trim();
-  if(!phone){ toast('Phone number daalo'); return; }
-  if(!email){ toast('Gmail zaroori hai'); return; }
-  navigator.geolocation.getCurrentPosition(async (pos) => {
-    await sendOtpRequest(phone, name, email, pos.coords.latitude, pos.coords.longitude);
-  }, async () => {
-    await sendOtpRequest(phone, name, email, 0, 0);
-  });
-}
+  const valid = /^\d{6,15}$/.test(phone) && !/^(\d)\1+$/.test(phone);
+  const wrap = document.getElementById('google-btn-wrap');
 
-async function sendOtpRequest(phone, name, email, lat, lng){
-  const res = await fetch(`${API}/auth/request-otp`, {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({phone, name, email, role:'shopkeeper', latitude:lat, longitude:lng})
-  });
-  const data = await res.json();
-  if(!res.ok){ toast(data.detail || 'Kuch galat hua'); return; }
-  toast('OTP Gmail par bhej diya gaya hai');
-  document.getElementById('otp-box').classList.remove('hidden');
-}
-
-async function verifyOtp(){
-  const phone = document.getElementById('phone').value.trim();
-  const otp = document.getElementById('login-otp').value.trim();
-  const res = await fetch(`${API}/auth/verify-login-otp`, {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({phone, otp})
-  });
-  const data = await res.json();
-  if(!res.ok){ toast(data.detail || 'OTP galat hai'); return; }
-  onLoggedIn(data);
-}
-
-function updateGoogleButtonState(){
-  const phone = document.getElementById('phone').value.trim();
-  const validPhone = /^\d{6,15}$/.test(phone) && !/^(\d)\1+$/.test(phone);
-  const wrap = document.getElementById('g_id_signin_wrap');
-  const hint = document.getElementById('phone-hint');
-  if(validPhone){
+  if (valid) {
     wrap.style.opacity = '1';
     wrap.style.pointerEvents = 'auto';
-    hint.innerText = 'Ab Google se login karo';
+    document.getElementById('phone-hint').innerText = 'Ab Google se continue karein';
   } else {
     wrap.style.opacity = '0.4';
     wrap.style.pointerEvents = 'none';
-    hint.innerText = 'Number bharo, phir Google se login karo';
+    document.getElementById('phone-hint').innerText = 'Pehle sahi phone number daalein';
   }
 }
 
-async function handleGoogleLogin(response){
+async function handleGoogleLogin(response) {
   const phone = document.getElementById('phone').value.trim();
-  const validPhone = /^\d{6,15}$/.test(phone) && !/^(\d)\1+$/.test(phone);
-  if(!validPhone){ toast('Sahi phone number daalo'); return; }
-  navigator.geolocation.getCurrentPosition(async (pos) => {
-    await sendGoogleLogin(response.credential, phone, pos.coords.latitude, pos.coords.longitude);
-  }, async () => {
-    await sendGoogleLogin(response.credential, phone, 0, 0);
-  });
+  try {
+    const res = await fetch(`${API}/auth/google`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ credential: response.credential, phone: phone, role: "shopkeeper" })
+    });
+    const data = await res.json();
+    if (!res.ok) { toast(data.detail || 'Login fail hua'); return; }
+
+    token = data.access_token;
+    localStorage.setItem('shop_access_token', token);
+    initDashboard();
+  } catch (err) {
+    toast('Server Error: Login nahi ho pa raha hai');
+  }
 }
 
-async function sendGoogleLogin(credential, phone, lat, lng){
-  const res = await fetch(`${API}/auth/google`, {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({credential, phone, role:'shopkeeper', latitude:lat, longitude:lng})
-  });
-  const data = await res.json();
-  if(!res.ok){ toast(data.detail || 'Google login fail ho gaya'); return; }
-  onLoggedIn(data);
+function authHeaders() {
+  return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
 }
 
-function onLoggedIn(data){
-  token = data.access_token; myUserId = data.user_id;
-  document.getElementById('user-badge').innerText = data.name;
+// ---------------- DASHBOARD & ORDERS ----------------
+function initDashboard() {
   document.getElementById('auth-panel').classList.add('hidden');
-  document.getElementById('app-content').classList.remove('hidden');
-  loadOrders(); loadCatalogAndInventory(); connectWS();
-  setInterval(loadOrders, 8000);
+  document.getElementById('dashboard-panel').classList.remove('hidden');
+  document.getElementById('shop-status').innerText = "Online";
+  document.getElementById('shop-status').style.background = "rgba(255,255,255,0.4)";
+  
+  fetchOrders();
+  connectWS();
 }
 
-function openForgotPassword(){
-  document.getElementById('forgot-modal').classList.remove('hidden');
-  document.getElementById('forgot-step1').classList.remove('hidden');
-  document.getElementById('forgot-step2').classList.add('hidden');
+async function fetchOrders() {
+  try {
+    const res = await fetch(`${API}/shopkeeper/orders`, { headers: authHeaders() });
+    if (!res.ok) return;
+    const orders = await res.json();
+    renderOrders(orders);
+  } catch(e) {
+    toast('Orders fetch nahi ho paaye');
+  }
 }
 
-function closeForgotPassword(){
-  document.getElementById('forgot-modal').classList.add('hidden');
-  document.getElementById('forgot-phone').value = '';
-  document.getElementById('forgot-otp').value = '';
-  document.getElementById('forgot-new-password').value = '';
-}
-
-async function sendForgotOtp(){
-  const phone = document.getElementById('forgot-phone').value;
-  if(!phone){ toast('Phone number daalo'); return; }
-  const res = await fetch(`${API}/auth/forgot-password`, {
-    method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({phone})
-  });
-  const data = await res.json();
-  if(!res.ok){ toast(data.detail || 'Kuch galat ho gaya'); return; }
-  toast('OTP Gmail par bhej diya gaya hai');
-  document.getElementById('forgot-step1').classList.add('hidden');
-  document.getElementById('forgot-step2').classList.remove('hidden');
-}
-
-async function submitResetPassword(){
-  const phone = document.getElementById('forgot-phone').value;
-  const otp = document.getElementById('forgot-otp').value;
-  const new_password = document.getElementById('forgot-new-password').value;
-  if(!otp || !new_password){ toast('OTP aur naya password daalo'); return; }
-  const res = await fetch(`${API}/auth/reset-password`, {
-    method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({phone, otp, new_password})
-  });
-  const data = await res.json();
-  if(!res.ok){ toast(data.detail || 'Kuch galat ho gaya'); return; }
-  toast('Password badal gaya! Ab login karo');
-  closeForgotPassword();
-}
-
-function authHeaders(){ return {'Authorization': `Bearer ${token}`, 'Content-Type':'application/json'}; }
-
-function switchTab(name){
-  ['orders','inventory','scan','myqr'].forEach(t => {
-    document.getElementById(`tab-content-${t}`).classList.toggle('hidden', t !== name);
-    document.getElementById(`tab-${t}`).classList.toggle('active', t === name);
-  });
-  if(name === 'myqr') loadMyShopQR();
-}
-
-let myShopQRLoaded = false;
-async function loadMyShopQR(){
-  if(myShopQRLoaded) return;
-  const res = await fetch(`${API}/shop/my-qr`, {headers: authHeaders()});
-  if(!res.ok){ toast('QR load nahi hua'); return; }
-  const data = await res.json();
-  document.getElementById('my-qr-name').innerText = data.shop_name;
-  const box = document.getElementById('my-qr-box');
-  box.innerHTML = '';
-  const img = document.createElement('img');
-  img.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(data.qr_data)}`;
-  img.alt = 'Dukan QR Code';
-  img.style.width = '220px';
-  img.style.height = '220px';
-  box.appendChild(img);
-  myShopQRLoaded = true;
-}
-
-// ---------------- ORDERS ----------------
-async function loadOrders(){
-  const res = await fetch(`${API}/shop/orders`, {headers: authHeaders()});
-  if(!res.ok) return;
-  const orders = await res.json();
-  const wrap = document.getElementById('orders-list');
-  wrap.innerHTML = orders.filter(o => o.status !== 'completed').map(renderOrderCard).join('') || '<div class="panel">Abhi koi naya order nahi hai.</div>';
-}
-
-function renderOrderCard(so){
-  const itemsHtml = so.items.map(i => `
-    <div class="item-check-row">
-      <span class="name">${i.item_name} × ${i.quantity} <br><span class="hint">₹${i.unit_price}/unit</span></span>
-      <button class="avail-btn avail-ok ${i.availability==='available'?'active':''}" onclick="setAvailability(${i.id}, 'available')">✓</button>
-      <button class="avail-btn avail-no ${i.availability==='not_available'?'active':''}" onclick="setAvailability(${i.id}, 'not_available')">✕</button>
-    </div>`).join('');
-
-  let footer = '';
-  if(so.status === 'awaiting_payment'){
-    footer = `<div class="hint">Customer payment kar raha hai — thoda intezaar karo.</div>`;
-  } else if(so.status === 'confirmed'){
-    footer = `<div class="hint">Payment: <strong>${so.payment_status}</strong></div>
-      <button class="btn-accent" style="margin-top:8px" onclick="markReady(${so.id})">Ready — Saman Taiyar Hai</button>`;
-  } else if(so.status === 'ready'){
-    footer = `<div class="hint">Customer aa raha hai. Order ID: <strong>${so.id}</strong> — Pickup Verify tab se confirm karo.</div>`;
+function renderOrders(orders) {
+  const container = document.getElementById('orders-container');
+  if (!orders || orders.length === 0) {
+    container.innerHTML = `<p style="color:var(--muted); font-size:0.9rem;">Koi naya order nahi hai...</p>`;
+    return;
   }
 
-  return `
-    <div class="panel order-card">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <strong>${so.customer_name}</strong>
-        <span class="status-pill status-${so.status}">${so.status.replace(/_/g,' ')}</span>
+  container.innerHTML = orders.map(o => `
+    <div class="order-card">
+      <div class="order-header">
+        <strong>Order #${o.id}</strong>
+        <span class="order-status status-${o.status.toLowerCase()}">${o.status}</span>
       </div>
-      <div class="hint">Order ID: ${so.id} · Total: ₹${so.amount.toFixed(2)}</div>
-      ${itemsHtml}
-      ${footer}
-    </div>`;
+      <div class="item-list">
+        ${(o.items || []).map(i => `
+          <div class="item-row">
+            <span>${i.name} x ${i.quantity}</span>
+            <span>₹${i.price}</span>
+          </div>
+        `).join('')}
+      </div>
+      <div style="display:flex; justify-content:space-between; font-weight:700; margin-bottom:8px;">
+        <span>Total:</span>
+        <span>₹${o.total_price}</span>
+      </div>
+      ${o.status === 'PENDING' ? `
+        <div class="actions">
+          <button class="btn-green" onclick="updateOrderStatus(${o.id}, 'ACCEPTED')">Accept</button>
+          <button class="btn-red" onclick="updateOrderStatus(${o.id}, 'REJECTED')">Reject</button>
+        </div>
+      ` : ''}
+    </div>
+  `).join('');
 }
 
-async function setAvailability(shopOrderItemId, availability){
-  const res = await fetch(`${API}/shop/order-items/${shopOrderItemId}/availability`, {
-    method:'PATCH', headers: authHeaders(), body: JSON.stringify({availability})
-  });
-  if(!res.ok){ toast(await res.text()); return; }
-  loadOrders();
-}
-
-async function markReady(shopOrderId){
-  const res = await fetch(`${API}/shop/orders/${shopOrderId}/ready`, {method:'POST', headers: authHeaders()});
-  if(!res.ok){ toast(await res.text()); return; }
-  toast('Customer ko "order ready" bhej diya!');
-  loadOrders();
-}
-
-// ---------------- INVENTORY ----------------
-async function loadCatalogAndInventory(){
-  const res = await fetch(`${API}/customer/items`, {headers: authHeaders()});
-  catalogItems = await res.json();
-  document.getElementById('inventory-list').innerHTML = catalogItems.map(it => `
-    <div class="item-check-row">
-      <span class="name">${it.name}</span>
-      <input type="number" step="0.5" style="width:90px; margin:0;" placeholder="Price ₹" id="price-${it.id}" />
-      <button class="btn-outline btn-row" style="width:auto; padding:8px 12px;" onclick="saveInventory(${it.id})">Save</button>
-    </div>`).join('');
-}
-
-async function createItem(){
-  const name = document.getElementById('new-item-name').value;
-  const unit = document.getElementById('new-item-unit').value || 'unit';
-  if(!name) return;
-  const res = await fetch(`${API}/shop/items?name=${encodeURIComponent(name)}&unit=${encodeURIComponent(unit)}`, {method:'POST', headers: authHeaders()});
-  if(!res.ok){ toast(await res.text()); return; }
-  toast('Item catalog mein add ho gaya');
-  document.getElementById('new-item-name').value = '';
-  loadCatalogAndInventory();
-}
-
-async function saveInventory(itemId){
-  const price = parseFloat(document.getElementById(`price-${itemId}`).value);
-  if(!price || price <= 0){ toast('Sahi price daalo'); return; }
-  const res = await fetch(`${API}/shop/inventory`, {
-    method:'POST', headers: authHeaders(),
-    body: JSON.stringify({item_id: itemId, price, in_stock: true})
-  });
-  if(!res.ok){ toast(await res.text()); return; }
-  toast('Price save ho gaya');
-}
-
-// ---------------- PICKUP VERIFICATION ----------------
-let html5QrCode = null;
-
-function startScanner(){
-  const orderId = document.getElementById('scan-order-id').value;
-  if(!orderId){ toast('Pehle Order ID daalo'); return; }
-  if(html5QrCode){ html5QrCode.stop(); }
-  html5QrCode = new Html5Qrcode("qr-reader");
-  html5QrCode.start(
-    { facingMode: "environment" }, { fps: 10, qrbox: 220 },
-    async (decodedText) => {
-      html5QrCode.stop();
-      const res = await fetch(`${API}/shop/orders/${orderId}/verify-qr`, {
-        method:'POST', headers: authHeaders(), body: JSON.stringify({qr_token: decodedText})
-      });
-      if(res.ok){ toast('Pickup confirm ho gaya! ✅'); loadOrders(); }
-      else{ toast('QR match nahi hua: ' + (await res.text())); }
-    },
-    () => {}
-  );
-}
-
-async function verifyByCode(){
-  const code = document.getElementById('code-input').value;
-  if(!code || code.length !== 4){ toast('4-digit code daalo'); return; }
-  const res = await fetch(`${API}/shop/orders/verify-code-only`, {
-    method:'POST', headers: authHeaders(), body: JSON.stringify({code})
-  });
-  if(res.ok){
-    toast('Pickup confirm ho gaya! ✅');
-    document.getElementById('code-input').value = '';
-    loadOrders();
-  } else {
-    toast('Galat code: ' + (await res.text()));
+async function updateOrderStatus(orderId, status) {
+  try {
+    const res = await fetch(`${API}/shopkeeper/orders/${orderId}/status`, {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify({ status })
+    });
+    if (res.ok) {
+      toast(`Order #${orderId} ${status.toLowerCase()} ho gaya!`);
+      fetchOrders();
+    } else {
+      toast('Status update fail hua');
+    }
+  } catch(e) {
+    toast('Network Error');
   }
 }
 
-// ---------------- WEBSOCKET ----------------
-function connectWS(){
-  const wsUrl = API.replace('http', 'ws') + `/ws?token=${token}`;
-  ws = new WebSocket(wsUrl);
-  ws.onmessage = (msg) => {
-    const {event, data} = JSON.parse(msg.data);
-    if(event === 'new_order'){ toast('Naya order aaya!'); loadOrders(); }
-    else if(event === 'order_completed'){ toast(`${data.customer_name} ko saman de diya gaya`); loadOrders(); }
+// ---------------- WEBSOCKET FOR REALTIME NOTIFICATIONS ----------------
+function connectWS() {
+  if (!token) return;
+  ws = new WebSocket(`wss://localkirana-production.up.railway.app/ws?token=${token}`);
+  
+  ws.onmessage = (evt) => {
+    const msg = JSON.parse(evt.data);
+    if (msg.type === 'NEW_ORDER') {
+      toast('🔔 Naya Order Aaya Hai!');
+      fetchOrders();
+    }
   };
-  ws.onclose = () => setTimeout(connectWS, 3000);
+
+  ws.onclose = () => {
+    setTimeout(connectWS, 5000); // Reconnect logic
+  };
 }
 
-function toast(msg){
-  const t = document.createElement('div');
-  t.className = 'toast'; t.innerText = typeof msg === 'string' ? msg : JSON.stringify(msg);
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 3500);
-}
-</script>
-
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
-        .then((reg) => console.log('Service Worker Registered!'))
-        .catch((err) => console.error('Service Worker Failed:', err));
-    })
+// Check saved session
+window.addEventListener('DOMContentLoaded', () => {
+  if (token) {
+    initDashboard();
   }
+});
 </script>
+
 </body>
 </html>
