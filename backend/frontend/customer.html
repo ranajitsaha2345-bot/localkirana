@@ -285,9 +285,16 @@ const ICONS = [
   {kw:['masala','mirch','haldi'], icon:'🌶️'},
 ];
 function iconFor(name){
-  const n = (name||'').toLowerCase();
-  for(const g of ICONS){ if(g.kw.some(k => n.includes(k))) return g.icon; }
-  return '🛒';
+  const map = {
+    "Biskut (Parle-G)": "https://m.media-amazon.com/images/I/71p5eL6-mVL._SL1500_.jpg",
+    "Biskut (Marie Gold)": "https://m.media-amazon.com/images/I/71QYK9zqYYL._SL1500_.jpg",
+    "Biskut (Britannia Good Day)": "https://m.media-amazon.com/images/I/71-3XSFyoLL._SL1500_.jpg",
+    "Biskut (Oreo)": "https://m.media-amazon.com/images/I/81ynxeh-lWL._SL1500_.jpg",
+    "Lays Chips": "https://m.media-amazon.com/images/I/81vJ+PSHNoL._SL1500_.jpg",
+    "Bingo Chips": "https://m.media-amazon.com/images/I/71K4v6vJTNL._SL1500_.jpg",
+    "Maggi": "https://m.media-amazon.com/images/I/71G94sDvR-L._SL1500_.jpg",
+  };
+  return map[name] ? `<img src="${map[name]}" style="width:36px;height:36px;object-fit:contain;border-radius:6px;">` : "🛒";
 }
 const CATEGORIES = [
   {icon:'🌾', label:'Anaj', keyword:'chawal'},
