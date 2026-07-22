@@ -78,6 +78,17 @@ input::-webkit-credentials-auto-fill-button { visibility: hidden; display: none 
   .tabbar button{flex:1; background:#fff; border:1px solid var(--line); color:var(--ink);}
   .tabbar button.active{background: linear-gradient(135deg, var(--red), var(--red-dark)); color:#fff; border-color:var(--red);}
   .auth-heading{ color:var(--ink); font-size:1.25rem; font-weight:800; margin-bottom:14px; }
+  .phone-box {
+  border: 1.5px solid var(--line); border-radius: 10px; padding: 8px 12px;
+  display: flex; align-items: center; gap: 10px; position:relative;
+}
+.phone-box:focus-within{ border-color: var(--red); }
+.phone-box .flag-code {
+  font-size: 0.95rem; color: var(--ink); white-space: nowrap;
+  border-right: 1px solid var(--line); padding-right: 10px;
+}
+.phone-box input { border: none; outline: none; padding: 6px 0; font-size: 0.95rem; flex: 1; }
+.floating-label{ display:block; margin-bottom:6px; font-size:.82rem; color:var(--muted); font-weight:600; }
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
@@ -101,9 +112,12 @@ input::-webkit-credentials-auto-fill-button { visibility: hidden; display: none 
   <section id="auth-panel" class="panel">
     <h2 id="auth-title" class="auth-heading">Login Karo</h2>
 
-    <label>Phone</label>
-    <input id="phone" placeholder="9876543210" oninput="updateGoogleButtonState()" />
-    <div id="phone-hint" class="hint" style="margin-bottom:14px;">Number bharo, phir Google se login karo</div>
+    <label class="floating-label">Mobile Number</label>
+    <div class="phone-box" style="margin-bottom: 16px;">
+      <span class="flag-code"><img src="https://flagcdn.com/w20/in.png"> +91</span>
+      <input type="text" id="phone" placeholder="9876543210" oninput="updateGoogleButtonState()">
+    </div>
+    <div id="phone-hint" class="hint" style="margin-bottom:14px; text-align:center;">Number bharo, phir Google se login karo</div>
 
     <div id="g_id_signin_wrap" style="opacity:0.4; pointer-events:none;">
       <div id="g_id_signin"></div>
