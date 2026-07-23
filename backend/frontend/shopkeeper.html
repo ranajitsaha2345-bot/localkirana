@@ -77,7 +77,8 @@
   margin-bottom:0; padding:10px 8px; font-size:.85rem; min-width:0;
 }
 .inventory-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap:6px; align-items:stretch; }
-.inv-chip{ background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:6px 4px; text-align:center; display:flex; flex-direction:column; justify-content:space-between; min-height:70px; }
+.inv-price-badge{ position:absolute; top:4px; left:4px; background:var(--green-ok); color:#fff; font-size:.62rem; font-weight:700; padding:2px 6px; border-radius:6px; z-index:1; }
+.inv-chip{ background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:20px 4px 6px; text-align:center; display:flex; flex-direction:column; justify-content:space-between; min-height:70px; }
 .inv-chip .inv-name{ font-size:.68rem; font-weight:600; display:block; margin-bottom:4px; overflow-wrap:break-word; word-break:break-word; white-space:normal; line-height:1.2; }
 .inv-edit-btn{ width:100%; padding:5px 2px; font-size:.68rem; background:#fff; border:1.5px solid var(--red); color:var(--red-dark); border-radius:7px; margin-top:auto; }
 .inv-edit-row{ grid-column: 1 / -1; display:flex; align-items:center; gap:6px; background:#fff; border:1px solid var(--line); border-radius:10px; padding:8px; }
@@ -537,11 +538,24 @@ async function removeInventoryItem(shopItemId){
 
 async function createItem(){
   if(!requireLogin()) return;
+  const price = parseFloat(document.getElementById('new-item-price').value);
+  if(!price || price <= 0){ toast('Sahi price daalo'); return; }
+
+  if(editingItemId){
+    const res = await fetch(`${API}/shop/inventory`, {
+      method:'POST', headers: authHeaders(),
+      body: JSON.stringify({item_id: editingItemId, price, in_stock: true})
+    });
+    if(!res.ok){ toast(await res.text()); return; }
+    toast('Price update ho gaya!');
+    resetItemForm();
+    loadCatalogAndInventory();
+    return;
+  }
+
   const name = document.getElementById('new-item-name').value.trim();
   const unit = document.getElementById('new-item-unit').value;
-  const price = parseFloat(document.getElementById('new-item-price').value);
   if(!name){ toast('Item naam daalo'); return; }
-  if(!price || price <= 0){ toast('Sahi price daalo'); return; }
 
   const res = await fetch(`${API}/shop/items?name=${encodeURIComponent(name)}&unit=${encodeURIComponent(unit)}`, {method:'POST', headers: authHeaders()});
   if(!res.ok){ toast(await res.text()); return; }
@@ -554,64 +568,8 @@ async function createItem(){
   if(!invRes.ok){ toast('Item bana, par price save nahi hua: ' + (await invRes.text())); return; }
 
   toast('Item add ho gaya!');
-  document.getElementById('new-item-name').value = '';
-  document.getElementById('new-item-price').value = '';
+  resetItemForm();
   loadCatalogAndInventory();
-}
-let openInventoryEditId = null;
-let myInventoryItems = [];
-
-async function loadCatalogAndInventory(){
-  const res = await fetch(`${API}/shop/inventory`, {headers: authHeaders()});
-  myInventoryItems = await res.json();
-  renderInventoryGrid();
-}
-
-function renderInventoryGrid(){
-  const el = document.getElementById('inventory-list');
-  if(!myInventoryItems.length){
-    el.innerHTML = '<div class="hint">Abhi koi item add nahi kiya. Upar se naya item banao.</div>';
-    return;
-  }
-  el.innerHTML = myInventoryItems.map(it => {
-    if(openInventoryEditId === it.item_id){
-      return `
-        <div class="inv-edit-row">
-          <input type="number" id="edit-price-${it.item_id}" placeholder="Price" class="ie-price" value="${it.price}">
-          <button class="btn-accent ie-save" onclick="saveInventory(${it.item_id})">Save</button>
-        </div>
-      `;
-    }
-    return `
-      <div class="inv-chip" style="position:relative;">
-        <button onclick="removeInventoryItem(${it.shop_item_id})"
-          style="position:absolute; top:4px; right:4px; width:18px; height:18px; padding:0; border-radius:50%;
-          background:var(--red); color:#fff; font-size:.6rem; line-height:1; border:none;">✕</button>
-        <span class="inv-name">${it.name}</span>
-        <button class="inv-edit-btn" onclick="openInventoryEdit(${it.item_id})">Edit</button>
-      </div>
-    `;
-  }).join('');
-}
-
-function openInventoryEdit(itemId){
-  if(!requireLogin()) return;
-  openInventoryEditId = itemId;
-  renderInventoryGrid();
-}
-
-async function saveInventory(itemId){
-  if(!requireLogin()) return;
-  const price = parseFloat(document.getElementById(`edit-price-${itemId}`).value);
-  if(!price || price <= 0){ toast('Sahi price daalo'); return; }
-  const res = await fetch(`${API}/shop/inventory`, {
-    method:'POST', headers: authHeaders(),
-    body: JSON.stringify({item_id: itemId, price, in_stock: true})
-  });
-  if(!res.ok){ toast(await res.text()); return; }
-  toast('Price save ho gaya');
-  openInventoryEditId = null;
-  renderInventoryGrid();
 }
 
 // ---------------- PICKUP VERIFICATION ----------------
