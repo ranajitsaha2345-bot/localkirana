@@ -229,8 +229,7 @@ function editInventoryItem(shopItemId, name, price){
       <section class="panel">
         <h2>My Shop QR</h2>
         <div class="hint" style="margin-bottom:10px;">
-          Isko print karke ya screen pe dukan mein rakho. Jab customer pahunch ke isse scan karega,
-          aapko turant uske order ki poori details mil jaayengi.
+          Print this or keep it on screen at your shop. When a customer scans it, you'll instantly get their order details.
         </div>
         <div id="my-qr-box" style="text-align:center; padding:16px;"></div>
         <div id="my-qr-name" class="hint" style="text-align:center; font-weight:700; font-size:1rem; color:var(--red-dark);"></div>
@@ -711,7 +710,7 @@ async function loadInventory(){
 function renderInventoryGrid(items){
   const wrap = document.getElementById('inventory-list');
   if(!items.length){
-    wrap.innerHTML = '<div class="hint">Abhi koi item add nahi kiya.</div>';
+    wrap.innerHTML = '<div class="hint">No items added yet.</div>';
     return;
   }
   wrap.innerHTML = items.map(i => `
