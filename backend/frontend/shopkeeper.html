@@ -475,7 +475,7 @@ async function loadOrders(){
   if(!res.ok) return;
   const orders = await res.json();
   const wrap = document.getElementById('orders-list');
-  wrap.innerHTML = orders.filter(o => o.status !== 'completed').map(renderOrderCard).join('') || '<div class="panel">Abhi koi naya order nahi hai.</div>';
+  wrap.innerHTML = orders.filter(o => o.status !== 'completed').map(renderOrderCard).join('') || '<div class="panel">No new orders yet.</div>';
 }
 
 function renderOrderCard(so){
