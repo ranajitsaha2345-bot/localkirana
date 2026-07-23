@@ -18,9 +18,9 @@ GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 class GoogleLogin(BaseModel):
     credential: str
     role: str = "customer"
+    phone: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
-    role: str = "customer"
 
 
 @router.post("/google", response_model=schemas.Token)
@@ -44,7 +44,7 @@ def google_login(payload: GoogleLogin, db: Session = Depends(get_db)):
         requested_role = models.UserRole.shopkeeper if payload.role == "shopkeeper" else models.UserRole.customer
         user = models.User(
             name=name,
-            phone=None,
+            phone=payload.phone,
             email=email,
             google_id=google_id,
             password_hash=auth.hash_password(google_id),
@@ -54,8 +54,28 @@ def google_login(payload: GoogleLogin, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(user)
     else:
+        changed = False
         if not user.google_id:
             user.google_id = google_id
+            changed = True
+        if payload.phone and not user.phone:
+            user.phone = payload.phone
+            changed = True
+        if changed:
+            db.commit()
+
+    # Shopkeeper ke liye shop record na ho to bana do — extra form ki zaroorat nahi
+    if user.role == models.UserRole.shopkeeper:
+        shop = db.query(models.Shop).filter(models.Shop.owner_id == user.id).first()
+        if not shop:
+            shop = models.Shop(
+                owner_id=user.id,
+                name=f"{name}'s Shop",
+                address="",
+                latitude=payload.latitude or 0,
+                longitude=payload.longitude or 0,
+            )
+            db.add(shop)
             db.commit()
 
     token = auth.create_access_token({"sub": str(user.id)})
