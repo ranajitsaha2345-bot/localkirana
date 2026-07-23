@@ -177,19 +177,20 @@
     <!-- INVENTORY TAB -->
     <div id="tab-content-inventory" class="hidden">
       <section class="panel">
-        <h2>Naya Item Add Karo</h2>
+        <h2>Add New Item</h2>
         <div class="add-item-row">
           <input id="new-item-name" placeholder="Item naam" class="ai-name" />
           <select id="new-item-unit" class="ai-unit">
             <option value="packet">1 Packet</option>
             <option value="kg">1 Kg</option>
+            <option value="litre">1 Litre</option>
           </select>
           <input id="new-item-price" type="number" step="0.5" placeholder="₹" class="ai-price" />
           <button class="btn-accent ai-save" onclick="createItem()">Save</button>
         </div>
       </section>
       <section class="panel">
-        <h2>Apni Dukan Ka Price Set Karo</h2>
+        <h2>Shop Item List</h2>
         <div id="inventory-list" class="inventory-grid"></div>
       </section>
     </div>
