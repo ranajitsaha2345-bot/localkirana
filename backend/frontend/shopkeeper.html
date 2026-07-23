@@ -414,6 +414,13 @@ async function submitResetPassword(){
 
 function authHeaders(){ return {'Authorization': `Bearer ${token}`, 'Content-Type':'application/json'}; }
 
+function requireLogin(){
+  if(token) return true;
+  toast('Pehle login karo!');
+  document.getElementById('app-content').classList.add('hidden');
+  document.getElementById('auth-panel').classList.remove('hidden');
+  return false;
+}
 function switchTab(name){
   ['orders','inventory','scan','myqr'].forEach(t => {
     document.getElementById(`tab-content-${t}`).classList.toggle('hidden', t !== name);
@@ -480,6 +487,7 @@ function renderOrderCard(so){
 }
 
 async function setAvailability(shopOrderItemId, availability){
+  if(!requireLogin()) return;
   const res = await fetch(`${API}/shop/order-items/${shopOrderItemId}/availability`, {
     method:'PATCH', headers: authHeaders(), body: JSON.stringify({availability})
   });
@@ -488,6 +496,7 @@ async function setAvailability(shopOrderItemId, availability){
 }
 
 async function markReady(shopOrderId){
+  if(!requireLogin()) return; 
   const res = await fetch(`${API}/shop/orders/${shopOrderId}/ready`, {method:'POST', headers: authHeaders()});
   if(!res.ok){ toast(await res.text()); return; }
   toast('Customer ko "order ready" bhej diya!');
@@ -507,6 +516,7 @@ async function loadCatalogAndInventory(){
 }
 
 async function createItem(){
+  if(!requireLogin()) return;
   const name = document.getElementById('new-item-name').value.trim();
   const unit = document.getElementById('new-item-unit').value;
   const price = parseFloat(document.getElementById('new-item-price').value);
@@ -530,6 +540,7 @@ async function createItem(){
 }
 
 async function saveInventory(itemId){
+  if(!requireLogin()) return;
   const price = parseFloat(document.getElementById(`price-${itemId}`).value);
   if(!price || price <= 0){ toast('Sahi price daalo'); return; }
   const res = await fetch(`${API}/shop/inventory`, {
@@ -544,6 +555,7 @@ async function saveInventory(itemId){
 let html5QrCode = null;
 
 function startScanner(){
+  if(!requireLogin()) return;  
   const orderId = document.getElementById('scan-order-id').value;
   if(!orderId){ toast('Pehle Order ID daalo'); return; }
   if(html5QrCode){ html5QrCode.stop(); }
@@ -563,6 +575,7 @@ function startScanner(){
 }
 
 async function verifyByCode(){
+  if(!requireLogin()) return;
   const code = document.getElementById('code-input').value;
   if(!code || code.length !== 4){ toast('4-digit code daalo'); return; }
   const res = await fetch(`${API}/shop/orders/verify-code-only`, {
