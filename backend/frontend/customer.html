@@ -342,10 +342,26 @@ const CATEGORIES = [
   {icon:'🍵', label:'Chai/Coffee', keyword:'chai'},
   {icon:'🍪', label:'Snacks', keyword:'biskut'}
 ];
-const UNIT_CONFIG = [
-  {kw:['dal','chawal','atta','chini','namak','masala','haldi','mirch','jeera'], step:250, base:'g', pricing_unit:'kg'},
-  {kw:['tel','oil','ghee','doodh','dahi'], step:250, base:'ml', pricing_unit:'litre'},
-];
+let itemUnitById = {}; // item.id -> backend unit ("kg","litre","piece",...)
+
+function getUnitInfo(backendUnit){
+  const u = (backendUnit || '').toLowerCase();
+  if(u === 'kg'){ return {step:250, base:'g', factor:1000}; }
+  if(u === 'litre' || u === 'liter' || u === 'l'){ return {step:250, base:'ml', factor:1000}; }
+  return {step:1, base:'pcs', factor:1}; // piece/unit/anything else
+}
+function formatQty(amount, info){
+  if(info.base === 'g'){
+    return amount >= 1000 ? `${(amount/1000).toFixed(amount % 1000 === 0 ? 0 : 1)}kg` : `${amount}g`;
+  }
+  if(info.base === 'ml'){
+    return amount >= 1000 ? `${(amount/1000).toFixed(amount % 1000 === 0 ? 0 : 1)}l` : `${amount}ml`;
+  }
+  return `${amount} pc${amount > 1 ? 's' : ''}`;
+}
+function toBackendQty(displayAmount, info){
+  return +(displayAmount / info.factor).toFixed(3);
+}
 function getUnitConfig(name){
   const n = name.toLowerCase();
   for(const u of UNIT_CONFIG){
@@ -661,18 +677,21 @@ let pendingQty = {};
 async function loadCatalog(){
   const res = await fetch(`${API}/customer/items`, {headers: authHeaders()});
   catalogItems = await res.json();
+  itemUnitById = {};
+  catalogItems.forEach(it => { itemUnitById[it.id] = it.unit; });
+
   const el = document.getElementById('catalog');
   el.innerHTML = catalogItems.map(it => {
-    const cfg = getUnitConfig(it.name);
-    const hint = cfg.base === 'pcs' ? `${cfg.step}pc/click` : `${cfg.step}${cfg.base}/click`;
+    const info = getUnitInfo(it.unit);
+    const hint = info.base === 'pcs' ? `1 pc/click` : `${info.step}${info.base}/click`;
     return `
     <div class="item-card" data-name="${it.name}" data-category="${it.category || ''}">
       <span class="qty-float hidden" id="qty-float-${it.id}">0</span>
       <div class="name">${it.name}</div>
       <div class="unit-hint">${hint}</div>
       <div class="qty-controls">
-        <button class="qty-btn minus" onclick="adjustPending(${it.id}, -1, '${it.name.replace(/'/g,"\\'")}')">−</button>
-        <button class="qty-btn" onclick="adjustPending(${it.id}, 1, '${it.name.replace(/'/g,"\\'")}')">+</button>
+        <button class="qty-btn minus" onclick="adjustPending(${it.id}, -1)">−</button>
+        <button class="qty-btn" onclick="adjustPending(${it.id}, 1)">+</button>
       </div>
       <button class="btn-buy" onclick="confirmBuy(${it.id}, '${it.name.replace(/'/g,"\\'")}')">Add</button>
     </div>
@@ -680,14 +699,14 @@ async function loadCatalog(){
   }).join('');
 }
 
-function adjustPending(itemId, delta, itemName){
-  const cfg = getUnitConfig(itemName);
+function adjustPending(itemId, delta){
+  const info = getUnitInfo(itemUnitById[itemId]);
   const current = pendingQty[itemId] !== undefined ? pendingQty[itemId] : (cart[itemId] || 0);
-  const next = Math.max(0, current + delta * cfg.step);
+  const next = Math.max(0, current + delta * info.step);
   pendingQty[itemId] = next;
   const badge = document.getElementById(`qty-float-${itemId}`);
   if(next > 0){
-    badge.innerText = formatQty(next, cfg);
+    badge.innerText = formatQty(next, info);
     badge.classList.remove('hidden');
   } else {
     badge.classList.add('hidden');
@@ -700,10 +719,9 @@ function confirmBuy(itemId, name){
   cart[itemId] = qty;
   cartNames[itemId] = name;
   renderFloatingCart();
-  const cfg = getUnitConfig(name);
-  toast(`${name} — ${formatQty(qty, cfg)} add ho gaya!`);
+  const info = getUnitInfo(itemUnitById[itemId]);
+  toast(`${name} — ${formatQty(qty, info)} add ho gaya!`);
 }
-
 function removeFromCart(itemId){
   delete cart[itemId];
   delete pendingQty[itemId];
@@ -722,11 +740,10 @@ function renderFloatingCart(){
   }
   wrap.classList.remove('hidden');
   itemsEl.innerHTML = entries.map(([id, qty]) => {
-    const name = cartNames[id] || 'Item';
-    const cfg = getUnitConfig(name);
+    const info = getUnitInfo(itemUnitById[id]);
     return `
     <div class="cart-chip">
-      ${name} × ${formatQty(qty, cfg)}
+      ${cartNames[id] || 'Item'} × ${formatQty(qty, info)}
       <span class="cart-remove" onclick="removeFromCart(${id})">✕</span>
     </div>
   `;
@@ -734,10 +751,10 @@ function renderFloatingCart(){
 }
 // ---------------- MATCH CHEAPEST SHOP ----------------
 async function matchCart(){
-  const lines = Object.entries(cart).map(([item_id, quantity]) => ({
-    item_id: parseInt(item_id),
-    quantity: toBackendQty(quantity, cartNames[item_id])
-  }));
+  const lines = Object.entries(cart).map(([item_id, quantity]) => {
+    const info = getUnitInfo(itemUnitById[item_id]);
+    return { item_id: parseInt(item_id), quantity: toBackendQty(quantity, info) };
+  });
   if(lines.length === 0){ toast('Pehle kuch saman chuno'); return; }
 
   navigator.geolocation.getCurrentPosition(async (pos) => {
@@ -781,10 +798,10 @@ async function doMatch(lines, lat, lng){
 
 // ---------------- PLACE ORDER ----------------
 async function placeOrder(){
-  const lines = Object.entries(cart).map(([item_id, quantity]) => ({
-    item_id: parseInt(item_id),
-    quantity: toBackendQty(quantity, cartNames[item_id])
-  }));
+  const lines = Object.entries(cart).map(([item_id, quantity]) => {
+    const info = getUnitInfo(itemUnitById[item_id]);
+    return { item_id: parseInt(item_id), quantity: toBackendQty(quantity, info) };
+  });
   const res = await fetch(`${API}/customer/orders`, {
     method:'POST', headers: authHeaders(),
     body: JSON.stringify({lines, latitude: window._lastLat, longitude: window._lastLng})
