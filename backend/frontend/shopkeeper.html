@@ -76,10 +76,10 @@
 .add-item-row input, .add-item-row select{
   margin-bottom:0; padding:10px 8px; font-size:.85rem; min-width:0;
 }
-.inventory-grid{ display:grid; grid-template-columns: repeat(6, 1fr); gap:6px; }
-.inv-chip{ background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:6px 4px; text-align:center; }
-.inv-chip .inv-name{ font-size:.68rem; font-weight:600; display:block; margin-bottom:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.inv-edit-btn{ width:100%; padding:5px 2px; font-size:.68rem; background:#fff; border:1.5px solid var(--red); color:var(--red-dark); border-radius:7px; }
+.inventory-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap:6px; align-items:stretch; }
+.inv-chip{ background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:6px 4px; text-align:center; display:flex; flex-direction:column; justify-content:space-between; min-height:70px; }
+.inv-chip .inv-name{ font-size:.68rem; font-weight:600; display:block; margin-bottom:4px; overflow-wrap:break-word; word-break:break-word; white-space:normal; line-height:1.2; }
+.inv-edit-btn{ width:100%; padding:5px 2px; font-size:.68rem; background:#fff; border:1.5px solid var(--red); color:var(--red-dark); border-radius:7px; margin-top:auto; }
 .inv-edit-row{ grid-column: 1 / -1; display:flex; align-items:center; gap:6px; background:#fff; border:1px solid var(--line); border-radius:10px; padding:8px; }
 .inv-edit-row input, .inv-edit-row select{ margin-bottom:0; padding:8px 6px; font-size:.82rem; min-width:0; }
 .ie-name{ flex:1.3; }
