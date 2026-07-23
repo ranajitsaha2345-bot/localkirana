@@ -558,29 +558,37 @@ async function createItem(){
   document.getElementById('new-item-price').value = '';
   loadCatalogAndInventory();
 }
-
 let openInventoryEditId = null;
+let myInventoryItems = [];
 
 async function loadCatalogAndInventory(){
-  const res = await fetch(`${API}/customer/items`, {headers: authHeaders()});
-  catalogItems = await res.json();
+  const res = await fetch(`${API}/shop/inventory`, {headers: authHeaders()});
+  myInventoryItems = await res.json();
   renderInventoryGrid();
 }
 
 function renderInventoryGrid(){
-  document.getElementById('inventory-list').innerHTML = catalogItems.map(it => {
-    if(openInventoryEditId === it.id){
+  const el = document.getElementById('inventory-list');
+  if(!myInventoryItems.length){
+    el.innerHTML = '<div class="hint">Abhi koi item add nahi kiya. Upar se naya item banao.</div>';
+    return;
+  }
+  el.innerHTML = myInventoryItems.map(it => {
+    if(openInventoryEditId === it.item_id){
       return `
         <div class="inv-edit-row">
-          <input type="number" id="edit-price-${it.id}" placeholder="Price" class="ie-price">
-          <button class="btn-accent ie-save" onclick="saveInventory(${it.id})">Save</button>
+          <input type="number" id="edit-price-${it.item_id}" placeholder="Price" class="ie-price" value="${it.price}">
+          <button class="btn-accent ie-save" onclick="saveInventory(${it.item_id})">Save</button>
         </div>
       `;
     }
     return `
-      <div class="inv-chip">
+      <div class="inv-chip" style="position:relative;">
+        <button onclick="removeInventoryItem(${it.shop_item_id})"
+          style="position:absolute; top:4px; right:4px; width:18px; height:18px; padding:0; border-radius:50%;
+          background:var(--red); color:#fff; font-size:.6rem; line-height:1; border:none;">✕</button>
         <span class="inv-name">${it.name}</span>
-        <button class="inv-edit-btn" onclick="openInventoryEdit(${it.id})">Edit</button>
+        <button class="inv-edit-btn" onclick="openInventoryEdit(${it.item_id})">Edit</button>
       </div>
     `;
   }).join('');
