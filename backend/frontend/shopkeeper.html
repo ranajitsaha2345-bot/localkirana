@@ -190,7 +190,7 @@ function editInventoryItem(shopItemId, name, price){
       <section class="panel">
         <h2>Add New Item</h2>
         <div class="add-item-row">
-          <input id="new-item-name" placeholder="Item naam" class="ai-name" />
+          <input id="new-item-name" placeholder="Item name" class="ai-name" />
           <select id="new-item-unit" class="ai-unit">
             <option value="packet">1 Packet</option>
             <option value="kg">1 Kg</option>
@@ -209,25 +209,25 @@ function editInventoryItem(shopItemId, name, price){
     <!-- SCAN TAB -->
     <div id="tab-content-scan" class="hidden">
       <section class="panel">
-        <h2>Pickup Confirm Karo</h2>
+        <h2>Confirm Pickup</h2>
 
         <label>Order ID</label>
-        <input id="scan-order-id" placeholder="Order ID daalo" />
+        <input id="scan-order-id" placeholder="Enter Order ID" />
 
-        <label>Customer Ne Bataya Code</label>
+        <label>Code Given by Customer</label>
         <input id="code-input" maxlength="4" placeholder="1234" />
 
-        <button class="btn-accent" onclick="verifyByCode()">Code Se Confirm Karo</button>
+        <button class="btn-accent" onclick="verifyByCode()">Confirm with Code</button>
 
         <div id="qr-reader"></div>
-        <button class="btn-outline" style="width:100%; margin-top:10px;" onclick="startScanner()">QR Scan Karo</button>
+        <button class="btn-outline" style="width:100%; margin-top:10px;" onclick="startScanner()">Scan QR</button>
       </section>
     </div>
 
     <!-- MY SHOP QR TAB -->
     <div id="tab-content-myqr" class="hidden">
       <section class="panel">
-        <h2>Meri Dukan Ka QR</h2>
+        <h2>My Shop QR</h2>
         <div class="hint" style="margin-bottom:10px;">
           Isko print karke ya screen pe dukan mein rakho. Jab customer pahunch ke isse scan karega,
           aapko turant uske order ki poori details mil jaayengi.
@@ -274,7 +274,7 @@ function getShopLocation(callback){
       callback(position.coords.latitude, position.coords.longitude);
     },
     (error) => {
-      toast('Location allow karo, tabhi signup hoga');
+      toast('Please allow location to sign up');
       console.error('Geolocation error:', error);
     }
   );
@@ -293,7 +293,7 @@ async function signup(){
       shop_latitude: lat, shop_longitude: lng
     };
     const res = await fetch(`${API}/auth/signup`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
-    if(!res.ok){ toast('Signup fail: ' + (await res.text())); return; }
+    if(!res.ok){ toast('Signup failed: ' + (await res.text())); return; }
     onLoggedIn(await res.json());
   });
 }
@@ -302,8 +302,8 @@ async function requestOtp(){
   const phone = document.getElementById('phone').value.trim();
   const name = document.getElementById('reg-name').value.trim();
   const email = document.getElementById('reg-email').value.trim();
-  if(!phone){ toast('Phone number daalo'); return; }
-  if(!email){ toast('Gmail zaroori hai'); return; }
+  if(!phone){ toast('Enter phone number'); return; }
+  if(!email){ toast('Gmail is required'); return; }
   navigator.geolocation.getCurrentPosition(async (pos) => {
     await sendOtpRequest(phone, name, email, pos.coords.latitude, pos.coords.longitude);
   }, async () => {
@@ -317,8 +317,8 @@ async function sendOtpRequest(phone, name, email, lat, lng){
     body: JSON.stringify({phone, name, email, role:'shopkeeper', latitude:lat, longitude:lng})
   });
   const data = await res.json();
-  if(!res.ok){ toast(data.detail || 'Kuch galat hua'); return; }
-  toast('OTP Gmail par bhej diya gaya hai');
+  if(!res.ok){ toast(data.detail || 'Something went wrong'); return; }
+  toast('OTP sent to your Gmail');
   document.getElementById('otp-box').classList.remove('hidden');
 }
 
@@ -330,7 +330,7 @@ async function verifyOtp(){
     body: JSON.stringify({phone, otp})
   });
   const data = await res.json();
-  if(!res.ok){ toast(data.detail || 'OTP galat hai'); return; }
+  if(!res.ok){ toast(data.detail || 'Invalid OTP'); return; }
   onLoggedIn(data);
 }
 
@@ -366,7 +366,7 @@ function updateGoogleButtonState(){
 async function handleGoogleLogin(response){
   const phone = document.getElementById('phone').value.trim();
   const validPhone = /^\d{6,15}$/.test(phone) && !/^(\d)\1+$/.test(phone);
-  if(!validPhone){ toast('Sahi phone number daalo'); return; }
+  if(!validPhone){ toast('Enter a valid phone number'); return; }
   navigator.geolocation.getCurrentPosition(async (pos) => {
     await sendGoogleLogin(response.credential, phone, pos.coords.latitude, pos.coords.longitude);
   }, async () => {
@@ -380,7 +380,7 @@ async function sendGoogleLogin(credential, phone, lat, lng){
     body: JSON.stringify({credential, phone, role:'shopkeeper', latitude:lat, longitude:lng})
   });
   const data = await res.json();
-  if(!res.ok){ toast(data.detail || 'Google login fail ho gaya'); return; }
+  if(!res.ok){ toast(data.detail || 'Google login failed'); return; }
   onLoggedIn(data);
 }
 
@@ -431,7 +431,7 @@ async function submitResetPassword(){
   });
   const data = await res.json();
   if(!res.ok){ toast(data.detail || 'Kuch galat ho gaya'); return; }
-  toast('Password badal gaya! Ab login karo');
+  toast('Password changed! Please login now');
   closeForgotPassword();
 }
 
@@ -439,7 +439,7 @@ function authHeaders(){ return {'Authorization': `Bearer ${token}`, 'Content-Typ
 
 function requireLogin(){
   if(token) return true;
-  toast('Pehle login karo!');
+  toast('Please login first!');
   document.getElementById('app-content').classList.add('hidden');
   document.getElementById('auth-panel').classList.remove('hidden');
   return false;
@@ -456,7 +456,7 @@ let myShopQRLoaded = false;
 async function loadMyShopQR(){
   if(myShopQRLoaded) return;
   const res = await fetch(`${API}/shop/my-qr`, {headers: authHeaders()});
-  if(!res.ok){ toast('QR load nahi hua'); return; }
+  if(!res.ok){ toast('QR could not be loaded'); return; }
   const data = await res.json();
   document.getElementById('my-qr-name').innerText = data.shop_name;
   const box = document.getElementById('my-qr-box');
@@ -489,12 +489,12 @@ function renderOrderCard(so){
 
   let footer = '';
   if(so.status === 'awaiting_payment'){
-    footer = `<div class="hint">Customer payment kar raha hai — thoda intezaar karo.</div>`;
+    footer = `<div class="hint">Customer is making payment — please wait.</div>`;
   } else if(so.status === 'confirmed'){
     footer = `<div class="hint">Payment: <strong>${so.payment_status}</strong></div>
-      <button class="btn-accent" style="margin-top:8px" onclick="markReady(${so.id})">Ready — Saman Taiyar Hai</button>`;
+      <button class="btn-accent" style="margin-top:8px" onclick="markReady(${so.id})">Ready — Items Prepared</button>`;
   } else if(so.status === 'ready'){
-    footer = `<div class="hint">Customer aa raha hai. Order ID: <strong>${so.id}</strong> — Pickup Verify tab se confirm karo.</div>`;
+    footer = `<div class="hint">Customer is on the way. Order ID: <strong>${so.id}</strong> — confirm from Pickup Verify tab.</div>`;
   }
 
   return `
@@ -522,7 +522,7 @@ async function markReady(shopOrderId){
   if(!requireLogin()) return; 
   const res = await fetch(`${API}/shop/orders/${shopOrderId}/ready`, {method:'POST', headers: authHeaders()});
   if(!res.ok){ toast(await res.text()); return; }
-  toast('Customer ko "order ready" bhej diya!');
+  toast('Sent "order ready" to customer!');
   loadOrders();
 }
 
@@ -533,7 +533,7 @@ let html5QrCode = null;
 function startScanner(){
   if(!requireLogin()) return;  
   const orderId = document.getElementById('scan-order-id').value;
-  if(!orderId){ toast('Pehle Order ID daalo'); return; }
+  if(!orderId){ toast('Enter Order ID first'); return; }
   if(html5QrCode){ html5QrCode.stop(); }
   html5QrCode = new Html5Qrcode("qr-reader");
   html5QrCode.start(
@@ -543,8 +543,8 @@ function startScanner(){
       const res = await fetch(`${API}/shop/orders/${orderId}/verify-qr`, {
         method:'POST', headers: authHeaders(), body: JSON.stringify({qr_token: decodedText})
       });
-      if(res.ok){ toast('Pickup confirm ho gaya! ✅'); loadOrders(); }
-      else{ toast('QR match nahi hua: ' + (await res.text())); }
+      if(res.ok){ toast('Pickup confirmed! ✅'); loadOrders(); }
+      else{ toast('QR did not match: ' + (await res.text())); }
     },
     () => {}
   );
@@ -553,7 +553,7 @@ function startScanner(){
 async function verifyByCode(){
   if(!requireLogin()) return;
   const code = document.getElementById('code-input').value;
-  if(!code || code.length !== 4){ toast('4-digit code daalo'); return; }
+  if(!code || code.length !== 4){ toast('Enter the 4-digit code'); return; }
   const res = await fetch(`${API}/shop/orders/verify-code-only`, {
     method:'POST', headers: authHeaders(), body: JSON.stringify({code})
   });
@@ -562,7 +562,7 @@ async function verifyByCode(){
     document.getElementById('code-input').value = '';
     loadOrders();
   } else {
-    toast('Galat code: ' + (await res.text()));
+    toast('Incorrect code: ' + (await res.text()));
   }
 }
 
@@ -675,8 +675,8 @@ function connectWS(){
   ws = new WebSocket(wsUrl);
   ws.onmessage = (msg) => {
     const {event, data} = JSON.parse(msg.data);
-    if(event === 'new_order'){ toast('Naya order aaya!'); loadOrders(); }
-    else if(event === 'order_completed'){ toast(`${data.customer_name} ko saman de diya gaya`); loadOrders(); }
+    if(event === 'new_order'){ toast('New order received!'); loadOrders(); }
+    else if(event === 'order_completed'){ toast(`Order delivered to ${data.customer_name}`); loadOrders(); }
   };
   ws.onclose = () => setTimeout(connectWS, 3000);
 }
@@ -730,8 +730,8 @@ async function createItem(){
   const unit = document.getElementById('new-item-unit').value;
   const price = parseFloat(document.getElementById('new-item-price').value);
 
-  if(!name){ toast('Item ka naam daalo'); return; }
-  if(!price || price <= 0){ toast('Sahi price daalo'); return; }
+  if(!name){ toast('Enter item name'); return; }
+  if(!price || price <= 0){ toast('Enter a valid price'); return; }
 
   if(editingShopItemId){
     const delRes = await fetch(`${API}/shop/inventory/${editingShopItemId}`, {
@@ -743,16 +743,16 @@ async function createItem(){
   const itemRes = await fetch(`${API}/shop/items?name=${encodeURIComponent(name)}&unit=${encodeURIComponent(unit)}&category=general`, {
     method: 'POST', headers: authHeaders()
   });
-  if(!itemRes.ok){ toast('Item banane mein error: ' + (await itemRes.text())); return; }
+  if(!itemRes.ok){ toast('Error creating item: ' + (await itemRes.text())); return; }
   const item = await itemRes.json();
 
   const invRes = await fetch(`${API}/shop/inventory`, {
     method: 'POST', headers: authHeaders(),
     body: JSON.stringify({item_id: item.id, price, in_stock: true})
   });
-  if(!invRes.ok){ toast('Price save nahi hua: ' + (await invRes.text())); return; }
+  if(!invRes.ok){ toast('Price could not be saved: ' + (await invRes.text())); return; }
 
-  toast(editingShopItemId ? 'Item update ho gaya!' : 'Item add ho gaya!');
+  toast(editingShopItemId ? 'Item update ho gaya!' : 'Item added!');
   document.getElementById('new-item-name').value = '';
   document.getElementById('new-item-price').value = '';
   document.querySelector('.ai-save').innerText = 'Save';
@@ -765,8 +765,8 @@ async function deleteInventoryItem(shopItemId){
   const res = await fetch(`${API}/shop/inventory/${shopItemId}`, {
     method: 'DELETE', headers: authHeaders()
   });
-  if(!res.ok){ toast('Remove nahi hua: ' + (await res.text())); return; }
-  toast('Item hata diya');
+  if(!res.ok){ toast('Could not remove: ' + (await res.text())); return; }
+  toast('Item removed');
   loadInventory();
 }
 </script>
