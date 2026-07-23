@@ -640,7 +640,7 @@ async function loadCatalog(){
         <button class="qty-btn minus" onclick="adjustPending(${it.id}, -1)">−</button>
         <button class="qty-btn" onclick="adjustPending(${it.id}, 1)">+</button>
       </div>
-      <button class="btn-buy" onclick="confirmBuy(${it.id}, '${it.name.replace(/'/g,"\\'")}')">Buy</button>
+      <button class="btn-buy" onclick="confirmBuy(${it.id}, '${it.name.replace(/'/g,"\\'")}')">Add</button>
     </div>
   `).join('');
 }
