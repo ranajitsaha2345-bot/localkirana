@@ -334,3 +334,36 @@ async def _complete_pickup(db: Session, so: models.ShopOrder) -> schemas.ShopOrd
         {"shop_order_id": so.id, "customer_name": so.order.customer.name},
     )
     return _to_shop_order_out(db, so)
+# ---------------------------------------------------------------------------
+# Dukandar ki apni inventory list (sirf usne jo add/set kiya hai)
+# ---------------------------------------------------------------------------
+@router.get("/inventory")
+def get_my_inventory(db: Session = Depends(get_db),
+                      user: models.User = Depends(require_shopkeeper)):
+    """Sirf wahi items jo is shopkeeper ne apni dukan mein add kiye hain."""
+    shop = _get_owned_shop(db, user)
+    shop_items = db.query(models.ShopItem).filter(models.ShopItem.shop_id == shop.id).all()
+    return [
+        {
+            "shop_item_id": si.id,
+            "item_id": si.item_id,
+            "name": si.item.name,
+            "unit": si.item.unit,
+            "price": si.price,
+            "in_stock": si.in_stock,
+        }
+        for si in shop_items
+    ]
+
+
+@router.delete("/inventory/{shop_item_id}")
+def delete_my_inventory_item(shop_item_id: int, db: Session = Depends(get_db),
+                              user: models.User = Depends(require_shopkeeper)):
+    """Dukandar apni list se ek item hata deta hai (sirf apni dukan se, catalog se nahi)."""
+    shop = _get_owned_shop(db, user)
+    shop_item = db.query(models.ShopItem).get(shop_item_id)
+    if not shop_item or shop_item.shop_id != shop.id:
+        raise HTTPException(404, "Yeh item tumhari dukan ki list mein nahi hai")
+    db.delete(shop_item)
+    db.commit()
+    return {"status": "removed"}

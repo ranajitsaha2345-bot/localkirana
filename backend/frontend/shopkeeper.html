@@ -517,14 +517,22 @@ async function markReady(shopOrderId){
 
 // ---------------- INVENTORY ----------------
 async function loadCatalogAndInventory(){
-  const res = await fetch(`${API}/customer/items`, {headers: authHeaders()});
-  catalogItems = await res.json();
-  document.getElementById('inventory-list').innerHTML = catalogItems.map(it => `
-    <div class="item-check-row">
-      <span class="name">${it.name}</span>
-      <input type="number" step="0.5" style="width:90px; margin:0;" placeholder="Price ₹" id="price-${it.id}" />
-      <button class="btn-outline btn-row" style="width:auto; padding:8px 12px;" onclick="saveInventory(${it.id})">Save</button>
-    </div>`).join('');
+  const res = await fetch(`${API}/shop/inventory`, {headers: authHeaders()});
+  const myItems = await res.json();
+  document.getElementById('inventory-list').innerHTML = myItems.map(it => `
+    <div class="item-check-row" id="shop-item-${it.shop_item_id}">
+      <span class="name">${it.name} <span class="hint">₹${it.price}/${it.unit}</span></span>
+      <input type="number" step="0.5" style="width:90px; margin:0;" placeholder="Price ₹" id="price-${it.item_id}" value="${it.price}" />
+      <button class="btn-outline btn-row" style="width:auto; padding:8px 12px;" onclick="saveInventory(${it.item_id})">Save</button>
+      <button class="avail-btn avail-no" style="width:auto; padding:8px 10px;" onclick="removeInventoryItem(${it.shop_item_id})">✕</button>
+    </div>`).join('') || '<div class="hint">Abhi koi item add nahi kiya. Upar se naya item banao.</div>';
+}
+
+async function removeInventoryItem(shopItemId){
+  const res = await fetch(`${API}/shop/inventory/${shopItemId}`, {method:'DELETE', headers: authHeaders()});
+  if(!res.ok){ toast(await res.text()); return; }
+  toast('Item list se hata diya gaya');
+  loadCatalogAndInventory();
 }
 
 async function createItem(){
