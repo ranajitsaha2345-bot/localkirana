@@ -561,16 +561,16 @@ function renderInventoryGrid(){
   document.getElementById('inventory-list').innerHTML = catalogItems.map(it => {
     if(openInventoryEditId === it.id){
       return `
-        <div class="edit-box">
-          <input type="number" id="edit-price-${it.id}" placeholder="Price">
-          <button onclick="saveInventory(${it.id})">Save</button>
+        <div class="inv-edit-row">
+          <input type="number" id="edit-price-${it.id}" placeholder="Price" class="ie-price">
+          <button class="btn-accent ie-save" onclick="saveInventory(${it.id})">Save</button>
         </div>
       `;
     }
     return `
-      <div class="chip">
-        <span>${it.name}</span>
-        <button onclick="openInventoryEdit(${it.id})">Edit</button>
+      <div class="inv-chip">
+        <span class="inv-name">${it.name}</span>
+        <button class="inv-edit-btn" onclick="openInventoryEdit(${it.id})">Edit</button>
       </div>
     `;
   }).join('');
