@@ -346,8 +346,8 @@ let itemUnitById = {}; // item.id -> backend unit ("kg","litre","piece",...)
 
 function getUnitInfo(backendUnit){
   const u = (backendUnit || '').toLowerCase();
-  if(u === 'kg'){ return {step:250, base:'g', factor:1000}; }
-  if(u === 'litre' || u === 'liter' || u === 'l'){ return {step:250, base:'ml', factor:1000}; }
+  if(u === 'kg'){ return {step:100, base:'g', factor:1000}; }
+  if(u === 'litre' || u === 'liter' || u === 'l'){ return {step:100, base:'ml', factor:1000}; }
   return {step:1, base:'pcs', factor:1}; // piece/unit/anything else
 }
 function formatQty(amount, info){
