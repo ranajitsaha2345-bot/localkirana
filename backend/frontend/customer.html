@@ -176,6 +176,20 @@ input:focus { border-color: var(--red); }
 .country-list img, .flag-code img{ width:20px; height:14px; object-fit:cover; vertical-align:middle; margin-right:4px; }
 .btn-primary:disabled{ background:#E7D9CD; color:#a89686; cursor:not-allowed; }
 #user-badge{ cursor:pointer; }
+.floating-cart{
+  position:sticky; top:0; z-index:9; background:#fff; border-bottom:2px solid var(--red);
+  padding:10px 16px; margin:-4px -4px 14px; box-shadow:0 6px 16px rgba(0,0,0,.1);
+  border-radius:0 0 14px 14px;
+}
+.floating-cart-items{ display:flex; gap:8px; overflow-x:auto; padding-bottom:8px; }
+.cart-chip{
+  display:flex; align-items:center; gap:6px; background:var(--paper); border:1px solid var(--line);
+  border-radius:20px; padding:6px 10px; font-size:.8rem; white-space:nowrap; flex-shrink:0;
+}
+.cart-remove{
+  background:var(--red); color:#fff; width:16px; height:16px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center; font-size:.65rem; cursor:pointer; font-weight:800; flex-shrink:0;
+}
 </style>
 </head>
 <body>
@@ -220,6 +234,12 @@ input:focus { border-color: var(--red); }
   <!-- ============ CATALOG / CART ============ -->
   <section id="shop-panel" class="panel hidden">
 
+    <!-- ============ FLOATING CART (TOP) ============ -->
+    <div id="floating-cart" class="floating-cart hidden">
+      <div id="floating-cart-items" class="floating-cart-items"></div>
+      <button class="btn-primary" onclick="matchCart()">Pay</button>
+    </div>
+
     <div class="hero-wrap">
       <div class="hero-card">
         <span class="hero-emoji">🧺</span>
@@ -237,8 +257,6 @@ input:focus { border-color: var(--red); }
 
     <h2>Saman Chuno</h2>
     <div id="catalog"></div>
-    <div style="height:10px;"></div>
-    <button class="btn-primary" onclick="matchCart()">Sabse Sasti Dukan Dhoondo</button>
   </section>
 
   <section id="match-panel" class="panel hidden">
@@ -589,25 +607,72 @@ function onLoggedIn(data){
 function authHeaders(){ return {'Authorization': `Bearer ${token}`, 'Content-Type':'application/json'}; }
 
 // ---------------- CATALOG ----------------
+let cartNames = {};
+let pendingQty = {};
+
 async function loadCatalog(){
   const res = await fetch(`${API}/customer/items`, {headers: authHeaders()});
   catalogItems = await res.json();
   const el = document.getElementById('catalog');
   el.innerHTML = catalogItems.map(it => `
     <div class="item-card" data-name="${it.name}" data-category="${it.category || ''}">
-      <div class="icon">${iconFor(it.name)}</div>
-      <div class="name">${it.name}<div class="unit">${it.unit}</div></div>
-      <input type="number" min="0" step="0.5" placeholder="0" data-item="${it.id}" onchange="updateCart(${it.id}, this.value)" />
+      <span class="qty-float hidden" id="qty-float-${it.id}">0</span>
+      <div class="name">${it.name}</div>
+      <div class="qty-controls">
+        <button class="qty-btn minus" onclick="adjustPending(${it.id}, -1)">−</button>
+        <button class="qty-btn" onclick="adjustPending(${it.id}, 1)">+</button>
+      </div>
+      <button class="btn-buy" onclick="confirmBuy(${it.id}, '${it.name.replace(/'/g,"\\'")}')">Buy</button>
     </div>
   `).join('');
 }
 
-function updateCart(itemId, qty){
-  qty = parseFloat(qty);
-  if(!qty || qty <= 0){ delete cart[itemId]; return; }
-  cart[itemId] = qty;
+function adjustPending(itemId, delta){
+  const current = pendingQty[itemId] !== undefined ? pendingQty[itemId] : (cart[itemId] || 0);
+  const next = Math.max(0, current + delta);
+  pendingQty[itemId] = next;
+  const badge = document.getElementById(`qty-float-${itemId}`);
+  if(next > 0){
+    badge.innerText = next;
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
 }
 
+function confirmBuy(itemId, name){
+  const qty = pendingQty[itemId] || 0;
+  if(qty <= 0){ toast('Pehle + dabakar quantity chuno'); return; }
+  cart[itemId] = qty;
+  cartNames[itemId] = name;
+  renderFloatingCart();
+  toast(`${name} list mein add ho gaya!`);
+}
+
+function removeFromCart(itemId){
+  delete cart[itemId];
+  delete pendingQty[itemId];
+  const badge = document.getElementById(`qty-float-${itemId}`);
+  if(badge) badge.classList.add('hidden');
+  renderFloatingCart();
+}
+
+function renderFloatingCart(){
+  const wrap = document.getElementById('floating-cart');
+  const itemsEl = document.getElementById('floating-cart-items');
+  const entries = Object.entries(cart);
+  if(entries.length === 0){
+    wrap.classList.add('hidden');
+    return;
+  }
+  wrap.classList.remove('hidden');
+  itemsEl.innerHTML = entries.map(([id, qty]) => `
+    <div class="cart-chip">
+      ${cartNames[id] || 'Item'} × ${qty}
+      <span class="cart-remove" onclick="removeFromCart(${id})">✕</span>
+    </div>
+  `).join('');
+}
 // ---------------- MATCH CHEAPEST SHOP ----------------
 async function matchCart(){
   const lines = Object.entries(cart).map(([item_id, quantity]) => ({item_id: parseInt(item_id), quantity}));
