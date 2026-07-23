@@ -38,6 +38,7 @@
   }
   header h1{font-size:1.05rem; font-weight:800;} header h1 span{color:var(--orange);}
   .badge{background:rgba(255,255,255,.15); border-radius:20px; padding:6px 14px; font-size:.78rem; font-weight:600;}
+  .hdr-top{ display:flex; align-items:center; justify-content:space-between; }
   main{max-width:560px; margin:0 auto; padding:16px; padding-top:0;}
   .panel{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:16px; margin-bottom:14px; box-shadow:0 8px 24px rgba(179,34,29,.08);}
   .panel h2{font-size:1rem; margin-bottom:10px; color:var(--red-dark); font-weight:800;}
@@ -106,10 +107,12 @@
 </head>
 <body>
 
-<header>
-  <h1>Wait <span>🏪</span> · Dukandar</h1>
-  <div class="badge" id="user-badge">Guest</div>
-</header>
+  <header>
+    <div class="hdr-top" style="justify-content:center; position:relative;">
+      <h1 style="margin:0 auto; font-size:1.05rem;">Wait <span style="color:var(--orange)">🏪</span> · Dukandar</h1>
+      <button class="badge" id="user-badge" onclick="skipToGuest()" style="position:absolute; right:0;">Guest</button>
+    </div>
+  </header>
 
 <main>
   <div id="auth-panel" class="panel">
@@ -294,19 +297,32 @@ async function verifyOtp(){
   onLoggedIn(data);
 }
 
+let lastInvalidToastPhone = '';
 function updateGoogleButtonState(){
   const phone = document.getElementById('phone').value.trim();
   const validPhone = /^\d{6,15}$/.test(phone) && !/^(\d)\1+$/.test(phone);
-  const wrap = document.getElementById('g_id_signin_wrap');
+  const wrap = document.getElementById('google-btn-wrap');
+  const phoneBox = document.querySelector('.phone-box');
+  const label = document.querySelector('.floating-label');
   const hint = document.getElementById('phone-hint');
+
   if(validPhone){
     wrap.style.opacity = '1';
     wrap.style.pointerEvents = 'auto';
-    hint.innerText = 'Ab Google se login karo';
+    hint.innerText = 'Now continue with Google';
+    phoneBox.style.borderColor = 'var(--green-ok)';
+    label.style.color = 'var(--green-ok)';
+    lastInvalidToastPhone = '';
   } else {
     wrap.style.opacity = '0.4';
     wrap.style.pointerEvents = 'none';
-    hint.innerText = 'Number bharo, phir Google se login karo';
+    hint.innerText = 'Enter number, then continue with Google';
+    phoneBox.style.borderColor = '';
+    label.style.color = '';
+    if(phone.length >= 6 && phone !== lastInvalidToastPhone){
+      toast('Enter valid number');
+      lastInvalidToastPhone = phone;
+    }
   }
 }
 
@@ -604,6 +620,40 @@ const countries = [
 {flag:"vn",code:"+84",name:"Vietnam"},{flag:"ye",code:"+967",name:"Yemen"},{flag:"zm",code:"+260",name:"Zambia"},
 {flag:"zw",code:"+263",name:"Zimbabwe"}
 ];
+
+function renderCountryList(filter=""){
+  const items = document.getElementById('country-list-items');
+  const f = filter.toLowerCase();
+  const filtered = countries.filter(c => c.name.toLowerCase().includes(f) || c.code.includes(f));
+  items.innerHTML = filtered.map(c => `<div onclick="selectCountry('${c.flag}','${c.code}')"><img src="https://flagcdn.com/w20/${c.flag}.png"> ${c.code} ${c.name}</div>`).join('');
+}
+
+function toggleCountryList(){
+  const list = document.getElementById('country-list');
+  if(list.classList.contains('hidden')){
+    renderCountryList();
+    list.classList.remove('hidden');
+    document.getElementById('country-search').value = "";
+    document.getElementById('country-search').focus();
+  } else {
+    list.classList.add('hidden');
+  }
+}
+
+function selectCountry(flag, code){
+  document.getElementById('country-code-btn').innerHTML = `<img src="https://flagcdn.com/w20/${flag}.png"> ${code} ▾`;
+  document.getElementById('country-list').classList.add('hidden');
+}
+
+function skipToGuest(){
+  token = null; myUserId = null;
+  document.getElementById('user-badge').innerText = 'Guest User';
+  document.getElementById('auth-panel').classList.add('hidden');
+  document.getElementById('app-content').classList.remove('hidden');
+  loadOrders(); loadCatalogAndInventory();
+  toast('Guest mode active!');
+}
+
 // ---------------- WEBSOCKET ----------------
 function connectWS(){
   const wsUrl = API.replace('http', 'ws') + `/ws?token=${token}`;
