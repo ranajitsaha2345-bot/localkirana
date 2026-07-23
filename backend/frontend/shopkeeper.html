@@ -516,60 +516,7 @@ async function markReady(shopOrderId){
   loadOrders();
 }
 
-// ---------------- INVENTORY ----------------
-async function loadCatalogAndInventory(){
-  const res = await fetch(`${API}/shop/inventory`, {headers: authHeaders()});
-  const myItems = await res.json();
-  document.getElementById('inventory-list').innerHTML = myItems.map(it => `
-    <div class="item-check-row" id="shop-item-${it.shop_item_id}">
-      <span class="name">${it.name} <span class="hint">₹${it.price}/${it.unit}</span></span>
-      <input type="number" step="0.5" style="width:90px; margin:0;" placeholder="Price ₹" id="price-${it.item_id}" value="${it.price}" />
-      <button class="btn-outline btn-row" style="width:auto; padding:8px 12px;" onclick="saveInventory(${it.item_id})">Save</button>
-      <button class="avail-btn avail-no" style="width:auto; padding:8px 10px;" onclick="removeInventoryItem(${it.shop_item_id})">✕</button>
-    </div>`).join('') || '<div class="hint">Abhi koi item add nahi kiya. Upar se naya item banao.</div>';
-}
-
-async function removeInventoryItem(shopItemId){
-  const res = await fetch(`${API}/shop/inventory/${shopItemId}`, {method:'DELETE', headers: authHeaders()});
-  if(!res.ok){ toast(await res.text()); return; }
-  toast('Item list se hata diya gaya');
-  loadCatalogAndInventory();
-}
-
-async function createItem(){
-  if(!requireLogin()) return;
-  const name = document.getElementById('new-item-name').value.trim();
-  const unit = document.getElementById('new-item-unit').value;
-  const price = parseFloat(document.getElementById('new-item-price').value);
-  if(!name){ toast('Item naam daalo'); return; }
-  if(!price || price <= 0){ toast('Sahi price daalo'); return; }
-
-  const res = await fetch(`${API}/shop/items?name=${encodeURIComponent(name)}&unit=${encodeURIComponent(unit)}`, {method:'POST', headers: authHeaders()});
-  if(!res.ok){ toast(await res.text()); return; }
-  const newItem = await res.json();
-
-  const invRes = await fetch(`${API}/shop/inventory`, {
-    method:'POST', headers: authHeaders(),
-    body: JSON.stringify({item_id: newItem.id, price, in_stock: true})
-  });
-  if(!invRes.ok){ toast('Item bana, par price save nahi hua: ' + (await invRes.text())); return; }
-
-  toast('Item add ho gaya!');
-  document.getElementById('new-item-name').value = '';
-  document.getElementById('new-item-price').value = '';
-  loadCatalogAndInventory();
-}
-let openInventoryEditId = null;
-let myInventoryItems = [];
-
-async function loadCatalogAndInventory(){
-  const res = await fetch(`${API}/shop/inventory`, {headers: authHeaders()});
-  myInventoryItems = await res.json();
-  renderInventoryGrid();
-}
-
  
-
 // ---------------- PICKUP VERIFICATION ----------------
 let html5QrCode = null;
 
@@ -740,6 +687,68 @@ function toast(msg){
         .catch((err) => console.error('Service Worker Failed:', err));
     })
   }
+  async function loadCatalogAndInventory(){
+  await loadInventory();
+}
+
+async function loadInventory(){
+  const res = await fetch(`${API}/shop/inventory`, {headers: authHeaders()});
+  if(!res.ok) return;
+  const items = await res.json();
+  renderInventoryGrid(items);
+}
+
+function renderInventoryGrid(items){
+  const wrap = document.getElementById('inventory-list');
+  if(!items.length){
+    wrap.innerHTML = '<div class="hint">Abhi koi item add nahi kiya.</div>';
+    return;
+  }
+  wrap.innerHTML = items.map(i => `
+    <div class="inv-chip" style="position:relative;">
+      <span class="inv-price-badge">₹${i.price}</span>
+      <span class="inv-name">${i.name}</span>
+      <button class="inv-edit-btn" onclick="deleteInventoryItem(${i.shop_item_id})">Remove</button>
+    </div>
+  `).join('');
+}
+
+async function createItem(){
+  if(!requireLogin()) return;
+  const name = document.getElementById('new-item-name').value.trim();
+  const unit = document.getElementById('new-item-unit').value;
+  const price = parseFloat(document.getElementById('new-item-price').value);
+
+  if(!name){ toast('Item ka naam daalo'); return; }
+  if(!price || price <= 0){ toast('Sahi price daalo'); return; }
+
+  const itemRes = await fetch(`${API}/shop/items?name=${encodeURIComponent(name)}&unit=${encodeURIComponent(unit)}&category=general`, {
+    method: 'POST', headers: authHeaders()
+  });
+  if(!itemRes.ok){ toast('Item banane mein error: ' + (await itemRes.text())); return; }
+  const item = await itemRes.json();
+
+  const invRes = await fetch(`${API}/shop/inventory`, {
+    method: 'POST', headers: authHeaders(),
+    body: JSON.stringify({item_id: item.id, price, in_stock: true})
+  });
+  if(!invRes.ok){ toast('Price save nahi hua: ' + (await invRes.text())); return; }
+
+  toast('Item add ho gaya!');
+  document.getElementById('new-item-name').value = '';
+  document.getElementById('new-item-price').value = '';
+  loadInventory();
+}
+
+async function deleteInventoryItem(shopItemId){
+  if(!requireLogin()) return;
+  const res = await fetch(`${API}/shop/inventory/${shopItemId}`, {
+    method: 'DELETE', headers: authHeaders()
+  });
+  if(!res.ok){ toast('Remove nahi hua: ' + (await res.text())); return; }
+  toast('Item hata diya');
+  loadInventory();
+}
 </script>
 </body>
 </html>
