@@ -111,9 +111,11 @@ button:active{transform:scale(.97);}
 
 .qty-float{
   position:absolute; top:2px; right:2px; background:var(--red); color:#fff;
-  font-size:.6rem; font-weight:800; border-radius:50%; width:16px; height:16px;
+  font-size:.55rem; font-weight:800; border-radius:8px; padding:1px 5px;
+  min-width:16px; height:16px;
   display:flex; align-items:center; justify-content:center;
 }
+.item-card .unit-hint{ font-size:.5rem; color:var(--muted); margin-top:-2px; }
 .qty-controls{ display:flex; gap:4px; width:100%; justify-content:center; }
 .qty-btn{
   width:20px; height:20px; padding:0; font-size:.75rem; border-radius:6px;
@@ -340,6 +342,34 @@ const CATEGORIES = [
   {icon:'🍵', label:'Chai/Coffee', keyword:'chai'},
   {icon:'🍪', label:'Snacks', keyword:'biskut'}
 ];
+const UNIT_CONFIG = [
+  {kw:['dal','chawal','atta','chini','namak','masala','haldi','mirch','jeera'], step:250, base:'g', pricing_unit:'kg'},
+  {kw:['tel','oil','ghee','doodh','dahi'], step:250, base:'ml', pricing_unit:'litre'},
+];
+function getUnitConfig(name){
+  const n = name.toLowerCase();
+  for(const u of UNIT_CONFIG){
+    if(u.kw.some(k => n.includes(k))) return u;
+  }
+  return {step:1, base:'pcs', pricing_unit:'pcs'};
+}
+function formatQty(amount, cfg){
+  if(cfg.base === 'g'){
+    return amount >= 1000 ? `${(amount/1000).toFixed(amount % 1000 === 0 ? 0 : 1)}kg` : `${amount}g`;
+  }
+  if(cfg.base === 'ml'){
+    return amount >= 1000 ? `${(amount/1000).toFixed(amount % 1000 === 0 ? 0 : 1)}l` : `${amount}ml`;
+  }
+  return `${amount} pc${amount > 1 ? 's' : ''}`;
+}
+// Backend ko bhejne layak quantity nikalne ke liye
+function toBackendQty(amount, name){
+  const cfg = getUnitConfig(name);
+  if(cfg.pricing_unit === 'kg' || cfg.pricing_unit === 'litre'){
+    return +(amount / 1000).toFixed(3); // 250g -> 0.25 kg
+  }
+  return amount; // pcs items same rahenge
+}
 function renderCategories(){
   const row = document.getElementById('cat-row');
   if(!row) return;
@@ -632,26 +662,32 @@ async function loadCatalog(){
   const res = await fetch(`${API}/customer/items`, {headers: authHeaders()});
   catalogItems = await res.json();
   const el = document.getElementById('catalog');
-  el.innerHTML = catalogItems.map(it => `
+  el.innerHTML = catalogItems.map(it => {
+    const cfg = getUnitConfig(it.name);
+    const hint = cfg.base === 'pcs' ? `${cfg.step}pc/click` : `${cfg.step}${cfg.base}/click`;
+    return `
     <div class="item-card" data-name="${it.name}" data-category="${it.category || ''}">
       <span class="qty-float hidden" id="qty-float-${it.id}">0</span>
       <div class="name">${it.name}</div>
+      <div class="unit-hint">${hint}</div>
       <div class="qty-controls">
-        <button class="qty-btn minus" onclick="adjustPending(${it.id}, -1)">−</button>
-        <button class="qty-btn" onclick="adjustPending(${it.id}, 1)">+</button>
+        <button class="qty-btn minus" onclick="adjustPending(${it.id}, -1, '${it.name.replace(/'/g,"\\'")}')">−</button>
+        <button class="qty-btn" onclick="adjustPending(${it.id}, 1, '${it.name.replace(/'/g,"\\'")}')">+</button>
       </div>
       <button class="btn-buy" onclick="confirmBuy(${it.id}, '${it.name.replace(/'/g,"\\'")}')">Add</button>
     </div>
-  `).join('');
+  `;
+  }).join('');
 }
 
-function adjustPending(itemId, delta){
+function adjustPending(itemId, delta, itemName){
+  const cfg = getUnitConfig(itemName);
   const current = pendingQty[itemId] !== undefined ? pendingQty[itemId] : (cart[itemId] || 0);
-  const next = Math.max(0, current + delta);
+  const next = Math.max(0, current + delta * cfg.step);
   pendingQty[itemId] = next;
   const badge = document.getElementById(`qty-float-${itemId}`);
   if(next > 0){
-    badge.innerText = next;
+    badge.innerText = formatQty(next, cfg);
     badge.classList.remove('hidden');
   } else {
     badge.classList.add('hidden');
@@ -664,7 +700,8 @@ function confirmBuy(itemId, name){
   cart[itemId] = qty;
   cartNames[itemId] = name;
   renderFloatingCart();
-  toast(`${name} list mein add ho gaya!`);
+  const cfg = getUnitConfig(name);
+  toast(`${name} — ${formatQty(qty, cfg)} add ho gaya!`);
 }
 
 function removeFromCart(itemId){
@@ -684,16 +721,23 @@ function renderFloatingCart(){
     return;
   }
   wrap.classList.remove('hidden');
-  itemsEl.innerHTML = entries.map(([id, qty]) => `
+  itemsEl.innerHTML = entries.map(([id, qty]) => {
+    const name = cartNames[id] || 'Item';
+    const cfg = getUnitConfig(name);
+    return `
     <div class="cart-chip">
-      ${cartNames[id] || 'Item'} × ${qty}
+      ${name} × ${formatQty(qty, cfg)}
       <span class="cart-remove" onclick="removeFromCart(${id})">✕</span>
     </div>
-  `).join('');
+  `;
+  }).join('');
 }
 // ---------------- MATCH CHEAPEST SHOP ----------------
 async function matchCart(){
-  const lines = Object.entries(cart).map(([item_id, quantity]) => ({item_id: parseInt(item_id), quantity}));
+  const lines = Object.entries(cart).map(([item_id, quantity]) => ({
+    item_id: parseInt(item_id),
+    quantity: toBackendQty(quantity, cartNames[item_id])
+  }));
   if(lines.length === 0){ toast('Pehle kuch saman chuno'); return; }
 
   navigator.geolocation.getCurrentPosition(async (pos) => {
@@ -737,7 +781,10 @@ async function doMatch(lines, lat, lng){
 
 // ---------------- PLACE ORDER ----------------
 async function placeOrder(){
-  const lines = Object.entries(cart).map(([item_id, quantity]) => ({item_id: parseInt(item_id), quantity}));
+  const lines = Object.entries(cart).map(([item_id, quantity]) => ({
+    item_id: parseInt(item_id),
+    quantity: toBackendQty(quantity, cartNames[item_id])
+  }));
   const res = await fetch(`${API}/customer/orders`, {
     method:'POST', headers: authHeaders(),
     body: JSON.stringify({lines, latitude: window._lastLat, longitude: window._lastLng})
