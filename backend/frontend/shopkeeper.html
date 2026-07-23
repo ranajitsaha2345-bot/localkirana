@@ -78,6 +78,7 @@
 }
 .inventory-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap:6px; align-items:stretch; }
 .inv-price-badge{ position:absolute; top:4px; left:4px; background:var(--green-ok); color:#fff; font-size:.62rem; font-weight:700; padding:2px 6px; border-radius:6px; z-index:1; }
+.inv-remove-x{ position:absolute; top:4px; right:4px; width:20px; height:20px; background:var(--red); color:#fff; border:none; border-radius:50%; font-size:.75rem; font-weight:800; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:2; }
 .inv-chip{ background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:20px 4px 6px; text-align:center; display:flex; flex-direction:column; justify-content:space-between; min-height:70px; }
 .inv-chip .inv-name{ font-size:.68rem; font-weight:600; display:block; margin-bottom:4px; overflow-wrap:break-word; word-break:break-word; white-space:normal; line-height:1.2; }
 .inv-edit-btn{ width:100%; padding:5px 2px; font-size:.68rem; background:#fff; border:1.5px solid var(--red); color:var(--red-dark); border-radius:7px; margin-top:auto; }
@@ -116,6 +117,15 @@
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
+  let editingShopItemId = null;
+
+function editInventoryItem(shopItemId, name, price){
+  editingShopItemId = shopItemId;
+  document.getElementById('new-item-name').value = name;
+  document.getElementById('new-item-price').value = price;
+  document.querySelector('.ai-save').innerText = 'Update';
+  document.getElementById('new-item-name').scrollIntoView({behavior:'smooth', block:'center'});
+}
   window.onload = function() {
     google.accounts.id.initialize({
       client_id: "331552152118-9kbvonm08obtu4fjepnvc46b4lkdjid8.apps.googleusercontent.com",
@@ -707,8 +717,9 @@ function renderInventoryGrid(items){
   wrap.innerHTML = items.map(i => `
     <div class="inv-chip" style="position:relative;">
       <span class="inv-price-badge">₹${i.price}</span>
+      <button class="inv-remove-x" onclick="deleteInventoryItem(${i.shop_item_id})">✕</button>
       <span class="inv-name">${i.name}</span>
-      <button class="inv-edit-btn" onclick="deleteInventoryItem(${i.shop_item_id})">Remove</button>
+      <button class="inv-edit-btn" onclick="editInventoryItem(${i.shop_item_id}, '${i.name.replace(/'/g,"\\'")}', ${i.price})">Edit</button>
     </div>
   `).join('');
 }
@@ -722,6 +733,13 @@ async function createItem(){
   if(!name){ toast('Item ka naam daalo'); return; }
   if(!price || price <= 0){ toast('Sahi price daalo'); return; }
 
+  if(editingShopItemId){
+    const delRes = await fetch(`${API}/shop/inventory/${editingShopItemId}`, {
+      method: 'DELETE', headers: authHeaders()
+    });
+    if(!delRes.ok){ toast('Update nahi hua: ' + (await delRes.text())); return; }
+  }
+
   const itemRes = await fetch(`${API}/shop/items?name=${encodeURIComponent(name)}&unit=${encodeURIComponent(unit)}&category=general`, {
     method: 'POST', headers: authHeaders()
   });
@@ -734,9 +752,11 @@ async function createItem(){
   });
   if(!invRes.ok){ toast('Price save nahi hua: ' + (await invRes.text())); return; }
 
-  toast('Item add ho gaya!');
+  toast(editingShopItemId ? 'Item update ho gaya!' : 'Item add ho gaya!');
   document.getElementById('new-item-name').value = '';
   document.getElementById('new-item-price').value = '';
+  document.querySelector('.ai-save').innerText = 'Save';
+  editingShopItemId = null;
   loadInventory();
 }
 
