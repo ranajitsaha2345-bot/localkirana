@@ -112,6 +112,12 @@
   .tabbar{display:flex; gap:8px; margin-bottom:14px;}
   .tabbar button{flex:1; background:#fff; border:1px solid var(--line); color:var(--ink);}
   .tabbar button.active{background: linear-gradient(135deg, var(--red), var(--red-dark)); color:#fff; border-color:var(--red);}
+  .tabbar button{ position:relative; }
+.tab-badge{
+  position:absolute; top:-6px; right:-6px; background:#FF3B30; color:#fff;
+  font-size:.68rem; font-weight:800; min-width:18px; height:18px; border-radius:9px;
+  display:flex; align-items:center; justify-content:center; padding:0 4px;
+}
   .auth-heading{ color:var(--ink); font-size:1.25rem; font-weight:800; margin-bottom:14px; }
 </style>
 
@@ -175,7 +181,7 @@ function editInventoryItem(shopItemId, name, price){
   <div id="app-content" class="hidden">
     <div class="tabbar">
       <button id="tab-inventory" onclick="switchTab('inventory')">Inventory</button>
-      <button id="tab-orders" class="active" onclick="switchTab('orders')">Orders</button>
+      <button id="tab-orders" class="active" onclick="switchTab('orders')">Orders <span id="orders-badge" class="tab-badge hidden">0</span></button>
       <button id="tab-scan" onclick="switchTab('scan')">Pickup Verify</button>
       <button id="tab-myqr" onclick="switchTab('myqr')">Meri Dukan QR</button>
     </div>
@@ -235,6 +241,18 @@ function editInventoryItem(shopItemId, name, price){
 <script>
 const API = "https://localkirana-production.up.railway.app";
 let token = null, myUserId = null, ws = null;
+let unreadOrders = 0;
+
+function updateOrdersBadge(){
+  const badge = document.getElementById('orders-badge');
+  if(unreadOrders > 0){
+    badge.innerText = unreadOrders > 99 ? '99+' : unreadOrders;
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
+}
+
 let isSignupMode = false;
 
 function togglePasswordVisibility(){
@@ -442,6 +460,10 @@ function switchTab(name){
     document.getElementById(`tab-content-${t}`).classList.toggle('hidden', t !== name);
     document.getElementById(`tab-${t}`).classList.toggle('active', t === name);
   });
+  if(name === 'orders'){
+    unreadOrders = 0;
+    updateOrdersBadge();
+  }
   if(name === 'myqr') loadMyShopQR();
 }
 
@@ -668,7 +690,12 @@ function connectWS(){
   ws = new WebSocket(wsUrl);
   ws.onmessage = (msg) => {
     const {event, data} = JSON.parse(msg.data);
-    if(event === 'new_order'){ toast('New order received!'); loadOrders(); }
+    if(event === 'new_order'){
+      unreadOrders++;
+      updateOrdersBadge();
+      toast('New order received!');
+      loadOrders();
+    }
     else if(event === 'order_completed'){ toast(`Order delivered to ${data.customer_name}`); loadOrders(); }
   };
   ws.onclose = () => setTimeout(connectWS, 3000);
