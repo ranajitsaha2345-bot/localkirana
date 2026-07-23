@@ -211,16 +211,10 @@ function editInventoryItem(shopItemId, name, price){
       <section class="panel">
         <h2>Confirm Pickup</h2>
 
-        <label>Order ID</label>
-        <input id="scan-order-id" placeholder="Enter Order ID" />
-
         <label>Code Given by Customer</label>
         <input id="code-input" maxlength="4" placeholder="1234" />
 
-        <button class="btn-accent" onclick="verifyByCode()">Confirm with Code</button>
-
-        <div id="qr-reader"></div>
-        <button class="btn-outline" style="width:100%; margin-top:10px;" onclick="startScanner()">Scan QR</button>
+        <button class="btn-accent" style="margin-top:10px;" onclick="verifyByCode()">Verify with Code</button>
       </section>
     </div>
 
