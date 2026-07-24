@@ -823,14 +823,19 @@ function renderOrderCard(so){
       <span>₹${(i.unit_price * i.quantity).toFixed(2)}</span>
     </div>`).join('');
 
-  let actionHtml = '';
-  if(so.status === 'awaiting_payment'){
+    let actionHtml = '';
+if(so.status === 'awaiting_payment'){
     actionHtml = `
       <div style="display:flex; gap:8px; margin-top:10px;">
         <button class="btn-primary" style="flex:1" onclick="payOnline(${so.id}, ${so.amount})">Online Payment</button>
         <button class="btn-outline" style="flex:1" onclick="payCash(${so.id})">Cash</button>
       </div>
       <div class="hint">Cash on pickup 10 online orders ke baad unlock hota hai.</div>`;
+  } else if(so.status === 'confirmed'){
+    actionHtml = `
+      <div class="hint" style="margin-top:10px; text-align:center; font-weight:600; color:var(--red-dark);">
+        ⏳ Payment ho gaya! Dukandar aapka order taiyar kar raha hai — ready hote hi aapko notification milega.
+      </div>`;
   } else if(so.status === 'ready'){
     actionHtml = `
       <div id="qr-box-${so.id}" style="text-align:center; margin-top:10px;"></div>
@@ -878,7 +883,7 @@ async function payOnline(shopOrderId, amount){
           razorpay_signature: response.razorpay_signature
         })
       });
-      if(verifyRes.ok){ toast('Payment ho gaya! ✅'); } else { toast('Payment verify nahi hua'); }
+      if(verifyRes.ok){ toast('Payment ho gaya! ✅'); refreshOrders(); } else { toast('Payment verify nahi hua'); }
     },
     theme: { color: "#E6372F" }
   };
