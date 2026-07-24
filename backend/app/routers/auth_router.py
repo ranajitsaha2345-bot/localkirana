@@ -50,6 +50,10 @@ def google_login(payload: GoogleLogin, db: Session = Depends(get_db)):
         )
 
     if not user:
+        if payload.phone:
+            phone_conflict = db.query(models.User).filter(models.User.phone == payload.phone).first()
+            if phone_conflict:
+                raise HTTPException(400, "Yeh phone number pehle se kisi aur account se registered hai")
         user = models.User(
             name=name,
             phone=payload.phone,
