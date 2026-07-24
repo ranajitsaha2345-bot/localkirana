@@ -379,7 +379,7 @@ function formatQty(amount, cfg){
   return `${amount} pc${amount > 1 ? 's' : ''}`;
 }
 // Backend ko bhejne layak quantity nikalne ke liye
-function toBackendQty(amount, name){
+function toBackendQtyByName(amount, name){
   const cfg = getUnitConfig(name);
   if(cfg.pricing_unit === 'kg' || cfg.pricing_unit === 'litre'){
     return +(amount / 1000).toFixed(3); // 250g -> 0.25 kg
