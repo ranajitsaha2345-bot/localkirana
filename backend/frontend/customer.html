@@ -257,9 +257,11 @@ input:focus { border-color: var(--red); }
     <!-- ============ FLOATING CART (TOP) ============ -->
     <div id="floating-cart" class="floating-cart hidden">
       <div id="floating-cart-items" class="floating-cart-items"></div>
+      <div style="display:flex; justify-content:flex-end; margin-bottom:6px;">
+        <span id="floating-cart-total" style="font-weight:800; color:var(--red-dark); font-size:1.05rem;">₹0</span>
+      </div>
       <button class="btn-primary" onclick="matchCart()">Pay</button>
     </div>
-
     <div class="hero-wrap">
       <div class="hero-card">
         <span class="hero-emoji">🧺</span>
@@ -736,6 +738,8 @@ function renderFloatingCart(){
   const entries = Object.entries(cart);
   if(entries.length === 0){
     wrap.classList.add('hidden');
+    const totalEl = document.getElementById('floating-cart-total');
+    if(totalEl) totalEl.innerText = '₹0';
     return;
   }
   wrap.classList.remove('hidden');
@@ -748,6 +752,31 @@ function renderFloatingCart(){
     </div>
   `;
   }).join('');
+  updateFloatingCartTotal();
+}
+
+async function updateFloatingCartTotal(){
+  const totalEl = document.getElementById('floating-cart-total');
+  if(!totalEl) return;
+  const entries = Object.entries(cart);
+  if(entries.length === 0){ totalEl.innerText = '₹0'; return; }
+
+  const lines = entries.map(([item_id, quantity]) => {
+    const info = getUnitInfo(itemUnitById[item_id]);
+    return { item_id: parseInt(item_id), quantity: toBackendQty(quantity, info) };
+  });
+
+  try{
+    const res = await fetch(`${API}/customer/cart/match`, {
+      method:'POST', headers: authHeaders(),
+      body: JSON.stringify({lines, latitude: null, longitude: null})
+    });
+    if(!res.ok) return;
+    const data = await res.json();
+    totalEl.innerText = `₹${data.grand_total.toFixed(2)}`;
+  } catch(err){
+    // silent fail — final total to match-panel pe already sahi dikhega
+  }
 }
 // ---------------- MATCH CHEAPEST SHOP ----------------
 async function matchCart(){
