@@ -771,6 +771,7 @@ function confirmBuy(itemId, name){
   cartNames[itemId] = name;
   renderFloatingCart();
   const info = getUnitInfo(itemUnitById[itemId]);
+  queueCheapestShopCheck(itemId, qty, info);
   toast(`${name} — ${formatQty(qty, info)} iteam add!`);
 }
 function removeFromCart(itemId){
@@ -796,9 +797,9 @@ function renderFloatingCart(){
     const info = getUnitInfo(itemUnitById[id]);
     return `
     <div class="cart-chip">
-      ${cartNames[id] || 'Item'} × ${formatQty(qty, info)}
-      <span class="cart-remove" onclick="removeFromCart(${id})">✕</span>
-    </div>
+  <span>${cartNames[id] || 'Item'} > ${formatQty(qty, info)} <small style="opacity:0.8;">(${checkCheapestShopCheck(id, qty, info) || 'Sasti Dukan Dhoond Raha Hai...'})</small></span>
+  <span class="cart-remove" onclick="removeFromCart('${id}')">✕</span>
+</div>
   `;
   }).join('');
   updateFloatingCartTotal();
