@@ -720,7 +720,7 @@ function confirmBuy(itemId, name){
   cartNames[itemId] = name;
   renderFloatingCart();
   const info = getUnitInfo(itemUnitById[itemId]);
-  toast(`${name} — ${formatQty(qty, info)} add ho gaya!`);
+  toast(`${name} — ${formatQty(qty, info)} iteam add!`);
 }
 function removeFromCart(itemId){
   delete cart[itemId];
