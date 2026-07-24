@@ -39,9 +39,20 @@ def google_login(payload: GoogleLogin, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.google_id == google_id).first()
     if not user and email:
         user = db.query(models.User).filter(models.User.email == email).first()
+user = db.query(models.User).filter(models.User.google_id == google_id).first()
+    if not user and email:
+        user = db.query(models.User).filter(models.User.email == email).first()
+
+    requested_role = models.UserRole.shopkeeper if payload.role == "shopkeeper" else models.UserRole.customer
+
+    if user and user.role != requested_role:
+        raise HTTPException(
+            400,
+            f"Yeh Gmail already ek {user.role.value} account se registered hai. "
+            f"{requested_role.value} account ke liye alag Gmail use karo."
+        )
 
     if not user:
-        requested_role = models.UserRole.shopkeeper if payload.role == "shopkeeper" else models.UserRole.customer
         user = models.User(
             name=name,
             phone=payload.phone,
