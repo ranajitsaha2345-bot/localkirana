@@ -584,17 +584,9 @@ async function handleGoogleLogin(response) {
     const data = await res.json();
     if (!res.ok) { toast(data.detail || 'Google login mein dikkat aayi'); return; }
 
-    token = data.access_token;
-    myRole = data.role;
-    myUserId = data.user_id;
-    localStorage.setItem('access_token', token);
+    localStorage.setItem('access_token', data.access_token);
     localStorage.removeItem('is_guest');
-    document.getElementById('user-badge').innerText = data.name || 'User';
-
-    document.getElementById('auth-panel').classList.add('hidden');
-    document.getElementById('shop-panel').classList.remove('hidden');
-    renderCategories();
-    loadCatalog();
+    onLoggedIn(data);
   } catch (err) {
     toast('Google login fail ho gaya, dobara try karo');
   }
