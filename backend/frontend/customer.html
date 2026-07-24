@@ -47,8 +47,9 @@ header .sub{ font-size:.78rem; opacity:.75; margin-top:2px; }
 .back-btn{
   position:absolute; left:0; top:50%; transform:translateY(-50%);
   background:rgba(255,255,255,.15); border:none; color:#fff; width:34px; height:34px;
-  border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.2rem;
+  border-radius:50%; display:none; align-items:center; justify-content:center; cursor:pointer; font-size:1.2rem;
 }
+.back-btn.show{ display:flex; }
 main{max-width:520px; margin:0 auto; padding:16px; padding-top:0;}
 .panel{
   background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
@@ -537,7 +538,8 @@ function skipToGuest() {
   localStorage.setItem("is_guest", "true");
   localStorage.removeItem("access_token");
   document.getElementById('user-badge').innerText = "Guest User";
-
+  document.querySelector('.back-btn').classList.add('show');
+ 
   panelStack = ['shop-panel'];
   applyPanel('shop-panel');
 
@@ -657,6 +659,7 @@ function showStep1() {
 function onLoggedIn(data){
   token = data.access_token; myRole = data.role; myUserId = data.user_id;
   document.getElementById('user-badge').innerText = `${data.name} · ${data.role}`;
+  document.querySelector('.back-btn').classList.add('show');
   panelStack = ['shop-panel'];
   applyPanel('shop-panel');
   document.getElementById('order-tracker').classList.remove('hidden');
