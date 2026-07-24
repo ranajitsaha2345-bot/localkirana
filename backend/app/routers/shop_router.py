@@ -1,6 +1,7 @@
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from .. import models, schemas, auth
 from ..database import get_db
@@ -52,10 +53,13 @@ def create_master_item(name: str, unit: str = "unit", category: str = "general",
                         db: Session = Depends(get_db),
                         user: models.User = Depends(require_shopkeeper)):
     """Agar catalog mein item pehle se nahi hai (jaise 'dal', 'chini'), to yeh banata hai."""
-    existing = db.query(models.Item).filter(models.Item.name == name).first()
+    clean_name = name.strip()
+    existing = db.query(models.Item).filter(
+        func.lower(models.Item.name) == clean_name.lower()
+    ).first()
     if existing:
         return existing
-    item = models.Item(name=name, unit=unit, category=category)
+    item = models.Item(name=clean_name, unit=unit, category=category)
     db.add(item)
     db.commit()
     db.refresh(item)
