@@ -538,8 +538,8 @@ function skipToGuest() {
   localStorage.removeItem("access_token");
   document.getElementById('user-badge').innerText = "Guest User";
 
-  document.getElementById('auth-panel').classList.add('hidden');
-  document.getElementById('shop-panel').classList.remove('hidden');
+  panelStack = ['shop-panel'];
+  applyPanel('shop-panel');
 
   renderCategories();
   toast('Guest mode active! Order ke liye login zaroori hoga.');
@@ -657,8 +657,8 @@ function showStep1() {
 function onLoggedIn(data){
   token = data.access_token; myRole = data.role; myUserId = data.user_id;
   document.getElementById('user-badge').innerText = `${data.name} · ${data.role}`;
-  document.getElementById('auth-panel').classList.add('hidden');
-  document.getElementById('shop-panel').classList.remove('hidden');
+  panelStack = ['shop-panel'];
+  applyPanel('shop-panel');
   document.getElementById('order-tracker').classList.remove('hidden');
   document.getElementById('shop-scan-panel').classList.remove('hidden');
   renderCategories();
@@ -782,7 +782,7 @@ async function doMatch(lines, lat, lng){
 
   document.getElementById('shop-panel').classList.add('hidden');
   document.getElementById('shop-panel').classList.add('hidden');
-  document.getElementById('match-panel').classList.remove('hidden');
+  showPanel('match-panel');
   document.getElementById('match-lines').innerHTML = matchedLines.map(l => l.available ? `
     <div class="receipt-line">
       <span>${l.item_name} × ${l.quantity}<br><span class="shop">📍 ${l.shop_name} — ₹${l.unit_price}/unit</span></span>
@@ -809,7 +809,7 @@ async function placeOrder(){
   if(!res.ok){ toast('Order nahi ban paya: ' + (await res.text())); return; }
   const shopOrders = await res.json();
   activeShopOrderIds = shopOrders.map(so => so.id);
-  document.getElementById('match-panel').classList.add('hidden');
+  goBack();
   shopOrders.forEach(renderOrderCard);
   toast('Order dukandar ko bhej diya gaya!');
 }
@@ -967,11 +967,27 @@ function startShopScanner(){
   );
 }
 
+let panelStack = ['auth-panel'];
+
+function showPanel(panelId){
+  panelStack.push(panelId);
+  applyPanel(panelId);
+}
+
+function applyPanel(panelId){
+  ['auth-panel','shop-panel','match-panel'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.classList.toggle('hidden', id !== panelId);
+  });
+}
+
 function goBack(){
-  if(window.history.length > 1){
-    window.history.back();
+  if(panelStack.length > 1){
+    panelStack.pop();
+    const prev = panelStack[panelStack.length - 1];
+    applyPanel(prev);
   } else {
-    location.reload();
+    toast('Yeh pehla panel hai');
   }
 }
 
