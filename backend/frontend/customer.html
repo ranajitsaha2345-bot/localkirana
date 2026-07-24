@@ -210,6 +210,14 @@ input:focus { border-color: var(--red); }
   background:var(--red); color:#fff; width:16px; height:16px; border-radius:50%;
   display:flex; align-items:center; justify-content:center; font-size:.65rem; cursor:pointer; font-weight:800; flex-shrink:0;
 }
+.item-card{ position:relative; }
+.item-shop-badge{
+  position:absolute; top:-8px; left:50%; transform:translateX(-50%);
+  background:var(--plum); color:#fff; font-size:.5rem; font-weight:700;
+  padding:2px 6px; border-radius:8px; white-space:nowrap; max-width:90%;
+  overflow:hidden; text-overflow:ellipsis; z-index:3; display:none;
+}
+.item-shop-badge.visible{ display:block; }
 .pay-total-badge{
   position:absolute; top:-8px; right:-6px;
   background:var(--green-ok); color:#fff;
@@ -696,6 +704,7 @@ async function loadCatalog(){
     const hint = info.base === 'pcs' ? `1 pc/click` : `${info.step}${info.base}/click`;
     return `
     <div class="item-card" data-name="${it.name}" data-category="${it.category || ''}">
+      <span class="item-shop-badge" id="shop-badge-${it.id}"></span>
       <span class="qty-float hidden" id="qty-float-${it.id}">0</span>
       <div class="name">${it.name}</div>
       <div class="unit-hint">${hint}</div>
@@ -709,18 +718,50 @@ async function loadCatalog(){
   }).join('');
 }
 
+let shopCheckTimers = {};
+
 function adjustPending(itemId, delta){
   const info = getUnitInfo(itemUnitById[itemId]);
   const current = pendingQty[itemId] !== undefined ? pendingQty[itemId] : (cart[itemId] || 0);
   const next = Math.max(0, current + delta * info.step);
   pendingQty[itemId] = next;
   const badge = document.getElementById(`qty-float-${itemId}`);
+  const shopBadge = document.getElementById(`shop-badge-${itemId}`);
   if(next > 0){
     badge.innerText = formatQty(next, info);
     badge.classList.remove('hidden');
+    queueCheapestShopCheck(itemId, next, info);
   } else {
     badge.classList.add('hidden');
+    if(shopBadge) shopBadge.classList.remove('visible');
   }
+}
+
+function queueCheapestShopCheck(itemId, displayQty, info){
+  clearTimeout(shopCheckTimers[itemId]);
+  shopCheckTimers[itemId] = setTimeout(async () => {
+    const shopBadge = document.getElementById(`shop-badge-${itemId}`);
+    if(!shopBadge) return;
+    try{
+      const res = await fetch(`${API}/customer/cart/match`, {
+        method:'POST', headers: authHeaders(),
+        body: JSON.stringify({
+          lines: [{ item_id: itemId, quantity: toBackendQty(displayQty, info) }],
+          latitude: null, longitude: null
+        })
+      });
+      if(!res.ok) return;
+      const data = await res.json();
+      const line = data.lines[0];
+      if(line.available){
+        shopBadge.innerText = `📍 ${line.shop_name}`;
+        shopBadge.classList.add('visible');
+      } else {
+        shopBadge.innerText = `❌ Available nahi`;
+        shopBadge.classList.add('visible');
+      }
+    } catch(err){ /* silent */ }
+  }, 400); // thoda debounce taaki har click pe call na ho
 }
 
 function confirmBuy(itemId, name){
