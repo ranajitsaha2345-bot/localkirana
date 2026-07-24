@@ -163,7 +163,9 @@ def create_payment(
         raise HTTPException(404, "Order nahi mila")
     if so.status != models.ShopOrderStatus.awaiting_payment:
         raise HTTPException(400, "Yeh order payment ke liye taiyar nahi hai - dukandar abhi items check kar raha hai")
-
+    
+    if so.amount < 1:
+        raise HTTPException(400, "Order amount kam se kam ₹1 hona chahiye online payment ke liye")
     rp_order = payment.create_razorpay_order(so.amount, receipt=f"shop_order_{so.id}")
     so.razorpay_order_id = rp_order["id"]
     so.payment_mode = models.PaymentMode.online
