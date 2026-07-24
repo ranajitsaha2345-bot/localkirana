@@ -736,7 +736,7 @@ function renderInventoryGrid(items){
   }
   wrap.innerHTML = items.map(i => `
     <div class="inv-chip" style="position:relative;">
-      <span class="inv-price-badge">₹${i.price}</span>
+      <span class="inv-price-badge">Price: ${i.price}</span>
       <button class="inv-remove-x" onclick="deleteInventoryItem(${i.shop_item_id})">✕</button>
       <span class="inv-name">${i.name}</span>
       <button class="inv-edit-btn" onclick="editInventoryItem(${i.shop_item_id}, '${i.name.replace(/'/g,"\\'")}', ${i.price})">Edit</button>
