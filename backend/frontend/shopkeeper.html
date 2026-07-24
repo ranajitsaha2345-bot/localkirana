@@ -461,7 +461,9 @@ function requireLogin(){
   document.getElementById('auth-panel').classList.remove('hidden');
   return false;
 }
-function switchTab(name){
+let tabStack = ['orders'];
+
+function switchTab(name, fromBack){
   ['orders','inventory','scan','myqr'].forEach(t => {
     document.getElementById(`tab-content-${t}`).classList.toggle('hidden', t !== name);
     document.getElementById(`tab-${t}`).classList.toggle('active', t === name);
@@ -471,6 +473,20 @@ function switchTab(name){
     updateOrdersBadge();
   }
   if(name === 'myqr') loadMyShopQR();
+
+  if(!fromBack){
+    tabStack.push(name);
+  }
+}
+
+function goBack(){
+  if(tabStack.length > 1){
+    tabStack.pop();
+    const prev = tabStack[tabStack.length - 1];
+    switchTab(prev, true);
+  } else {
+    toast('Yeh pehla tab hai');
+  }
 }
 
 let myShopQRLoaded = false;
@@ -705,13 +721,6 @@ function connectWS(){
     else if(event === 'order_completed'){ toast(`Order delivered to ${data.customer_name}`); loadOrders(); }
   };
   ws.onclose = () => setTimeout(connectWS, 3000);
-}
-function goBack(){
-  if(window.history.length > 1){
-    window.history.back();
-  } else {
-    location.reload();
-  }
 }
 
 function toast(msg){
