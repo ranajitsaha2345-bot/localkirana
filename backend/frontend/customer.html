@@ -257,7 +257,7 @@ input:focus { border-color: var(--red); }
     <!-- ============ FLOATING CART (TOP) ============ -->
     <div id="floating-cart" class="floating-cart hidden">
       <div id="floating-cart-items" class="floating-cart-items"></div>
-      <button class="btn-primary" onclick="matchCart()">send order shop</button>
+      <button class="btn-primary" onclick="matchCart()">Confirm</button>
     </div>
 
     <div class="hero-wrap">
@@ -782,6 +782,8 @@ async function doMatch(lines, lat, lng){
   matchedLines = data.lines;
   window._lastLat = lat; window._lastLng = lng;
 
+  document.getElementById('shop-panel').classList.add('hidden');
+  document.getElementById('shop-panel').classList.add('hidden');
   document.getElementById('match-panel').classList.remove('hidden');
   document.getElementById('match-lines').innerHTML = matchedLines.map(l => l.available ? `
     <div class="receipt-line">
