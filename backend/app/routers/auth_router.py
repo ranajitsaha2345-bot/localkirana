@@ -39,9 +39,6 @@ def google_login(payload: GoogleLogin, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.google_id == google_id).first()
     if not user and email:
         user = db.query(models.User).filter(models.User.email == email).first()
-user = db.query(models.User).filter(models.User.google_id == google_id).first()
-    if not user and email:
-        user = db.query(models.User).filter(models.User.email == email).first()
 
     requested_role = models.UserRole.shopkeeper if payload.role == "shopkeeper" else models.UserRole.customer
 
