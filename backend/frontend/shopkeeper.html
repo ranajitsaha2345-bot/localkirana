@@ -134,14 +134,25 @@ input:checked + .slider:before{ transform:translateX(24px); }
   .hidden{display:none !important;}
   .toast{position:fixed; bottom:16px; left:50%; transform:translateX(-50%); background:var(--plum); color:#fff; padding:10px 18px; border-radius:30px; font-size:.85rem; z-index:50; box-shadow:0 4px 14px rgba(0,0,0,.25);}
   #qr-reader{width:100%; margin-top:10px;}
-  .tabbar{display:flex; gap:8px; margin-bottom:14px;}
-  .tabbar button{flex:1; background:#fff; border:1px solid var(--line); color:var(--ink);}
-  .tabbar button.active{background: linear-gradient(135deg, var(--red), var(--red-dark)); color:#fff; border-color:var(--red);}
+  .tabbar{
+  position:fixed; bottom:0; left:0; right:0; z-index:30;
+  display:flex; gap:0; background:#fff; border-top:1px solid var(--line);
+  box-shadow:0 -4px 16px rgba(0,0,0,.08); max-width:560px; margin:0 auto;
+  padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+}
+.tabbar button{
+  flex:1; background:transparent; border:none; color:var(--muted);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:2px; padding:6px 2px; font-size:.62rem; font-weight:600; border-radius:10px;
+}
+.tabbar button .tab-icon{ font-size:1.15rem; }
+.tabbar button.active{ color:var(--red-dark); background:#FFF0E6; }
+main{ padding-bottom:80px; }
   .tabbar button{ position:relative; }
 .tab-badge{
-  position:absolute; top:-6px; right:-6px; background:#FF3B30; color:#fff;
-  font-size:.68rem; font-weight:800; min-width:18px; height:18px; border-radius:9px;
-  display:flex; align-items:center; justify-content:center; padding:0 4px;
+  position:absolute; top:2px; right:8px; background:#FF3B30; color:#fff;
+  font-size:.6rem; font-weight:800; min-width:15px; height:15px; border-radius:8px;
+  display:flex; align-items:center; justify-content:center; padding:0 3px;
 }
   .auth-heading{ color:var(--ink); font-size:1.25rem; font-weight:800; margin-bottom:14px; }
 </style>
@@ -206,10 +217,18 @@ function editInventoryItem(shopItemId, name, price){
 
   <div id="app-content" class="hidden">
     <div class="tabbar">
-      <button id="tab-inventory" onclick="switchTab('inventory')">Inventory</button>
-      <button id="tab-orders" class="active" onclick="switchTab('orders')">Orders <span id="orders-badge" class="tab-badge hidden">0</span></button>
-      <button id="tab-scan" onclick="switchTab('scan')">Pickup Verify</button>
-      <button id="tab-myqr" onclick="switchTab('myqr')">Meri Dukan QR</button>
+      <button id="tab-inventory" onclick="switchTab('inventory')">
+        <span class="tab-icon">📦</span> Inventory
+      </button>
+      <button id="tab-orders" class="active" onclick="switchTab('orders')" style="position:relative;">
+        <span class="tab-icon">🧾</span> Orders <span id="orders-badge" class="tab-badge hidden">0</span>
+      </button>
+      <button id="tab-scan" onclick="switchTab('scan')">
+        <span class="tab-icon">✅</span> Verify
+      </button>
+      <button id="tab-myqr" onclick="switchTab('myqr')">
+        <span class="tab-icon">🔗</span> QR
+      </button>
     </div>
     <div class="shop-toggle-row">
       <div>
