@@ -250,6 +250,13 @@ input:focus { border-color: var(--red); }
   background:var(--red); color:#fff; width:16px; height:16px; border-radius:50%;
   display:flex; align-items:center; justify-content:center; font-size:.65rem; cursor:pointer; font-weight:800; flex-shrink:0;
 }
+.category-banner{
+  border-radius:16px; padding:16px 18px; margin-bottom:14px; color:#fff;
+  position:relative; overflow:hidden;
+}
+.category-banner .cb-title{ font-size:1.15rem; font-weight:800; margin:0 0 4px; }
+.category-banner .cb-sub{ font-size:.8rem; opacity:.9; }
+.category-banner .cb-emoji{ position:absolute; right:14px; top:14px; font-size:2rem; opacity:.8; }
 </style>
 </head>
 <body>
@@ -322,6 +329,7 @@ input:focus { border-color: var(--red); }
     </div>
     <button class="btn-outline" style="width:100%; margin-bottom:14px;" onclick="toggleHistory()">📜 Purane Orders Dekho</button>
     <div class="cat-row" id="cat-row"></div>
+    <div id="category-banner" class="category-banner hidden"></div>
 
     <h2>Saman Chuno</h2>
     <div id="catalog"></div>
@@ -390,6 +398,27 @@ const CATEGORIES = [
   {icon:'🍵', label:'Chai/Coffee', keyword:'chai'},
   {icon:'🍪', label:'Snacks', keyword:'biskut'}
 ];
+const CATEGORY_THEMES = {
+  'Anaj':      { colors:'#8B5E34, #5B3A1E', title:'Anaj & Grocery', sub:'Roz ka raashan, ek jagah', emoji:'🌾' },
+  'Dairy':     { colors:'#4A90D9, #2C5F8A', title:'Dairy Fresh',    sub:'Doodh, dahi, paneer — taaza',  emoji:'🥛' },
+  'Sabzi':     { colors:'#3D9140, #1E5C22', title:'Taazi Sabzi',    sub:'Khet se seedhe aapke ghar',   emoji:'🥔' },
+  'Masala':    { colors:'#D9534F, #8A2E2B', title:'Masala Corner',  sub:'Swaad badhane wale masale',   emoji:'🌶️' },
+  'Chai/Coffee':{ colors:'#8A5A2B, #5C3A1A', title:'Chai & Coffee', sub:'Har mood ke liye ek cup',      emoji:'🍵' },
+  'Snacks':    { colors:'#E6A93F, #B3221D', title:'Snacks Time',    sub:'Chatpata aur crunchy',         emoji:'🍪' }
+};
+
+function applyCategoryTheme(label){
+  const theme = CATEGORY_THEMES[label];
+  const banner = document.getElementById('category-banner');
+  if(!theme){ banner.classList.add('hidden'); return; }
+  banner.style.background = `linear-gradient(120deg, ${theme.colors})`;
+  banner.innerHTML = `
+    <span class="cb-emoji">${theme.emoji}</span>
+    <div class="cb-title">${theme.title}</div>
+    <div class="cb-sub">${theme.sub}</div>
+  `;
+  banner.classList.remove('hidden');
+}
 let itemUnitById = {}; // item.id -> backend unit ("kg","litre","piece",...)
 
 function getUnitInfo(backendUnit){
@@ -438,7 +467,7 @@ function renderCategories(){
   const row = document.getElementById('cat-row');
   if(!row) return;
   row.innerHTML = CATEGORIES.map(c => `
-    <div class="cat-item" onclick="document.getElementById('item-search').value='${c.keyword}'; filterCatalog('${c.keyword}');">
+    <div class="cat-item" onclick="document.getElementById('item-search').value='${c.keyword}'; filterCatalog('${c.keyword}'); applyCategoryTheme('${c.label}');">
       <div class="cat-circle">${c.icon}</div>
       <span>${c.label}</span>
     </div>`).join('');
