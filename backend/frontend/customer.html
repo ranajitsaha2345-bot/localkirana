@@ -300,14 +300,7 @@ input:focus { border-color: var(--red); }
     <div id="order-cards"></div>
   </section>
 
-  <!-- ============ SHOP QR SCAN ============ -->
-  <section id="shop-scan-panel" class="panel hidden">
-    <h2>Dukan Pahunch Gaye?</h2>
-    <div class="hint" style="margin-bottom:10px;">Dukan mein lage QR ko scan karo, dukandar ko turant pata chal jaayega.</div>
-    <button class="btn-primary" onclick="startShopScanner()">Dukan Ka QR Scan Karo</button>
-    <div id="shop-qr-reader" style="width:100%; margin-top:10px;"></div>
-  </section>
-
+  
 </main>
 
 <script>
@@ -700,7 +693,6 @@ function onLoggedIn(data){
   panelStack = ['shop-panel'];
   applyPanel('shop-panel');
   document.getElementById('order-tracker').classList.remove('hidden');
-  document.getElementById('shop-scan-panel').classList.remove('hidden');
   renderCategories();
   loadCatalog();
   connectWS();
@@ -887,7 +879,10 @@ if(so.status === 'awaiting_payment'){
       <div id="qr-box-${so.id}" style="text-align:center; margin-top:10px;"></div>
       <div class="code-box">${so.verification_code}</div>
       <div class="hint">Yeh QR ya code dukandar ko dikhao/batao pickup ke liye</div>
-      <div id="map-${so.id}"></div>`;
+      <div id="map-${so.id}"></div>
+      <div class="hint" style="margin-top:14px;">Dukan mein lage QR ko scan karo, dukandar ko turant pata chal jaayega.</div>
+      <button class="btn-primary" style="width:100%; margin-top:8px;" onclick="startShopScanner(${so.id})">Dukan Ka QR Scan Karo</button>
+      <div id="shop-qr-reader-${so.id}" style="width:100%; margin-top:10px;"></div>`;
   }
 
   el.innerHTML = `
@@ -989,9 +984,9 @@ function showMap(data){
 }
 
 let shopHtml5QrCode = null;
-function startShopScanner(){
+function startShopScanner(orderId){
   if(shopHtml5QrCode){ shopHtml5QrCode.stop(); }
-  shopHtml5QrCode = new Html5Qrcode("shop-qr-reader");
+  shopHtml5QrCode = new Html5Qrcode(`shop-qr-reader-${orderId}`);
   shopHtml5QrCode.start(
     { facingMode: "environment" }, { fps: 10, qrbox: 220 },
     async (decodedText) => {
