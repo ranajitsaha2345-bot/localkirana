@@ -103,7 +103,7 @@
   .avail-no{background:#FBE3DD; color:var(--red); border:2px solid var(--red);}
   .avail-ok.active{background:var(--green-ok); color:#fff;}
   .avail-no.active{background:var(--red); color:#fff;}
-  .status-pill{display:inline-block; padding:3px 10px; border-radius:20px; font-size:.72rem; font-weight:700; text-transform:uppercase;}
+  .contact-row{ display:flex; gap:8px; margin-top:10px; }
   .status-pending_shop_review{background:#FFE9D6; color:var(--orange);}
   .status-partially_unavailable{background:#FBE3DD; color:var(--red);}
   .status-awaiting_payment{background:#FFE3EC; color:var(--pink);}
@@ -517,6 +517,20 @@ async function loadOrders(){
   const wrap = document.getElementById('orders-list');
   wrap.innerHTML = orders.filter(o => o.status !== 'completed').map(renderOrderCard).join('') || '<div class="panel">No new orders yet.</div>';
 }
+function renderContactButtons(phone){
+  if(!phone) return '';
+  const cleanPhone = phone.replace(/\D/g,'');
+  const waNumber = cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone;
+  return `
+    <div class="contact-row">
+      <a href="tel:${cleanPhone}" style="flex:1; text-decoration:none;">
+        <button class="avail-btn" style="width:100%; height:auto; padding:8px; font-size:.8rem; background:var(--plum); color:#fff; border-radius:8px;">📞 Call</button>
+      </a>
+      <a href="https://wa.me/${waNumber}" target="_blank" style="flex:1; text-decoration:none;">
+        <button class="avail-btn" style="width:100%; height:auto; padding:8px; font-size:.8rem; background:#25D366; color:#fff; border-radius:8px;">💬 Chat</button>
+      </a>
+    </div>`;
+}
 
 function renderOrderCard(so){
   const itemsHtml = so.items.map(i => `
@@ -531,6 +545,8 @@ function renderOrderCard(so){
     footer = `<div class="hint">Customer is making payment — please wait.</div>`;
   } else if(so.status === 'confirmed'){
     footer = `<div class="hint">Payment: <strong>${so.payment_status}</strong></div>
+      ${renderContactButtons(so.customer_phone)}
+      ${renderContactButtons(so.customer_phone)}
       <button class="btn-accent" style="margin-top:8px" onclick="markReady(${so.id})">Ready — Items Prepared</button>`;
   } else if(so.status === 'ready'){
     footer = `<div class="hint">Customer is on the way. Order ID: <strong>${so.id}</strong> — confirm from Pickup Verify tab.</div>`;

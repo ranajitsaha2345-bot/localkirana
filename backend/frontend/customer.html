@@ -164,6 +164,13 @@ button:active{transform:scale(.97);}
 #qr-box{text-align:center; padding:10px;}
 #qr-box canvas{margin:0 auto;}
 .code-box{
+  .contact-row{ display:flex; gap:8px; margin-top:10px; }
+.contact-btn{
+  flex:1; padding:10px 8px; font-size:.82rem; font-weight:700;
+  background:#25D366; color:#fff; border:none; border-radius:10px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.contact-btn.call-btn{ background:var(--plum); }
   text-align:center; font-size:2rem; letter-spacing:10px; font-weight:800;
   color:var(--red-dark); background:#FFF0E6; border-radius:12px; padding:14px; margin:10px 0;
 }
@@ -845,6 +852,20 @@ async function placeOrder(){
   shopOrders.forEach(renderOrderCard);
   toast('Order dukandar ko bhej diya gaya!');
 }
+function renderContactButtons(phone){
+  if(!phone) return '';
+  const cleanPhone = phone.replace(/\D/g,'');
+  const waNumber = cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone;
+  return `
+    <div class="contact-row">
+      <a href="tel:${cleanPhone}" style="flex:1; text-decoration:none;">
+        <button class="contact-btn call-btn" style="width:100%;">📞 Call</button>
+      </a>
+      <a href="https://wa.me/${waNumber}" target="_blank" style="flex:1; text-decoration:none;">
+        <button class="contact-btn" style="width:100%;">💬 Chat</button>
+      </a>
+    </div>`;
+}
 
 function renderOrderCard(so){
   let el = document.getElementById(`order-${so.id}`);
@@ -879,7 +900,10 @@ if(so.status === 'awaiting_payment'){
       <div id="qr-box-${so.id}" style="text-align:center; margin-top:10px;"></div>
       <div class="code-box">${so.verification_code}</div>
       <div class="hint">Yeh QR ya code dukandar ko dikhao/batao pickup ke liye</div>
-      <div id="map-${so.id}"></div>
+      ${renderContactButtons(so.shop_phone)}
+
+      <div id="map-${so.id}" style="margin-top:14px;"></div>
+
       <div class="hint" style="margin-top:14px;">Dukan mein lage QR ko scan karo, dukandar ko turant pata chal jaayega.</div>
       <button class="btn-primary" style="width:100%; margin-top:8px;" onclick="startShopScanner(${so.id})">Dukan Ka QR Scan Karo</button>
       <div id="shop-qr-reader-${so.id}" style="width:100%; margin-top:10px;"></div>`;
@@ -984,7 +1008,16 @@ function calculateDistance(lat1, lon1, lat2, lon2){
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   return R * c;
 }
-
+function calculateDistance(lat1, lon1, lat2, lon2){
+  const R = 6371; // Earth radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
 function showMap(data){
   const mapDiv = document.getElementById(`map-${data.shop_order_id}`);
   if(!mapDiv) return;
@@ -993,13 +1026,13 @@ function showMap(data){
   if(window._lastLat && window._lastLng && data.shop_latitude && data.shop_longitude){
     const dist = calculateDistance(window._lastLat, window._lastLng, data.shop_latitude, data.shop_longitude);
     const distText = dist < 1 ? `${Math.round(dist * 1000)} meter` : `${dist.toFixed(1)} km`;
-    distanceHtml = `<div class="hint" style="font-size:.9rem; font-weight:700; color:var(--red-dark); margin-top:10px;">📍 Dukan yahan se ${distText} door hai</div>`;
+    distanceHtml = `<div class="hint" style="font-size:.85rem; margin-bottom:6px;">📍 Dukan yahan se ${distText} door hai</div>`;
   }
 
   mapDiv.innerHTML = `
     ${distanceHtml}
     <a href="https://www.google.com/maps/dir/?api=1&destination=${data.shop_latitude},${data.shop_longitude}" target="_blank" style="text-decoration:none;">
-      <button class="btn-primary" style="width:100%; margin-top:8px;">🧭 Raasta Dikhao (Get Directions)</button>
+      <button class="btn-primary" style="width:100%;">📍 Shop Location</button>
     </a>`;
 }
 
