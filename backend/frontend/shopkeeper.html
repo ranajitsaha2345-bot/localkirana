@@ -83,6 +83,20 @@
   margin-bottom:0; padding:10px 8px; font-size:.85rem; min-width:0;
 }
 .inventory-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap:6px; align-items:stretch; }
+.category-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; }
+.category-card{
+  border:1px solid var(--line); border-radius:14px; padding:14px 6px; text-align:center;
+  background:#FFFCF9; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:6px;
+}
+.category-card .cat-icon{ font-size:1.6rem; }
+.category-card .cat-name{ font-size:.72rem; font-weight:700; }
+.template-item-row{
+  display:flex; align-items:center; justify-content:space-between; padding:8px 0;
+  border-bottom:1px dashed var(--line);
+}
+.template-item-row:last-child{ border-bottom:none; }
+.template-item-row .ti-name{ font-size:.88rem; }
+.template-item-row .ti-unit{ font-size:.72rem; color:var(--muted); }
 .inv-price-badge{ position:absolute; top:4px; left:4px; background:var(--green-ok); color:#fff; font-size:.62rem; font-weight:700; padding:2px 6px; border-radius:6px; z-index:1; }
 .inv-remove-x{ position:absolute; top:4px; right:4px; width:20px; height:20px; background:var(--red); color:#fff; border:none; border-radius:50%; font-size:.75rem; font-weight:800; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:2; }
 .inv-chip{ background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:20px 4px 6px; text-align:center; display:flex; flex-direction:column; justify-content:space-between; min-height:70px; }
@@ -262,6 +276,8 @@ function editInventoryItem(shopItemId, name, price){
 
     <!-- INVENTORY TAB -->
     <div id="tab-content-inventory" class="hidden">
+      <button class="btn-outline" style="width:100%; margin-bottom:14px;" onclick="openCategoryPicker()">🗂️ Categories Se Item Chuno</button>
+
       <section class="panel">
         <h2>Add New Item</h2>
         <div class="add-item-row">
@@ -280,6 +296,16 @@ function editInventoryItem(shopItemId, name, price){
         <div id="inventory-list" class="inventory-grid"></div>
       </section>
     </div>
+<!-- CATEGORY PICKER MODAL -->
+<div id="category-modal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:60; display:flex; align-items:center; justify-content:center; padding:16px;">
+  <div class="panel" style="max-width:480px; width:100%; max-height:85vh; overflow-y:auto;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <h2 style="margin:0;" id="category-modal-title">Dukan Ki Category Chuno</h2>
+      <button class="btn-outline btn-sm" onclick="closeCategoryModal()">✕ Band Karo</button>
+    </div>
+    <div id="category-modal-content"></div>
+  </div>
+</div>
 
     <!-- SCAN TAB -->
     <div id="tab-content-scan" class="hidden">
@@ -951,6 +977,105 @@ function renderInventoryGrid(items){
       <button class="inv-edit-btn" onclick="editInventoryItem(${i.shop_item_id}, '${i.name.replace(/'/g,"\\'")}', ${i.price})">Edit</button>
     </div>
   `).join('');
+}
+const SHOP_CATEGORY_TEMPLATES = {
+  "Kirana Store": {
+    icon: "🛒",
+    items: [
+      {name:"Chawal", unit:"kg"}, {name:"Atta", unit:"kg"}, {name:"Dal (Toor)", unit:"kg"},
+      {name:"Chini", unit:"kg"}, {name:"Namak", unit:"kg"}, {name:"Sarson Tel", unit:"litre"},
+      {name:"Chai Patti", unit:"packet"}, {name:"Biskut (Parle-G)", unit:"packet"},
+      {name:"Maggi", unit:"packet"}, {name:"Doodh", unit:"litre"}
+    ]
+  },
+  "Fast Food": {
+    icon: "🍔",
+    items: [
+      {name:"Burger", unit:"packet"}, {name:"Pizza Slice", unit:"packet"}, {name:"French Fries", unit:"packet"},
+      {name:"Cold Drink", unit:"packet"}, {name:"Sandwich", unit:"packet"}, {name:"Momos", unit:"packet"},
+      {name:"Roll", unit:"packet"}, {name:"Noodles", unit:"packet"}
+    ]
+  },
+  "Fish Store": {
+    icon: "🐟",
+    items: [
+      {name:"Rohu Fish", unit:"kg"}, {name:"Katla Fish", unit:"kg"}, {name:"Prawns", unit:"kg"},
+      {name:"Pomfret", unit:"kg"}, {name:"Hilsa Fish", unit:"kg"}, {name:"Crab", unit:"kg"}
+    ]
+  },
+  "Chicken/Meat Store": {
+    icon: "🍗",
+    items: [
+      {name:"Chicken (Whole)", unit:"kg"}, {name:"Chicken Breast", unit:"kg"}, {name:"Mutton", unit:"kg"},
+      {name:"Eggs", unit:"packet"}, {name:"Chicken Liver", unit:"kg"}, {name:"Boneless Chicken", unit:"kg"}
+    ]
+  },
+  "Vegetable Store": {
+    icon: "🥔",
+    items: [
+      {name:"Aloo", unit:"kg"}, {name:"Pyaz", unit:"kg"}, {name:"Tamatar", unit:"kg"},
+      {name:"Bhindi", unit:"kg"}, {name:"Gobi", unit:"kg"}, {name:"Lauki", unit:"kg"},
+      {name:"Palak", unit:"kg"}, {name:"Gajar", unit:"kg"}
+    ]
+  },
+  "Bakery": {
+    icon: "🍞",
+    items: [
+      {name:"Bread", unit:"packet"}, {name:"Cake", unit:"packet"}, {name:"Pastry", unit:"packet"},
+      {name:"Bun", unit:"packet"}, {name:"Cookies", unit:"packet"}, {name:"Rusk", unit:"packet"}
+    ]
+  }
+};
+
+function openCategoryPicker(){
+  const modal = document.getElementById('category-modal');
+  const content = document.getElementById('category-modal-content');
+  document.getElementById('category-modal-title').innerText = 'Dukan Ki Category Chuno';
+  modal.classList.remove('hidden');
+
+  content.innerHTML = `<div class="category-grid">
+    ${Object.entries(SHOP_CATEGORY_TEMPLATES).map(([name, data]) => `
+      <div class="category-card" onclick="showCategoryTemplate('${name.replace(/'/g,"\\'")}')">
+        <span class="cat-icon">${data.icon}</span>
+        <span class="cat-name">${name}</span>
+      </div>
+    `).join('')}
+  </div>`;
+}
+
+function showCategoryTemplate(categoryName){
+  const modal = document.getElementById('category-modal');
+  const content = document.getElementById('category-modal-content');
+  const data = SHOP_CATEGORY_TEMPLATES[categoryName];
+  document.getElementById('category-modal-title').innerText = categoryName;
+
+  content.innerHTML = `
+    <button class="btn-outline btn-sm" style="margin-bottom:10px;" onclick="openCategoryPicker()">← Wapas Categories Pe</button>
+    ${data.items.map(it => `
+      <div class="template-item-row">
+        <div>
+          <div class="ti-name">${it.name}</div>
+          <div class="ti-unit">${it.unit}</div>
+        </div>
+        <button class="btn-buy" style="width:auto; padding:6px 14px;" onclick="addFromTemplate('${it.name.replace(/'/g,"\\'")}', '${it.unit}')">+ Add</button>
+      </div>
+    `).join('')}
+  `;
+}
+
+function addFromTemplate(name, unit){
+  document.getElementById('new-item-name').value = name;
+  document.getElementById('new-item-unit').value = unit;
+  document.getElementById('new-item-price').value = '';
+  document.querySelector('.ai-save').innerText = 'Save';
+  editingShopItemId = null;
+  closeCategoryModal();
+  toast(`${name} ready hai — price daalo aur Save dabao`);
+  document.getElementById('new-item-name').scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+function closeCategoryModal(){
+  document.getElementById('category-modal').classList.add('hidden');
 }
 
 async function createItem(){
