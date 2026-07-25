@@ -192,6 +192,18 @@ function editInventoryItem(shopItemId, name, price){
       <button id="tab-scan" onclick="switchTab('scan')">Pickup Verify</button>
       <button id="tab-myqr" onclick="switchTab('myqr')">Meri Dukan QR</button>
     </div>
+    <button class="btn-primary" style="margin-bottom:14px;" onclick="openDailySummary()">🔒 Close Shop — Aaj Ka Hisaab Dekho</button>
+
+    <!-- DAILY SUMMARY MODAL -->
+    <div id="summary-modal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:60; display:flex; align-items:center; justify-content:center; padding:16px;">
+      <div class="panel" style="max-width:480px; width:100%; max-height:85vh; overflow-y:auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <h2 style="margin:0;">Aaj Ka Hisaab</h2>
+          <button class="btn-outline btn-sm" onclick="closeDailySummary()">✕ Band Karo</button>
+        </div>
+        <div id="summary-content"></div>
+      </div>
+    </div>
 
     <!-- ORDERS TAB -->
     <div id="tab-content-orders">
@@ -740,6 +752,73 @@ function connectWS(){
     else if(event === 'order_completed'){ toast(`Order delivered to ${data.customer_name}`); loadOrders(); }
   };
   ws.onclose = () => setTimeout(connectWS, 3000);
+}
+async function openDailySummary(){
+  const modal = document.getElementById('summary-modal');
+  const content = document.getElementById('summary-content');
+  modal.classList.remove('hidden');
+  content.innerHTML = '<div class="hint">Load ho raha hai...</div>';
+
+  try{
+    const res = await fetch(`${API}/shop/orders/history`, {headers: authHeaders()});
+    if(!res.ok){ content.innerHTML = '<div class="hint">Data load nahi hua.</div>'; return; }
+    const allOrders = await res.json();
+
+    const today = new Date().toDateString();
+    const todayOrders = allOrders.filter(o => new Date(o.created_at).toDateString() === today && o.status === 'completed');
+
+    if(!todayOrders.length){
+      content.innerHTML = '<div class="hint">Aaj abhi tak koi order complete nahi hua.</div>';
+      return;
+    }
+
+    let totalSale = 0;
+    let onlineTotal = 0;
+    let cashTotal = 0;
+    const itemSales = {};
+
+    todayOrders.forEach(o => {
+      totalSale += o.amount;
+      if(o.payment_status === 'paid_online' || o.payment_status === 'online'){
+        onlineTotal += o.amount;
+      } else {
+        cashTotal += o.amount;
+      }
+      o.items.forEach(i => {
+        if(i.availability === 'not_available') return;
+        if(!itemSales[i.item_name]) itemSales[i.item_name] = 0;
+        itemSales[i.item_name] += i.quantity;
+      });
+    });
+
+    const sortedItems = Object.entries(itemSales).sort((a,b) => b[1] - a[1]);
+    const topItem = sortedItems[0];
+    const lowItem = sortedItems[sortedItems.length - 1];
+
+    content.innerHTML = `
+      <div class="total-line" style="margin-bottom:10px;"><span>Total Orders</span><span>${todayOrders.length}</span></div>
+      <div class="total-line" style="margin-bottom:10px;"><span>Total Sale</span><span>₹${totalSale.toFixed(2)}</span></div>
+      <div class="receipt-line"><span>Online Payment</span><span>₹${onlineTotal.toFixed(2)}</span></div>
+      <div class="receipt-line" style="margin-bottom:14px;"><span>Cash Payment</span><span>₹${cashTotal.toFixed(2)}</span></div>
+
+      <h2 style="font-size:.95rem; margin-bottom:8px;">Sabse Zyada Bika</h2>
+      <div class="receipt-line" style="color:var(--green-ok); font-weight:700;"><span>${topItem ? topItem[0] : '-'}</span><span>${topItem ? topItem[1] : 0} unit</span></div>
+
+      <h2 style="font-size:.95rem; margin:14px 0 8px;">Sabse Kam Bika</h2>
+      <div class="receipt-line" style="color:var(--red); font-weight:700;"><span>${lowItem ? lowItem[0] : '-'}</span><span>${lowItem ? lowItem[1] : 0} unit</span></div>
+
+      <h2 style="font-size:.95rem; margin:14px 0 8px;">Sabhi Item — Poori List</h2>
+      ${sortedItems.map(([name, qty]) => `
+        <div class="receipt-line"><span>${name}</span><span>${qty} unit</span></div>
+      `).join('')}
+    `;
+  } catch(err){
+    content.innerHTML = '<div class="hint">Kuch galat hua, dobara try karo.</div>';
+  }
+}
+
+function closeDailySummary(){
+  document.getElementById('summary-modal').classList.add('hidden');
 }
 
 function toast(msg){
