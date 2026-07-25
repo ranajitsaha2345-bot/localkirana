@@ -245,7 +245,10 @@ function editInventoryItem(shopItemId, name, price){
     </div>
 
     <p id="phone-hint" style="text-align:center; color:var(--muted); margin:12px 0; font-size:.85rem;">Enter number, then continue with Google</p>
-
+    <div style="display:flex; align-items:flex-start; gap:8px; margin:10px 0; font-size:.78rem; color:var(--muted);">
+      <input type="checkbox" id="terms-checkbox" style="width:auto; margin-top:2px;" onchange="updateGoogleButtonState()">
+      <label for="terms-checkbox">Main <a href="terms.html" target="_blank" style="color:var(--red-dark);">Terms & Conditions aur Privacy Policy</a> se sehmat hoon</label>
+    </div>
     <div id="google-btn-wrap" style="opacity:0.4; pointer-events:none;">
       <div id="g_id_onload"
            data-client_id="331552152118-9kbvonm08obtu4fjepnvc46b4lkdjid8.apps.googleusercontent.com"
@@ -475,8 +478,9 @@ function updateGoogleButtonState(){
   const phoneBox = document.querySelector('.phone-box');
   const label = document.querySelector('.floating-label');
   const hint = document.getElementById('phone-hint');
+  const termsAccepted = document.getElementById('terms-checkbox').checked;
 
-  if(validPhone){
+  if(validPhone && termsAccepted){
     wrap.style.opacity = '1';
     wrap.style.pointerEvents = 'auto';
     hint.innerText = 'Now continue with Google';
@@ -486,7 +490,7 @@ function updateGoogleButtonState(){
   } else {
     wrap.style.opacity = '0.4';
     wrap.style.pointerEvents = 'none';
-    hint.innerText = 'Enter number, then continue with Google';
+    hint.innerText = validPhone && !termsAccepted ? 'Kripya Terms & Conditions accept karo' : 'Enter number, then continue with Google';
     phoneBox.style.borderColor = '';
     label.style.color = '';
     if(phone.length >= 6 && phone !== lastInvalidToastPhone){
