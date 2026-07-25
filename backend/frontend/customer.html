@@ -412,11 +412,48 @@ const SEARCH_KEYWORD_CATEGORY = {
   'chai':'beverages','coffee':'beverages','cold':'beverages',
   'sabun':'personal_care','shampoo':'personal_care','tooth':'personal_care',
 };
+// Do words kitne "close" hain, yeh check karta hai (spelling mistakes tolerate karega)
+function levenshteinDistance(a, b){
+  const matrix = [];
+  for(let i = 0; i <= b.length; i++){ matrix[i] = [i]; }
+  for(let j = 0; j <= a.length; j++){ matrix[0][j] = j; }
+  for(let i = 1; i <= b.length; i++){
+    for(let j = 1; j <= a.length; j++){
+      if(b.charAt(i-1) === a.charAt(j-1)){
+        matrix[i][j] = matrix[i-1][j-1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i-1][j-1] + 1,
+          matrix[i][j-1] + 1,
+          matrix[i-1][j] + 1
+        );
+      }
+    }
+  }
+  return matrix[b.length][a.length];
+}
+
+function fuzzyMatch(query, target){
+  query = query.toLowerCase().trim();
+  target = target.toLowerCase();
+  if(query === '') return true;
+  if(target.includes(query)) return true;
+
+  // Har word ke against fuzzy check karo (chhote typo bhi allow)
+  const targetWords = target.split(/\s+/);
+  for(const word of targetWords){
+    if(word.startsWith(query)) return true;
+    const maxDistance = query.length <= 3 ? 1 : query.length <= 6 ? 2 : 3;
+    if(levenshteinDistance(query, word.slice(0, query.length + maxDistance)) <= maxDistance) return true;
+  }
+  return false;
+}
+
 function filterCatalog(q){
   q = (q||'').toLowerCase().trim();
   const matchedCategory = SEARCH_KEYWORD_CATEGORY[q];
   document.querySelectorAll('#catalog .item-card').forEach(card => {
-    const nameMatch = card.dataset.name.toLowerCase().includes(q);
+    const nameMatch = fuzzyMatch(q, card.dataset.name);
     const categoryMatch = matchedCategory && card.dataset.category === matchedCategory;
     const show = q === '' || nameMatch || categoryMatch;
     card.style.display = show ? '' : 'none';
