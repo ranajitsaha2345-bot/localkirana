@@ -78,10 +78,16 @@ main{max-width:520px; margin:0 auto; padding:16px; padding-top:0;}
 .search-box svg{ flex-shrink:0; }
 
 /* categories */
-.cat-row{ display:flex; gap:14px; overflow-x:auto; padding:4px 2px 16px; scrollbar-width:none; scroll-behavior:smooth; }
+.cat-row{ display:grid; grid-template-columns:repeat(8, 1fr); gap:6px; padding:4px 2px 16px; }
+.cat-row::-webkit-scrollbar{ display:none; }
 .cat-row::-webkit-scrollbar{ display:none; }
 .cat-item{ flex-shrink:0; text-align:center; cursor:pointer; }
 .cat-circle{
+  .cat-item span{
+  font-size:.62rem; font-weight:600; color:var(--ink);
+  display:block; text-align:center; overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap;
+}
   .cat-item.active .cat-circle{
   transform: scale(1.18);
   box-shadow: 0 0 0 3px var(--red), 0 10px 22px rgba(230,55,47,.45);
