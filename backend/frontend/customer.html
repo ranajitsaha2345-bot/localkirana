@@ -78,7 +78,7 @@ main{max-width:520px; margin:0 auto; padding:16px; padding-top:0;}
 .search-box svg{ flex-shrink:0; }
 
 /* categories */
-.cat-row{ display:flex; gap:14px; overflow-x:auto; padding:4px 2px 16px; scrollbar-width:none; }
+.cat-row{ display:flex; gap:14px; overflow-x:auto; padding:4px 2px 16px; scrollbar-width:none; scroll-behavior:smooth; }
 .cat-row::-webkit-scrollbar{ display:none; }
 .cat-item{ flex-shrink:0; text-align:center; cursor:pointer; }
 .cat-circle{
@@ -478,6 +478,15 @@ function showSlide(index){
     hideLayer.classList.remove('active');
     activeBgLayer = activeBgLayer === 'a' ? 'b' : 'a';
     document.body.classList.add('photo-active');
+  }
+  const catIndex = CATEGORIES.findIndex(c => c.label === label);
+  document.querySelectorAll('.cat-item').forEach(el => el.classList.remove('active'));
+  if(catIndex !== -1){
+    const activeItem = document.getElementById(`cat-item-${catIndex}`);
+    if(activeItem){
+      activeItem.classList.add('active');
+      activeItem.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
+    }
   }
 }
 
