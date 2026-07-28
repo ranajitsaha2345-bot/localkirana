@@ -122,8 +122,8 @@ button:active{transform:scale(.97);}
   text-align:center; position:relative;
 }
 .item-card .icon{
-  width:100%; height:64px; border-radius:10px; display:flex; align-items:center; justify-content:center;
-  font-size:1.8rem; background:linear-gradient(135deg, #FFE3D3, #FFD1DC);
+  width:100%; height:48px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+  font-size:1.4rem; background:linear-gradient(135deg, #FFE3D3, #FFD1DC); overflow:hidden;
 }
 .item-card .name{ font-size:.62rem; font-weight:700; line-height:1.15; min-height:2.1em; display:flex; align-items:center; justify-content:center; }
 .item-card .unit{ font-size:.72rem; color:var(--muted); font-weight:400; }
@@ -422,17 +422,52 @@ const ICONS = [
   {kw:['sabzi','vegetable','aloo','pyaz','tamatar'], icon:'🥔'},
   {kw:['masala','mirch','haldi'], icon:'🌶️'},
 ];
-function iconFor(name){
+function iconFor(name, category){
   const map = {
     "Biskut (Parle-G)": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Parle-G_biscuits.jpg/240px-Parle-G_biscuits.jpg",
     "Biskut (Marie Gold)": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Biscuits.jpg/240px-Biscuits.jpg",
     "Biskut (Britannia Good Day)": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Biscuits.jpg/240px-Biscuits.jpg",
     "Biskut (Oreo)": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Oreo-Two-Cookies.jpg/240px-Oreo-Two-Cookies.jpg",
-    "Lays Chips": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Potato-Chips.jpg/240px-Potato-Chips.jpg",
-    "Bingo Chips": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Potato-Chips.jpg/240px-Potato-Chips.jpg",
+    "Biskut (Monaco)": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Biscuits.jpg/240px-Biscuits.jpg",
+    "Biskut (Krackjack)": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Biscuits.jpg/240px-Biscuits.jpg",
+    "Biskut (Bourbon)": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Oreo-Two-Cookies.jpg/240px-Oreo-Two-Cookies.jpg",
+    "Lays Chips": "https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=200",
+    "Bingo Chips": "https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=200",
+    "Kurkure": "https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=200",
     "Maggi": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Instant_noodles.jpg/240px-Instant_noodles.jpg",
+    "Dal (Toor)": "https://images.unsplash.com/photo-1596797038530-2c107229654b?w=200",
+    "Chini": "https://images.unsplash.com/photo-1610725664285-7c57e6eab576?w=200",
+    "Sarson Tel": "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=200",
+    "Atta": "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=200",
+    "Chawal": "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=200",
+    "Namak": "https://images.unsplash.com/photo-1518110925495-7fd1310ceb7a?w=200",
+    "Chai Patti": "https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=200",
+    "Chai Patti (Tata)": "https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=200",
+    "Chai Patti (Red Label)": "https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=200",
+    "Coffee (Nescafe)": "https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=200",
+    "Doodh (Full Cream)": "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=200",
+    "Dahi": "https://images.unsplash.com/photo-1584278858536-52532423b9ea?w=200",
+    "Paneer": "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=200",
+    "Bisleri": "https://images.unsplash.com/photo-1560023907-5f339617ea30?w=200",
+    "Kinley": "https://images.unsplash.com/photo-1560023907-5f339617ea30?w=200",
+    "Aquafina": "https://images.unsplash.com/photo-1560023907-5f339617ea30?w=200",
   };
-  return map[name] ? `<img src="${map[name]}" style="width:36px;height:36px;object-fit:cover;border-radius:6px;">` : "🛒";
+  if(map[name]) return `<img src="${map[name]}" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">`;
+
+  // Naam se photo na mile to category ke hisaab se generic photo dikhao
+  const categoryFallback = {
+    grocery: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=200",
+    dairy: "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=200",
+    vegetables: "https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=200",
+    masala: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=200",
+    beverages: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=200",
+    snacks: "https://images.unsplash.com/photo-1621447504864-d8686f12c84a?w=200",
+    water: "https://images.unsplash.com/photo-1560023907-5f339617ea30?w=200",
+  };
+  const fallbackPhoto = categoryFallback[category];
+  if(fallbackPhoto) return `<img src="${fallbackPhoto}" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">`;
+
+  return "🛒";
 }
 const CATEGORIES = [
   {icon:'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=200', label:'Anaj', keyword:'chawal'},
@@ -907,6 +942,7 @@ async function loadCatalog(){
     return `
     <div class="item-card" data-name="${it.name}" data-category="${it.category || ''}">
       <span class="qty-float hidden" id="qty-float-${it.id}">0</span>
+      <div class="icon">${iconFor(it.name, it.category)}</div>
       <div class="name">${it.name}</div>
       <div class="unit-hint">${hint}</div>
       <div class="qty-controls">
