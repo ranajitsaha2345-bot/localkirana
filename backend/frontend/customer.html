@@ -747,13 +747,19 @@ function updateGoogleButtonState() {
   } else {
     wrap.style.opacity = '0.4';
     wrap.style.pointerEvents = 'none';
-    document.getElementById('phone-hint').innerText = validPhone && !termsAccepted ? 'Kripya Terms & Conditions accept karo' : 'Enter number, then continue with Google';
-    phoneBox.style.borderColor = '';
-    label.style.color = '';
+    phoneBox.style.borderColor = validPhone ? 'var(--green-ok)' : '';
+    label.style.color = validPhone ? 'var(--green-ok)' : '';
 
-    if (phone.length >= 6 && phone !== lastInvalidToastPhone) {
-      toast('Enter valid number');
-      lastInvalidToastPhone = phone;
+    if (validPhone && !termsAccepted) {
+      document.getElementById('phone-hint').innerText = 'Kripya Terms & Conditions accept karo';
+      lastInvalidToastPhone = '';
+    } else {
+      document.getElementById('phone-hint').innerText = 'Enter number, then continue with Google';
+      // Toast SIRF tab jab number khud invalid ho — terms ki wajah se nahi
+      if (phone.length >= 6 && phone !== lastInvalidToastPhone) {
+        toast('Enter valid number');
+        lastInvalidToastPhone = phone;
+      }
     }
   }
 }
