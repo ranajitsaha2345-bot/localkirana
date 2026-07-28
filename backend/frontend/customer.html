@@ -82,6 +82,14 @@ main{max-width:520px; margin:0 auto; padding:16px; padding-top:0;}
 .cat-row::-webkit-scrollbar{ display:none; }
 .cat-item{ flex-shrink:0; text-align:center; cursor:pointer; }
 .cat-circle{
+  .cat-item.active .cat-circle{
+  transform: scale(1.18);
+  box-shadow: 0 0 0 3px var(--red), 0 10px 22px rgba(230,55,47,.45);
+}
+.cat-item.active span{
+  color: var(--red-dark);
+  font-weight:800;
+}
   width:58px; height:58px; border-radius:50%; display:flex; align-items:center; justify-content:center;
   font-size:1.5rem; background:linear-gradient(135deg, var(--orange), var(--red));
   color:#fff; margin:0 auto 6px; box-shadow:0 6px 14px rgba(255,138,61,.35);
@@ -549,16 +557,17 @@ function toBackendQtyByName(amount, name){
   return amount; // pcs items same rahenge
 }
 function renderCategories(){
-  renderHeroCarousel();
   const row = document.getElementById('cat-row');
-  if(!row) return;
-  row.innerHTML = CATEGORIES.map(c => `
-    <div class="cat-item" onclick="document.getElementById('item-search').value='${c.keyword}'; filterCatalog('${c.keyword}'); applyCategoryTheme('${c.label}');">
-      <div class="cat-circle" style="background:none; padding:0; overflow:hidden;">
-        <img src="${c.icon}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
-      </div>
-      <span>${c.label}</span>
-    </div>`).join('');
+  if(row){
+    row.innerHTML = CATEGORIES.map((c, i) => `
+      <div class="cat-item" id="cat-item-${i}" onclick="document.getElementById('item-search').value=''; filterByCategory('${c.categoryKey}'); applyCategoryTheme('${c.label}');">
+        <div class="cat-circle" style="background:none; padding:0; overflow:hidden;">
+          <img src="${c.icon}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+        </div>
+        <span>${c.label}</span>
+      </div>`).join('');
+  }
+  renderHeroCarousel();
 }
 const SEARCH_KEYWORD_CATEGORY = {
   'biskut':'snacks','biscuit':'snacks','namkeen':'snacks','chips':'snacks',
