@@ -354,7 +354,7 @@ body.photo-active .item-card {
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B3221D" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <input type="text" id="item-search" placeholder="Search for 'Chawal'" oninput="filterCatalog(this.value)">
     </div>
-    <button class="btn-outline" style="width:100%; margin-bottom:14px;" onclick="toggleHistory()">📜 Purane Orders Dekho</button>
+    <button class="btn-outline hidden" id="history-btn" style="width:100%; margin-bottom:14px;" onclick="toggleHistory()">📜 History</button>
     <div class="cat-row" id="cat-row"></div>
     <div id="category-banner" class="category-banner hidden"></div>
 
@@ -378,8 +378,11 @@ body.photo-active .item-card {
 <!-- ============ ORDER HISTORY ============ -->
 <section id="history-panel" class="panel hidden">
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-    <h2 style="margin:0;">Purane Orders</h2>
+    <h2 style="margin:0;">History</h2>
     <button class="btn-outline btn-sm" onclick="toggleHistory()">Band Karo</button>
+  </div>
+  <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
+    <button class="btn-outline btn-sm hidden" id="clear-history-btn" onclick="clearAllHistory()" style="color:var(--red); border-color:var(--red);">🗑 Sab Clear Karo</button>
   </div>
   <div id="history-list"></div>
 </section>
@@ -853,6 +856,7 @@ function onLoggedIn(data){
   renderCategories();
   loadCatalog();
   connectWS();
+  checkHistoryAvailability();
 }
 
 function authHeaders(){ return {'Authorization': `Bearer ${token}`, 'Content-Type':'application/json'}; }
@@ -1001,6 +1005,7 @@ async function placeOrder(){
   goBack();
   shopOrders.forEach(renderOrderCard);
   toast('Order dukandar ko bhej diya gaya!');
+  showHistoryButton();
 }
 function renderContactButtons(phone){
   if(!phone) return '';
@@ -1204,6 +1209,31 @@ function startShopScanner(orderId){
     () => {}
   );
 }
+// ---------------- HISTORY VISIBILITY + LOCAL DELETE ----------------
+function getHiddenOrderIds(){
+  try{ return JSON.parse(localStorage.getItem('hidden_order_ids') || '[]'); }catch(e){ return []; }
+}
+function hideOrderId(orderId){
+  const hidden = getHiddenOrderIds();
+  if(!hidden.includes(orderId)){
+    hidden.push(orderId);
+    localStorage.setItem('hidden_order_ids', JSON.stringify(hidden));
+  }
+}
+function showHistoryButton(){
+  const btn = document.getElementById('history-btn');
+  if(btn) btn.classList.remove('hidden');
+}
+async function checkHistoryAvailability(){
+  try{
+    const res = await fetch(`${API}/customer/orders/history`, {headers: authHeaders()});
+    if(!res.ok) return;
+    const history = await res.json();
+    const hidden = getHiddenOrderIds();
+    const visible = history.filter(o => !hidden.includes(o.id ?? o.order_id));
+    if(visible.length > 0) showHistoryButton();
+  } catch(e){}
+}
 
 let panelStack = ['auth-panel'];
 
@@ -1239,6 +1269,8 @@ async function toggleHistory(){
   }
 }
 
+let loadedHistory = [];
+
 async function loadOrderHistory(){
   const listEl = document.getElementById('history-list');
   listEl.innerHTML = '<div class="hint">Load ho raha hai...</div>';
@@ -1246,24 +1278,56 @@ async function loadOrderHistory(){
     const res = await fetch(`${API}/customer/orders/history`, {headers: authHeaders()});
     if(!res.ok){ listEl.innerHTML = '<div class="hint">Purane orders load nahi hue.</div>'; return; }
     const history = await res.json();
-    if(!history.length){ listEl.innerHTML = '<div class="hint">Abhi tak koi purana order nahi hai.</div>'; return; }
-
-    listEl.innerHTML = history.map(order => {
-      const dateStr = new Date(order.created_at).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
-      const itemsText = order.items.map(i => `${i.item_name} × ${i.quantity}`).join(', ');
-      return `
-        <div class="receipt-line" style="flex-direction:column; align-items:flex-start; gap:4px; padding:10px 0;">
-          <div style="display:flex; justify-content:space-between; width:100%;">
-            <strong>${order.shop_name || 'Order'}</strong>
-            <span class="shop">${dateStr}</span>
-          </div>
-          <div class="shop">${itemsText}</div>
-          <button class="btn-outline btn-sm" style="margin-top:6px;" onclick='reorderItems(${JSON.stringify(order.items)})'>🔁 Reorder</button>
-        </div>`;
-    }).join('');
+    const hidden = getHiddenOrderIds();
+    loadedHistory = history.filter(o => !hidden.includes(o.id ?? o.order_id));
+    renderHistoryList();
   } catch(err){
     listEl.innerHTML = '<div class="hint">Kuch galat hua, dobara try karo.</div>';
   }
+}
+
+function renderHistoryList(){
+  const listEl = document.getElementById('history-list');
+  const clearBtn = document.getElementById('clear-history-btn');
+
+  if(!loadedHistory.length){
+    listEl.innerHTML = '<div class="hint">Abhi tak koi purana order nahi hai.</div>';
+    if(clearBtn) clearBtn.classList.add('hidden');
+    return;
+  }
+  if(clearBtn) clearBtn.classList.remove('hidden');
+
+  listEl.innerHTML = loadedHistory.map(order => {
+    const orderId = order.id ?? order.order_id;
+    const dateStr = new Date(order.created_at).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+    const itemsText = order.items.map(i => `${i.item_name} × ${i.quantity}`).join(', ');
+    return `
+      <div class="receipt-line" style="flex-direction:column; align-items:flex-start; gap:4px; padding:10px 0;">
+        <div style="display:flex; justify-content:space-between; width:100%;">
+          <strong>${order.shop_name || 'Order'}</strong>
+          <span class="shop">${dateStr}</span>
+        </div>
+        <div class="shop">${itemsText}</div>
+        <div style="display:flex; gap:8px; margin-top:6px;">
+          <button class="btn-outline btn-sm" onclick='reorderItems(${JSON.stringify(order.items)})'>🔁 Reorder</button>
+          <button class="btn-outline btn-sm" style="color:var(--red); border-color:var(--red);" onclick="deleteHistoryItem(${orderId})">🗑 Delete</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function deleteHistoryItem(orderId){
+  hideOrderId(orderId);
+  loadedHistory = loadedHistory.filter(o => (o.id ?? o.order_id) !== orderId);
+  renderHistoryList();
+  toast('Order history se hata diya gaya');
+}
+
+function clearAllHistory(){
+  loadedHistory.forEach(o => hideOrderId(o.id ?? o.order_id));
+  loadedHistory = [];
+  renderHistoryList();
+  toast('Poori history clear ho gayi');
 }
 
 function reorderItems(items){
