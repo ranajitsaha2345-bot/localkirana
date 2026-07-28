@@ -412,12 +412,12 @@ const CATEGORIES = [
   {icon:'🍪', label:'Snacks', keyword:'biskut'}
 ];
 const CATEGORY_THEMES = {
-  'Anaj':      { photo:'https://source.unsplash.com/800x400/?rice,grains', title:'Anaj & Grocery', sub:'Roz ka raashan, ek jagah', emoji:'🌾' },
-  'Dairy':     { photo:'https://source.unsplash.com/800x400/?milk,dairy', title:'Dairy Fresh',    sub:'Doodh, dahi, paneer — taaza',  emoji:'🥛' },
-  'Sabzi':     { photo:'https://source.unsplash.com/800x400/?vegetables', title:'Taazi Sabzi',    sub:'Khet se seedhe aapke ghar',   emoji:'🥔' },
-  'Masala':    { photo:'https://source.unsplash.com/800x400/?spices', title:'Masala Corner',  sub:'Swaad badhane wale masale',   emoji:'🌶️' },
-  'Chai/Coffee':{ photo:'https://source.unsplash.com/800x400/?tea,coffee', title:'Chai & Coffee', sub:'Har mood ke liye ek cup',      emoji:'🍵' },
-  'Snacks':    { photo:'https://source.unsplash.com/800x400/?snacks,chips', title:'Snacks Time',    sub:'Chatpata aur crunchy',         emoji:'🍪' }
+  'Anaj':      { photo:'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=1000', title:'Anaj & Grocery', sub:'Roz ka raashan, ek jagah', emoji:'🌾' },
+  'Dairy':     { photo:'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=1000', title:'Dairy Fresh',    sub:'Doodh, dahi, paneer — taaza',  emoji:'🥛' },
+  'Sabzi':     { photo:'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=1000', title:'Taazi Sabzi',    sub:'Khet se seedhe aapke ghar',   emoji:'🥔' },
+  'Masala':    { photo:'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=1000', title:'Masala Corner',  sub:'Swaad badhane wale masale',   emoji:'🌶️' },
+  'Chai/Coffee':{ photo:'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=1000', title:'Chai & Coffee', sub:'Har mood ke liye ek cup',      emoji:'🍵' },
+  'Snacks':    { photo:'https://images.unsplash.com/photo-1621447504864-d8686f12c84a?w=1000', title:'Snacks Time',    sub:'Chatpata aur crunchy',         emoji:'🍪' }
 };
 
 let carouselIndex = 0;
@@ -458,7 +458,13 @@ function applyCategoryTheme(label){
   const index = carouselLabels.indexOf(label);
   if(index === -1) return;
   showSlide(index);
-  startCarouselAutoSlide(); // taaki manual click ke baad bhi auto-slide chalta rahe
+  startCarouselAutoSlide();
+
+  const theme = CATEGORY_THEMES[label];
+  document.body.style.backgroundImage = `linear-gradient(rgba(255,243,233,.93), rgba(255,243,233,.93)), url('${theme.photo}')`;
+  document.body.style.backgroundSize = 'cover';
+  document.body.style.backgroundAttachment = 'fixed';
+  document.body.style.backgroundPosition = 'center';
 }
 let itemUnitById = {}; // item.id -> backend unit ("kg","litre","piece",...)
 
