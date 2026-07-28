@@ -475,8 +475,8 @@ function showSlide(index){
     const showLayer = document.getElementById(showLayerId);
     const hideLayer = document.getElementById(hideLayerId);
     showLayer.style.backgroundImage = `url('${theme.photo}')`;
-    showLayer.classList.add('visible');
-    hideLayer.classList.remove('visible');
+    showLayer.classList.add('active');
+    hideLayer.classList.remove('active');
     activeBgLayer = activeBgLayer === 'a' ? 'b' : 'a';
     document.body.classList.add('photo-active');
   }
