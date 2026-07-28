@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wait — Apna Saman</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#E6372F">
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+:root{
+  --ink:#2B1810;
+  --red:#E6372F;
+  --red-dark:#B3221D;
+  --orange:#FF8A3D;
+  --pink:#FF5B7F;
+  --plum:#5B1A3A;
+  --paper:#FFF3E9;
+  --card:#FFFFFF;
+  --line:#F1DFCF;
+  --green-ok:#1E8E4A;
+  --muted:#8A7A6E;
+  --radius:16px;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0; font-family:'Segoe UI', system-ui, -apple-system, sans-serif;
+  color:var(--ink);
+  background: var(--paper);
+}
+header{
+  background: linear-gradient(135deg, var(--plum), var(--red-dark));
+  color:#fff; padding:18px 20px 26px;
+  position:sticky; top:0; z-index:10;
+  border-bottom-left-radius:20px; border-bottom-right-radius:20px;
+}
+.hdr-top{ display:flex; align-items:center; justify-content:space-between; }
+header h1{ font-size:1.05rem; font-weight:800; letter-spacing:.2px; margin:0; }
+header .sub{ font-size:.78rem; opacity:.75; margin-top:2px; }
+.badge{
+  background:rgba(255,255,255,.15); border-radius:20px; padding:6px 14px;
+  font-size:.78rem; border:none; color:#fff; cursor:pointer; font-weight:600;
+}
+main{max-width:520px; margin:0 auto; padding:16px; padding-top:0;}
+.panel{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+  padding:16px; margin-bottom:14px;
+  box-shadow: 0 8px 24px rgba(179,34,29,.08);
+}
+.panel h2{font-size:1rem; margin:0 0 10px; color:var(--red-dark); font-weight:800;}
+
+/* hero */
+.hero-wrap{ margin:-14px -4px 14px; padding:0 4px; }
+.hero-card{
+  background: linear-gradient(120deg, var(--red), var(--pink));
+  border-radius:20px; padding:18px; color:#fff; position:relative; overflow:hidden;
+  box-shadow:0 12px 28px rgba(230,55,47,.35);
+}
+.hero-card h3{ font-size:1.4rem; margin:0 0 4px; font-weight:800; }
+.hero-card span{ font-size:.85rem; opacity:.9; }
+.hero-emoji{ position:absolute; right:14px; top:14px; font-size:2.4rem; opacity:.85; }
+
+/* search */
+.search-box{
+  display:flex; align-items:center; gap:10px; background:#fff; border:1px solid var(--line);
+  border-radius:14px; padding:12px 14px; margin:-4px 0 14px;
+}
+.search-box input{ border:none; outline:none; flex:1; font-size:.95rem; }
+.search-box svg{ flex-shrink:0; }
+
+/* categories */
+.cat-row{ display:flex; gap:14px; overflow-x:auto; padding:4px 2px 16px; scrollbar-width:none; }
+.cat-row::-webkit-scrollbar{ display:none; }
+.cat-item{ flex-shrink:0; text-align:center; cursor:pointer; }
+.cat-circle{
+  width:58px; height:58px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:1.5rem; background:linear-gradient(135deg, var(--orange), var(--red));
+  color:#fff; margin:0 auto 6px; box-shadow:0 6px 14px rgba(255,138,61,.35);
+}
+.cat-item span{ font-size:.72rem; font-weight:600; color:var(--ink); }
+
+label{font-size:.82rem; color:var(--muted); display:block; margin-bottom:4px;}
+button{
+  border:none; border-radius:12px; padding:12px 16px; font-size:.95rem;
+  font-weight:700; cursor:pointer; transition:transform .08s ease;
+}
+button:active{transform:scale(.97);}
+.btn-primary{background: linear-gradient(135deg, var(--red), var(--red-dark)); color:#fff; width:100%;}
+.btn-accent{background: linear-gradient(135deg, var(--orange), var(--red)); color:#fff; width:100%;}
+.btn-outline{background:#fff; border:1.5px solid var(--red); color:var(--red-dark);}
+.btn-sm{padding:6px 12px; font-size:.82rem;}
+
+/* catalog grid */
+#catalog{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.item-card{
+  border:1px solid var(--line); border-radius:14px; padding:10px; background:#FFFCF9;
+  display:flex; flex-direction:column; gap:8px;
+}
+.item-card .icon{
+  width:100%; height:64px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+  font-size:1.8rem; background:linear-gradient(135deg, #FFE3D3, #FFD1DC);
+}
+.item-card .name{ font-size:.88rem; font-weight:700; }
+.item-card .unit{ font-size:.72rem; color:var(--muted); font-weight:400; }
+.item-card input[type=number]{ width:100%; }
+
+.item-row{
+  display:flex; align-items:center; gap:10px; padding:8px 0;
+  border-bottom:1px dashed var(--line);
+}
+.item-row:last-child{border-bottom:none;}
+.item-row span.name{flex:1; font-size:.92rem;}
+.item-row input[type=number]{width:70px; margin:0; padding:6px;}
+
+.receipt-line{
+  display:flex; justify-content:space-between; font-size:.88rem; padding:6px 0;
+  border-bottom:1px dotted var(--line);
+}
+.receipt-line .shop{color:var(--muted); font-size:.78rem;}
+.total-line{
+  display:flex; justify-content:space-between; font-weight:800; padding-top:10px;
+  font-size:1.05rem; color:var(--red-dark);
+}
+.status-pill{
+  display:inline-block; padding:3px 10px; border-radius:20px; font-size:.72rem;
+  font-weight:700; text-transform:uppercase; letter-spacing:.4px;
+}
+.status-pending_shop_review{background:#FFE9D6; color:var(--orange);}
+.status-partially_unavailable{background:#FBE3DD; color:var(--red);}
+.status-awaiting_payment{background:#FFE3EC; color:var(--pink);}
+.status-confirmed{background:#E3F5E9; color:var(--green-ok);}
+.status-ready{background:var(--plum); color:#fff;}
+.status-completed{background:#22281F; color:#fff;}
+#order-tracker .order-card{margin-bottom:12px;}
+#qr-box{text-align:center; padding:10px;}
+#qr-box canvas{margin:0 auto;}
+.code-box{
+  text-align:center; font-size:2rem; letter-spacing:10px; font-weight:800;
+  color:var(--red-dark); background:#FFF0E6; border-radius:12px; padding:14px; margin:10px 0;
+}
+.hint{font-size:.78rem; color:var(--muted); margin-top:4px;}
+.hidden{display:none !important;}
+#map{width:100%; height:220px; border-radius:12px; margin-top:10px; border:1px solid var(--line);}
+.toast{
+  position:fixed; bottom:16px; left:50%; transform:translateX(-50%);
+  background:var(--plum); color:#fff; padding:10px 18px; border-radius:30px;
+  font-size:.85rem; z-index:50; box-shadow:0 4px 14px rgba(0,0,0,.25);
+}
+
+/* auth */
+input[type="text"], input[type="email"], input[type="number"] {
+  width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 0.95rem; outline: none;
+}
+input:focus { border-color: var(--red); }
+.auth-heading { color: var(--ink); font-size: 1.25rem; font-weight: 800; margin-bottom: 14px; }
+.phone-box {
+  border: 1.5px solid var(--line); border-radius: 10px; padding: 8px 12px;
+  display: flex; align-items: center; gap: 10px; position:relative;
+}
+.phone-box:focus-within{ border-color: var(--red); }
+.phone-box .flag-code {
+  font-size: 0.95rem; color: var(--ink); white-space: nowrap;
+  border-right: 1px solid var(--line); padding-right: 10px;
+}
+.phone-box input { border: none; outline: none; padding: 6px 0; font-size: 0.95rem; flex: 1; }
+.floating-label{ position:absolute; top:-9px; left:12px; background:#fff; padding:0 4px; font-size:.72rem; color:var(--muted); }
+.phone-box:focus-within .floating-label{ color:var(--red); }
+.field-error{ color:#D33; font-size:.72rem; margin-top:4px; padding-left:4px; }
+.country-list{ position:absolute; top:110%; left:0; background:#fff; border:1px solid var(--line); border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,.15); max-height:240px; overflow-y:auto; width:240px; z-index:20; }
+.country-list div{ padding:8px 12px; font-size:.88rem; cursor:pointer; display:flex; gap:8px; white-space:nowrap; }
+.country-list div:hover{ background:#FFF3E9; }
+#country-list-items{ display:flex; flex-direction:column; width:100%; }
+.country-list img, .flag-code img{ width:20px; height:14px; object-fit:cover; vertical-align:middle; margin-right:4px; }
+.btn-primary:disabled{ background:#E7D9CD; color:#a89686; cursor:not-allowed; }
+#user-badge{ cursor:pointer; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hdr-top">
+    <div>
+      <h1>Wait <span style="color:var(--orange)">🛒</span></h1>
+      <div class="sub">Save Time, No More Waiting</div>
+    </div>
+    <button class="badge" id="user-badge" onclick="skipToGuest()">Guest</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ AUTH CONTAINER ============ -->
+  <div id="auth-panel" class="panel">
+
+    <h2 class="auth-heading" style="margin-bottom:14px;">Enter your number</h2>
+
+    <div class="phone-box" style="margin-bottom: 16px;">
+      <span class="flag-code" id="country-code-btn" onclick="toggleCountryList()"><img src="https://flagcdn.com/w20/in.png"> +91 ▾</span>
+      <label class="floating-label">Mobile Number</label>
+      <div id="phone-error" class="field-error hidden">Please use a real phone number</div>
+      <input type="text" id="phone" placeholder=" " oninput="updateGoogleButtonState()">
+      <div id="country-list" class="country-list hidden">
+        <input type="text" id="country-search" placeholder="Search country" oninput="renderCountryList(this.value)" style="width:92%;margin:6px auto;display:block;padding:6px 8px;border:1px solid var(--line);">
+        <div id="country-list-items"></div>
+      </div>
+    </div>
+
+    <p id="phone-hint" style="text-align:center; color:var(--muted); margin:12px 0; font-size:.85rem;">Enter number, then continue with Google</p>
+
+    <div id="google-btn-wrap" style="opacity:0.4; pointer-events:none;">
+      <div id="g_id_onload"
+           data-client_id="331552152118-9kbvonm08obtu4fjepnvc46b4lkdjid8.apps.googleusercontent.com"
+           data-callback="handleGoogleLogin">
+      </div>
+      <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="continue_with" data-size="large" data-width="300"></div>
+    </div>
+
+  </div>
+
+  <!-- ============ CATALOG / CART ============ -->
+  <section id="shop-panel" class="panel hidden">
+
+    <div class="hero-wrap">
+      <div class="hero-card">
+        <span class="hero-emoji">🧺</span>
+        <h3>Welcome, ghar ke boss!</h3>
+        <span>Saman chuno, sabse sasti dukan turant milegi</span>
+      </div>
+    </div>
+
+    <div class="search-box">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B3221D" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="item-search" placeholder="Search for 'Chawal'" oninput="filterCatalog(this.value)">
+    </div>
+
+    <div class="cat-row" id="cat-row"></div>
+
+    <h2>Saman Chuno</h2>
+    <div id="catalog"></div>
+    <div style="height:10px;"></div>
+    <button class="btn-primary" onclick="matchCart()">Sabse Sasti Dukan Dhoondo</button>
+  </section>
+
+  <section id="match-panel" class="panel hidden">
+    <h2>Aapka Bill Preview</h2>
+    <div id="match-lines"></div>
+    <div class="total-line"><span>Total</span><span id="grand-total">₹0</span></div>
+    <div style="height:10px;"></div>
+    <button class="btn-accent" onclick="placeOrder()">Done — Order Bhejo</button>
+  </section>
+
+  <!-- ============ LIVE ORDER TRACKING ============ -->
+  <section id="order-tracker" class="panel hidden">
+    <h2>Aapka Order</h2>
+    <div id="order-cards"></div>
+  </section>
+
+  <!-- ============ SHOP QR SCAN ============ -->
+  <section id="shop-scan-panel" class="panel hidden">
+    <h2>Dukan Pahunch Gaye?</h2>
+    <div class="hint" style="margin-bottom:10px;">Dukan mein lage QR ko scan karo, dukandar ko turant pata chal jaayega.</div>
+    <button class="btn-primary" onclick="startShopScanner()">Dukan Ka QR Scan Karo</button>
+    <div id="shop-qr-reader" style="width:100%; margin-top:10px;"></div>
+  </section>
+
+</main>
+
+<script>
+const API = "https://localkirana-production.up.railway.app";
+let token = null, myRole = null, myUserId = null, ws = null;
+let catalogItems = [], cart = {}, matchedLines = [], activeShopOrderIds = [];
+
+// ---------------- ICON + CATEGORY HELPERS (visual only, no backend change) ----------------
+const ICONS = [
+  {kw:['dal','chana','rajma','moong'], icon:'🫘'},
+  {kw:['chini','sugar'], icon:'🍬'},
+  {kw:['tel','oil','ghee'], icon:'🫗'},
+  {kw:['biskut','biscuit','parle'], icon:'🍪'},
+  {kw:['atta','flour','maida'], icon:'🌾'},
+  {kw:['chawal','rice'], icon:'🍚'},
+  {kw:['namak','salt'], icon:'🧂'},
+  {kw:['chai','tea'], icon:'🍵'},
+  {kw:['doodh','milk','dahi','paneer'], icon:'🥛'},
+  {kw:['sabzi','vegetable','aloo','pyaz','tamatar'], icon:'🥔'},
+  {kw:['masala','mirch','haldi'], icon:'🌶️'},
+];
+function iconFor(name){
+  const n = (name||'').toLowerCase();
+  for(const g of ICONS){ if(g.kw.some(k => n.includes(k))) return g.icon; }
+  return '🛒';
+}
+const CATEGORIES = [
+  {icon:'🌾', label:'Anaj'}, {icon:'🥛', label:'Dairy'}, {icon:'🥔', label:'Sabzi'},
+  {icon:'🌶️', label:'Masala'}, {icon:'🍵', label:'Chai/Coffee'}, {icon:'🍪', label:'Snacks'}
+];
+function renderCategories(){
+  const row = document.getElementById('cat-row');
+  if(!row) return;
+  row.innerHTML = CATEGORIES.map(c => `
+    <div class="cat-item" onclick="document.getElementById('item-search').value='${c.label}'; filterCatalog('${c.label}');">
+      <div class="cat-circle">${c.icon}</div>
+      <span>${c.label}</span>
+    </div>`).join('');
+}
+function filterCatalog(q){
+  q = (q||'').toLowerCase();
+  document.querySelectorAll('#catalog .item-card').forEach(card => {
+    const match = card.dataset.name.toLowerCase().includes(q);
+    card.style.display = match ? '' : 'none';
+  });
+}
+
+// ---------------- AUTH LOGIC (FREE GMAIL OTP) ----------------
+const countries = [
+{flag:"af",code:"+93",name:"Afghanistan"},{flag:"al",code:"+355",name:"Albania"},{flag:"dz",code:"+213",name:"Algeria"},
+{flag:"ad",code:"+376",name:"Andorra"},{flag:"ao",code:"+244",name:"Angola"},{flag:"ag",code:"+1268",name:"Antigua and Barbuda"},
+{flag:"ar",code:"+54",name:"Argentina"},{flag:"am",code:"+374",name:"Armenia"},{flag:"au",code:"+61",name:"Australia"},
+{flag:"at",code:"+43",name:"Austria"},{flag:"az",code:"+994",name:"Azerbaijan"},{flag:"bs",code:"+1242",name:"Bahamas"},
+{flag:"bh",code:"+973",name:"Bahrain"},{flag:"bd",code:"+880",name:"Bangladesh"},{flag:"bb",code:"+1246",name:"Barbados"},
+{flag:"by",code:"+375",name:"Belarus"},{flag:"be",code:"+32",name:"Belgium"},{flag:"bz",code:"+501",name:"Belize"},
+{flag:"bj",code:"+229",name:"Benin"},{flag:"bt",code:"+975",name:"Bhutan"},{flag:"bo",code:"+591",name:"Bolivia"},
+{flag:"ba",code:"+387",name:"Bosnia and Herzegovina"},{flag:"bw",code:"+267",name:"Botswana"},{flag:"br",code:"+55",name:"Brazil"},
+{flag:"bn",code:"+673",name:"Brunei"},{flag:"bg",code:"+359",name:"Bulgaria"},{flag:"bf",code:"+226",name:"Burkina Faso"},
+{flag:"bi",code:"+257",name:"Burundi"},{flag:"cv",code:"+238",name:"Cabo Verde"},{flag:"kh",code:"+855",name:"Cambodia"},
+{flag:"cm",code:"+237",name:"Cameroon"},{flag:"ca",code:"+1",name:"Canada"},{flag:"cf",code:"+236",name:"Central African Republic"},
+{flag:"td",code:"+235",name:"Chad"},{flag:"cl",code:"+56",name:"Chile"},{flag:"cn",code:"+86",name:"China"},
+{flag:"co",code:"+57",name:"Colombia"},{flag:"km",code:"+269",name:"Comoros"},{flag:"cg",code:"+242",name:"Congo"},
+{flag:"cd",code:"+243",name:"DR Congo"},{flag:"cr",code:"+506",name:"Costa Rica"},{flag:"ci",code:"+225",name:"Cote d'Ivoire"},
+{flag:"hr",code:"+385",name:"Croatia"},{flag:"cu",code:"+53",name:"Cuba"},{flag:"cy",code:"+357",name:"Cyprus"},
+{flag:"cz",code:"+420",name:"Czech Republic"},{flag:"dk",code:"+45",name:"Denmark"},{flag:"dj",code:"+253",name:"Djibouti"},
+{flag:"dm",code:"+1767",name:"Dominica"},{flag:"do",code:"+1809",name:"Dominican Republic"},{flag:"ec",code:"+593",name:"Ecuador"},
+{flag:"eg",code:"+20",name:"Egypt"},{flag:"sv",code:"+503",name:"El Salvador"},{flag:"gq",code:"+240",name:"Equatorial Guinea"},
+{flag:"er",code:"+291",name:"Eritrea"},{flag:"ee",code:"+372",name:"Estonia"},{flag:"sz",code:"+268",name:"Eswatini"},
+{flag:"et",code:"+251",name:"Ethiopia"},{flag:"fj",code:"+679",name:"Fiji"},{flag:"fi",code:"+358",name:"Finland"},
+{flag:"fr",code:"+33",name:"France"},{flag:"ga",code:"+241",name:"Gabon"},{flag:"gm",code:"+220",name:"Gambia"},
+{flag:"ge",code:"+995",name:"Georgia"},{flag:"de",code:"+49",name:"Germany"},{flag:"gh",code:"+233",name:"Ghana"},
+{flag:"gr",code:"+30",name:"Greece"},{flag:"gd",code:"+1473",name:"Grenada"},{flag:"gt",code:"+502",name:"Guatemala"},
+{flag:"gn",code:"+224",name:"Guinea"},{flag:"gw",code:"+245",name:"Guinea-Bissau"},{flag:"gy",code:"+592",name:"Guyana"},
+{flag:"ht",code:"+509",name:"Haiti"},{flag:"hn",code:"+504",name:"Honduras"},{flag:"hk",code:"+852",name:"Hong Kong"},
+{flag:"hu",code:"+36",name:"Hungary"},{flag:"is",code:"+354",name:"Iceland"},{flag:"in",code:"+91",name:"India"},
+{flag:"id",code:"+62",name:"Indonesia"},{flag:"ir",code:"+98",name:"Iran"},{flag:"iq",code:"+964",name:"Iraq"},
+{flag:"ie",code:"+353",name:"Ireland"},{flag:"il",code:"+972",name:"Israel"},{flag:"it",code:"+39",name:"Italy"},
+{flag:"jm",code:"+1876",name:"Jamaica"},{flag:"jp",code:"+81",name:"Japan"},{flag:"jo",code:"+962",name:"Jordan"},
+{flag:"kz",code:"+7",name:"Kazakhstan"},{flag:"ke",code:"+254",name:"Kenya"},{flag:"ki",code:"+686",name:"Kiribati"},
+{flag:"kw",code:"+965",name:"Kuwait"},{flag:"kg",code:"+996",name:"Kyrgyzstan"},{flag:"la",code:"+856",name:"Laos"},
+{flag:"lv",code:"+371",name:"Latvia"},{flag:"lb",code:"+961",name:"Lebanon"},{flag:"ls",code:"+266",name:"Lesotho"},
+{flag:"lr",code:"+231",name:"Liberia"},{flag:"ly",code:"+218",name:"Libya"},{flag:"li",code:"+423",name:"Liechtenstein"},
+{flag:"lt",code:"+370",name:"Lithuania"},{flag:"lu",code:"+352",name:"Luxembourg"},{flag:"mo",code:"+853",name:"Macao"},
+{flag:"mg",code:"+261",name:"Madagascar"},{flag:"mw",code:"+265",name:"Malawi"},{flag:"my",code:"+60",name:"Malaysia"},
+{flag:"mv",code:"+960",name:"Maldives"},{flag:"ml",code:"+223",name:"Mali"},{flag:"mt",code:"+356",name:"Malta"},
+{flag:"mh",code:"+692",name:"Marshall Islands"},{flag:"mr",code:"+222",name:"Mauritania"},{flag:"mu",code:"+230",name:"Mauritius"},
+{flag:"mx",code:"+52",name:"Mexico"},{flag:"fm",code:"+691",name:"Micronesia"},{flag:"md",code:"+373",name:"Moldova"},
+{flag:"mc",code:"+377",name:"Monaco"},{flag:"mn",code:"+976",name:"Mongolia"},{flag:"me",code:"+382",name:"Montenegro"},
+{flag:"ma",code:"+212",name:"Morocco"},{flag:"mz",code:"+258",name:"Mozambique"},{flag:"mm",code:"+95",name:"Myanmar"},
+{flag:"na",code:"+264",name:"Namibia"},{flag:"nr",code:"+674",name:"Nauru"},{flag:"np",code:"+977",name:"Nepal"},
+{flag:"nl",code:"+31",name:"Netherlands"},{flag:"nz",code:"+64",name:"New Zealand"},{flag:"ni",code:"+505",name:"Nicaragua"},
+{flag:"ne",code:"+227",name:"Niger"},{flag:"ng",code:"+234",name:"Nigeria"},{flag:"kp",code:"+850",name:"North Korea"},
+{flag:"mk",code:"+389",name:"North Macedonia"},{flag:"no",code:"+47",name:"Norway"},{flag:"om",code:"+968",name:"Oman"},
+{flag:"pk",code:"+92",name:"Pakistan"},{flag:"pw",code:"+680",name:"Palau"},{flag:"ps",code:"+970",name:"Palestine"},
+{flag:"pa",code:"+507",name:"Panama"},{flag:"pg",code:"+675",name:"Papua New Guinea"},{flag:"py",code:"+595",name:"Paraguay"},
+{flag:"pe",code:"+51",name:"Peru"},{flag:"ph",code:"+63",name:"Philippines"},{flag:"pl",code:"+48",name:"Poland"},
+{flag:"pt",code:"+351",name:"Portugal"},{flag:"qa",code:"+974",name:"Qatar"},{flag:"ro",code:"+40",name:"Romania"},
+{flag:"ru",code:"+7",name:"Russia"},{flag:"rw",code:"+250",name:"Rwanda"},{flag:"kn",code:"+1869",name:"Saint Kitts and Nevis"},
+{flag:"lc",code:"+1758",name:"Saint Lucia"},{flag:"vc",code:"+1784",name:"Saint Vincent and the Grenadines"},
+{flag:"ws",code:"+685",name:"Samoa"},{flag:"sm",code:"+378",name:"San Marino"},{flag:"st",code:"+239",name:"Sao Tome and Principe"},
+{flag:"sa",code:"+966",name:"Saudi Arabia"},{flag:"sn",code:"+221",name:"Senegal"},{flag:"rs",code:"+381",name:"Serbia"},
+{flag:"sc",code:"+248",name:"Seychelles"},{flag:"sl",code:"+232",name:"Sierra Leone"},{flag:"sg",code:"+65",name:"Singapore"},
+{flag:"sk",code:"+421",name:"Slovakia"},{flag:"si",code:"+386",name:"Slovenia"},{flag:"sb",code:"+677",name:"Solomon Islands"},
+{flag:"so",code:"+252",name:"Somalia"},{flag:"za",code:"+27",name:"South Africa"},{flag:"kr",code:"+82",name:"South Korea"},
+{flag:"ss",code:"+211",name:"South Sudan"},{flag:"es",code:"+34",name:"Spain"},{flag:"lk",code:"+94",name:"Sri Lanka"},
+{flag:"sd",code:"+249",name:"Sudan"},{flag:"sr",code:"+597",name:"Suriname"},{flag:"se",code:"+46",name:"Sweden"},
+{flag:"ch",code:"+41",name:"Switzerland"},{flag:"sy",code:"+963",name:"Syria"},{flag:"tw",code:"+886",name:"Taiwan"},
+{flag:"tj",code:"+992",name:"Tajikistan"},{flag:"tz",code:"+255",name:"Tanzania"},{flag:"th",code:"+66",name:"Thailand"},
+{flag:"tl",code:"+670",name:"Timor-Leste"},{flag:"tg",code:"+228",name:"Togo"},{flag:"to",code:"+676",name:"Tonga"},
+{flag:"tt",code:"+1868",name:"Trinidad and Tobago"},{flag:"tn",code:"+216",name:"Tunisia"},{flag:"tr",code:"+90",name:"Turkey"},
+{flag:"tm",code:"+993",name:"Turkmenistan"},{flag:"tv",code:"+688",name:"Tuvalu"},{flag:"ug",code:"+256",name:"Uganda"},
+{flag:"ua",code:"+380",name:"Ukraine"},{flag:"ae",code:"+971",name:"UAE"},{flag:"gb",code:"+44",name:"UK"},
+{flag:"us",code:"+1",name:"USA"},{flag:"uy",code:"+598",name:"Uruguay"},{flag:"uz",code:"+998",name:"Uzbekistan"},
+{flag:"vu",code:"+678",name:"Vanuatu"},{flag:"va",code:"+379",name:"Vatican City"},{flag:"ve",code:"+58",name:"Venezuela"},
+{flag:"vn",code:"+84",name:"Vietnam"},{flag:"ye",code:"+967",name:"Yemen"},{flag:"zm",code:"+260",name:"Zambia"},
+{flag:"zw",code:"+263",name:"Zimbabwe"}
+];
+
+function renderCountryList(filter=""){
+  const items = document.getElementById('country-list-items');
+  const f = filter.toLowerCase();
+  const filtered = countries.filter(c => c.name.toLowerCase().includes(f) || c.code.includes(f));
+  items.innerHTML = filtered.map(c => `<div onclick="selectCountry('${c.flag}','${c.code}')"><img src="https://flagcdn.com/w20/${c.flag}.png"> ${c.code} ${c.name}</div>`).join('');
+}
+
+function toggleCountryList(){
+  const list = document.getElementById('country-list');
+  if(list.classList.contains('hidden')){
+    renderCountryList();
+    list.classList.remove('hidden');
+    document.getElementById('country-search').value = "";
+    document.getElementById('country-search').focus();
+  } else {
+    list.classList.add('hidden');
+  }
+}
+
+function selectCountry(flag, code){
+  document.getElementById('country-code-btn').innerHTML = `<img src="https://flagcdn.com/w20/${flag}.png"> ${code} ▾`;
+  document.getElementById('country-list').classList.add('hidden');
+}
+
+function isValidIndianPhone(phone){
+  return /^[6-9]\d{9}$/.test(phone);
+}
+
+function isValidEmail(email){
+  const disposableDomains = ['tempmail.com','10minutemail.com','guerrillamail.com','mailinator.com','yopmail.com','trashmail.com','fakeinbox.com','throwawaymail.com'];
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if(!emailRegex.test(email)) return false;
+  const domain = email.split('@')[1].toLowerCase();
+  return !disposableDomains.includes(domain);
+}
+
+function skipToGuest() {
+  token = null;
+  myRole = "customer";
+  myUserId = null;
+
+  localStorage.setItem("is_guest", "true");
+  localStorage.removeItem("access_token");
+  document.getElementById('user-badge').innerText = "Guest User";
+
+  document.getElementById('auth-panel').classList.add('hidden');
+  document.getElementById('shop-panel').classList.remove('hidden');
+
+  renderCategories();
+  toast('Guest mode active! Order ke liye login zaroori hoga.');
+  loadCatalog();
+}
+let lastInvalidToastPhone = '';
+
+function updateGoogleButtonState() {
+  const phone = document.getElementById('phone').value.trim();
+  const validPhone = /^\d{6,15}$/.test(phone) && !/^(\d)\1+$/.test(phone);
+  const wrap = document.getElementById('google-btn-wrap');
+  const phoneBox = document.querySelector('.phone-box');
+  const label = document.querySelector('.floating-label');
+
+  if (validPhone) {
+    wrap.style.opacity = '1';
+    wrap.style.pointerEvents = 'auto';
+    document.getElementById('phone-hint').innerText = 'Now continue with Google';
+    phoneBox.style.borderColor = 'var(--green-ok)';
+    label.style.color = 'var(--green-ok)';
+    lastInvalidToastPhone = '';
+  } else {
+    wrap.style.opacity = '0.4';
+    wrap.style.pointerEvents = 'none';
+    document.getElementById('phone-hint').innerText = 'Enter number, then continue with Google';
+    phoneBox.style.borderColor = '';
+    label.style.color = '';
+
+    if (phone.length >= 6 && phone !== lastInvalidToastPhone) {
+      toast('Enter valid number');
+      lastInvalidToastPhone = phone;
+    }
+  }
+}
+async function handleGoogleLogin(response) {
+  const phone = document.getElementById('phone').value.trim();
+  const validPhone = /^\d{6,15}$/.test(phone);
+  const isRepeated = /^(\d)\1+$/.test(phone);
+  const isSequential = phone === '1234567890' || phone === '0123456789';
+  if (!validPhone || isRepeated || isSequential) { toast('Kripya valid phone number daalein'); return; }
+
+  try {
+    const res = await fetch(`${API}/auth/google`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ credential: response.credential, phone: phone })
+    });
+    const data = await res.json();
+    if (!res.ok) { toast(data.detail || 'Google login mein dikkat aayi'); return; }
+
+    token = data.access_token;
+    myRole = data.role;
+    myUserId = data.user_id;
+    localStorage.setItem('access_token', token);
+    localStorage.removeItem('is_guest');
+    document.getElementById('user-badge').innerText = data.name || 'User';
+
+    document.getElementById('auth-panel').classList.add('hidden');
+    document.getElementById('shop-panel').classList.remove('hidden');
+    renderCategories();
+    loadCatalog();
+  } catch (err) {
+    toast('Google login fail ho gaya, dobara try karo');
+  }
+}
+async function handleSendOTP() {
+  const phone = document.getElementById('phone').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+
+  if (!phone || phone.length !== 10) { toast('Kripya sahi 10-digit phone number daalein'); return; }
+
+  const body = { phone: phone, name: "User", role: "customer" };
+
+  try {
+    const res = await fetch(`${API}/auth/request-otp`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+
+    const data = await res.json();
+    if (!res.ok) { toast(data.detail || 'OTP bhejne mein dikkat aayi'); return; }
+
+    toast('OTP aapke Gmail par bhej diya gaya hai!');
+    document.getElementById('otp-step1').classList.add('hidden');
+    document.getElementById('otp-step2').classList.remove('hidden');
+  } catch (err) {
+    toast('Backend server se connection nahi ho paya.');
+  }
+}
+
+async function handleVerifyOTP() {
+  const phone = document.getElementById('phone').value.trim();
+  const otp = document.getElementById('login-otp').value.trim();
+
+  if (!otp || otp.length !== 6) { toast('6-digit OTP daalein'); return; }
+
+  const body = { phone: phone, otp: otp, role: "customer" };
+
+  try {
+    const res = await fetch(`${API}/auth/verify-login-otp`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+
+    const data = await res.json();
+    if (!res.ok) { toast(data.detail || 'Galat OTP ya expire ho chuka hai'); return; }
+
+    localStorage.removeItem("is_guest");
+    onLoggedIn(data);
+    toast('Login successful! Welcome.');
+  } catch (err) {
+    toast('Verification failed.');
+  }
+}
+
+function showStep1() {
+  document.getElementById('otp-step1').classList.remove('hidden');
+  document.getElementById('otp-step2').classList.add('hidden');
+}
+
+function onLoggedIn(data){
+  token = data.access_token; myRole = data.role; myUserId = data.user_id;
+  document.getElementById('user-badge').innerText = `${data.name} · ${data.role}`;
+  document.getElementById('auth-panel').classList.add('hidden');
+  document.getElementById('shop-panel').classList.remove('hidden');
+  document.getElementById('order-tracker').classList.remove('hidden');
+  document.getElementById('shop-scan-panel').classList.remove('hidden');
+  renderCategories();
+  loadCatalog();
+  connectWS();
+}
+
+function authHeaders(){ return {'Authorization': `Bearer ${token}`, 'Content-Type':'application/json'}; }
+
+// ---------------- CATALOG ----------------
+async function loadCatalog(){
+  const res = await fetch(`${API}/customer/items`, {headers: authHeaders()});
+  catalogItems = await res.json();
+  const el = document.getElementById('catalog');
+  el.innerHTML = catalogItems.map(it => `
+    <div class="item-card" data-name="${it.name}">
+      <div class="icon">${iconFor(it.name)}</div>
+      <div class="name">${it.name}<div class="unit">${it.unit}</div></div>
+      <input type="number" min="0" step="0.5" placeholder="0" data-item="${it.id}" onchange="updateCart(${it.id}, this.value)" />
+    </div>
+  `).join('');
+}
+
+function updateCart(itemId, qty){
+  qty = parseFloat(qty);
+  if(!qty || qty <= 0){ delete cart[itemId]; return; }
+  cart[itemId] = qty;
+}
+
+// ---------------- MATCH CHEAPEST SHOP ----------------
+async function matchCart(){
+  const lines = Object.entries(cart).map(([item_id, quantity]) => ({item_id: parseInt(item_id), quantity}));
+  if(lines.length === 0){ toast('Pehle kuch saman chuno'); return; }
+
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    await doMatch(lines, pos.coords.latitude, pos.coords.longitude);
+  }, async () => { await doMatch(lines, null, null); });
+}
+
+async function doMatch(lines, lat, lng){
+  const res = await fetch(`${API}/customer/cart/match`, {
+    method:'POST', headers: authHeaders(),
+    body: JSON.stringify({lines, latitude: lat, longitude: lng})
+  });
+  if(!res.ok){
+    if(res.status === 401){
+      toast('Session expire ho gaya, dobara login karo');
+      document.getElementById('auth-panel').classList.remove('hidden');
+      document.getElementById('shop-panel').classList.add('hidden');
+      token = null;
+    } else {
+      toast('Kuch galat hua: ' + (await res.text()));
+    }
+    return;
+  }
+  const data = await res.json();
+  matchedLines = data.lines;
+  window._lastLat = lat; window._lastLng = lng;
+
+  document.getElementById('match-panel').classList.remove('hidden');
+  document.getElementById('match-lines').innerHTML = matchedLines.map(l => l.available ? `
+    <div class="receipt-line">
+      <span>${l.item_name} × ${l.quantity}<br><span class="shop">📍 ${l.shop_name} — ₹${l.unit_price}/unit</span></span>
+      <span>₹${l.line_total.toFixed(2)}</span>
+    </div>` : `
+    <div class="receipt-line">
+      <span>${l.item_name} × ${l.quantity}<br><span class="shop" style="color:var(--red)">❌ Kahi bhi available nahi</span></span>
+      <span>—</span>
+    </div>`
+  ).join('');
+  document.getElementById('grand-total').innerText = `₹${data.grand_total.toFixed(2)}`;
+}
+
+// ---------------- PLACE ORDER ----------------
+async function placeOrder(){
+  const lines = Object.entries(cart).map(([item_id, quantity]) => ({item_id: parseInt(item_id), quantity}));
+  const res = await fetch(`${API}/customer/orders`, {
+    method:'POST', headers: authHeaders(),
+    body: JSON.stringify({lines, latitude: window._lastLat, longitude: window._lastLng})
+  });
+  if(!res.ok){ toast('Order nahi ban paya: ' + (await res.text())); return; }
+  const shopOrders = await res.json();
+  activeShopOrderIds = shopOrders.map(so => so.id);
+  document.getElementById('match-panel').classList.add('hidden');
+  shopOrders.forEach(renderOrderCard);
+  toast('Order dukandar ko bhej diya gaya!');
+}
+
+function renderOrderCard(so){
+  let el = document.getElementById(`order-${so.id}`);
+  if(!el){
+    el = document.createElement('div');
+    el.id = `order-${so.id}`;
+    el.className = 'order-card panel';
+    document.getElementById('order-cards').prepend(el);
+  }
+  el.dataset.orderId = so.order_id;
+  const itemsHtml = so.items.map(i => `
+    <div class="receipt-line">
+      <span>${i.item_name} × ${i.quantity} ${i.availability === 'not_available' ? '❌' : i.availability === 'available' ? '✅' : '⏳'}</span>
+      <span>₹${(i.unit_price * i.quantity).toFixed(2)}</span>
+    </div>`).join('');
+
+  let actionHtml = '';
+  if(so.status === 'awaiting_payment'){
+    actionHtml = `
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <button class="btn-primary" style="flex:1" onclick="payOnline(${so.id}, ${so.amount})">Online Payment</button>
+        <button class="btn-outline" style="flex:1" onclick="payCash(${so.id})">Cash</button>
+      </div>
+      <div class="hint">Cash on pickup 10 online orders ke baad unlock hota hai.</div>`;
+  } else if(so.status === 'ready'){
+    actionHtml = `
+      <div id="qr-box-${so.id}" style="text-align:center; margin-top:10px;"></div>
+      <div class="code-box">${so.verification_code}</div>
+      <div class="hint">Yeh QR ya code dukandar ko dikhao/batao pickup ke liye</div>
+      <div id="map-${so.id}"></div>`;
+  }
+
+  el.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <strong>${so.shop_name}</strong>
+      <span class="status-pill status-${so.status}">${so.status.replace(/_/g,' ')}</span>
+    </div>
+    ${itemsHtml}
+    <div class="total-line"><span>Total</span><span>₹${so.amount.toFixed(2)}</span></div>
+    ${actionHtml}
+  `;
+
+  if(so.status === 'ready' && typeof QRCode !== 'undefined'){
+    QRCode.toCanvas(document.createElement('canvas'), so.qr_token, {width:180}, (err, canvas) => {
+      if(!err) document.getElementById(`qr-box-${so.id}`).appendChild(canvas);
+    });
+  }
+}
+
+// ---------------- PAYMENT ----------------
+async function payOnline(shopOrderId, amount){
+  const res = await fetch(`${API}/customer/shop-orders/${shopOrderId}/pay/create`, {method:'POST', headers: authHeaders()});
+  if(!res.ok){ toast('Payment order nahi ban paya: ' + (await res.text())); return; }
+  const rp = await res.json();
+
+  const options = {
+    key: rp.key_id,
+    amount: rp.amount_paise,
+    currency: rp.currency,
+    order_id: rp.razorpay_order_id,
+    name: "Wait",
+    description: "Order Payment",
+    handler: async function(response){
+      const verifyRes = await fetch(`${API}/customer/shop-orders/${shopOrderId}/pay/verify`, {
+        method:'POST', headers: authHeaders(),
+        body: JSON.stringify({
+          razorpay_order_id: response.razorpay_order_id,
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_signature: response.razorpay_signature
+        })
+      });
+      if(verifyRes.ok){ toast('Payment ho gaya! ✅'); } else { toast('Payment verify nahi hua'); }
+    },
+    theme: { color: "#E6372F" }
+  };
+  const rzp = new Razorpay(options);
+  rzp.open();
+}
+
+async function payCash(shopOrderId){
+  const res = await fetch(`${API}/customer/shop-orders/${shopOrderId}/pay/cash`, {method:'POST', headers: authHeaders()});
+  if(!res.ok){ toast(await res.text()); return; }
+  toast('Cash on pickup confirm ho gaya');
+}
+
+// ---------------- WEBSOCKET (REAL-TIME) ----------------
+function connectWS(){
+  const wsUrl = API.replace('http', 'ws') + `/ws?token=${token}`;
+  ws = new WebSocket(wsUrl);
+  ws.onmessage = (msg) => {
+    const {event, data} = JSON.parse(msg.data);
+    if(event === 'item_not_available'){
+      toast(`${data.item_name} ${data.shop_name} mein nahi hai. Alternatives dekh rahe hain.`);
+    } else if(event === 'ready_for_payment'){
+      toast('Aapke items confirm ho gaye — ab payment kijiye');
+      refreshOrders();
+    } else if(event === 'order_ready'){
+      toast(data.message);
+      refreshOrders();
+      showMap(data);
+    } else if(event === 'order_received'){
+      toast(data.message);
+      refreshOrders();
+    }
+  };
+  ws.onclose = () => setTimeout(connectWS, 3000);
+}
+
+async function refreshOrders(){
+  const orderIds = new Set();
+  for(const soId of activeShopOrderIds){
+    const el = document.getElementById(`order-${soId}`);
+    if(el && el.dataset.orderId) orderIds.add(el.dataset.orderId);
+  }
+  for(const orderId of orderIds){
+    const res = await fetch(`${API}/customer/orders/${orderId}/shop-orders`, {headers: authHeaders()});
+    if(!res.ok) continue;
+    const shopOrders = await res.json();
+    shopOrders.forEach(renderOrderCard);
+  }
+}
+
+function showMap(data){
+  const mapDiv = document.getElementById(`map-${data.shop_order_id}`);
+  if(!mapDiv) return;
+  mapDiv.innerHTML = `<iframe id="map" style="border:0" loading="lazy"
+    src="https://www.google.com/maps/embed/v1/place?key=YOUR_GOOGLE_MAPS_API_KEY&q=${data.shop_latitude},${data.shop_longitude}">
+    </iframe>`;
+}
+
+let shopHtml5QrCode = null;
+function startShopScanner(){
+  if(shopHtml5QrCode){ shopHtml5QrCode.stop(); }
+  shopHtml5QrCode = new Html5Qrcode("shop-qr-reader");
+  shopHtml5QrCode.start(
+    { facingMode: "environment" }, { fps: 10, qrbox: 220 },
+    async (decodedText) => {
+      shopHtml5QrCode.stop();
+      const res = await fetch(`${API}/customer/scan-shop`, {
+        method:'POST', headers: authHeaders(), body: JSON.stringify({qr_data: decodedText})
+      });
+      const data = await res.json();
+      if(res.ok){ toast(data.message || 'Dukandar ko bata diya gaya!'); }
+      else{ toast(data.detail || 'Scan fail ho gaya'); }
+    },
+    () => {}
+  );
+}
+
+function toast(msg){
+  const t = document.createElement('div');
+  t.className = 'toast'; t.innerText = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then((reg) => console.log('Service Worker Registered!'))
+        .catch((err) => console.error('Service Worker Failed:', err));
+    });
+  }
+</script>
+</body>
+</html>
