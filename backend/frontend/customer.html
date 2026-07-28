@@ -257,6 +257,14 @@ input:focus { border-color: var(--red); }
 .category-banner .cb-title{ font-size:1.15rem; font-weight:800; margin:0 0 4px; }
 .category-banner .cb-sub{ font-size:.8rem; opacity:.9; }
 .category-banner .cb-emoji{ position:absolute; right:14px; top:14px; font-size:2rem; opacity:.8; }
+body.photo-active h2, 
+body.photo-active .panel h2 {
+  text-shadow: 0 1px 3px rgba(255,255,255,.8);
+}
+body.photo-active .panel,
+body.photo-active .item-card {
+  background: rgba(255, 252, 249, 0.9);
+}
 .hero-carousel{
   position:relative; border-radius:20px; overflow:hidden; height:180px;
   box-shadow:0 12px 28px rgba(0,0,0,.2);
@@ -461,10 +469,11 @@ function applyCategoryTheme(label){
   startCarouselAutoSlide();
 
   const theme = CATEGORY_THEMES[label];
-  document.body.style.backgroundImage = `linear-gradient(rgba(255,243,233,.75), rgba(255,243,233,.75)), url('${theme.photo}')`;
+  document.body.style.backgroundImage = `linear-gradient(rgba(255,243,233,.4), rgba(255,243,233,.4)), url('${theme.photo}')`;
   document.body.style.backgroundSize = 'cover';
   document.body.style.backgroundAttachment = 'fixed';
   document.body.style.backgroundPosition = 'center';
+  document.body.classList.add('photo-active');
 }
 let itemUnitById = {}; // item.id -> backend unit ("kg","litre","piece",...)
 
