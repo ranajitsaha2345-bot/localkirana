@@ -426,7 +426,8 @@ const CATEGORIES = [
   {icon:'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=200', label:'Sabzi', keyword:'sabzi'},
   {icon:'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=200', label:'Masala', keyword:'masala'},
   {icon:'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=200', label:'Chai/Coffee', keyword:'chai'},
-  {icon:'https://images.unsplash.com/photo-1621447504864-d8686f12c84a?w=200', label:'Snacks', keyword:'biskut'}
+  {icon:'https://images.unsplash.com/photo-1621447504864-d8686f12c84a?w=200', label:'Snacks', keyword:'biskut'},
+  {icon:'https://images.unsplash.com/photo-1560023907-5f339617ea30?w=200', label:'Water', keyword:'pani'}
 ];
 const CATEGORY_THEMES = {
   'Anaj':      { photo:'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=1000', title:'Anaj & Grocery', sub:'Roz ka raashan, ek jagah', emoji:'🌾' },
@@ -434,7 +435,8 @@ const CATEGORY_THEMES = {
   'Sabzi':     { photo:'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=1000', title:'Taazi Sabzi',    sub:'Khet se seedhe aapke ghar',   emoji:'🥔' },
   'Masala':    { photo:'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=1000', title:'Masala Corner',  sub:'Swaad badhane wale masale',   emoji:'🌶️' },
   'Chai/Coffee':{ photo:'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=1000', title:'Chai & Coffee', sub:'Har mood ke liye ek cup',      emoji:'🍵' },
-  'Snacks':    { photo:'https://images.unsplash.com/photo-1621447504864-d8686f12c84a?w=1000', title:'Snacks Time',    sub:'Chatpata aur crunchy',         emoji:'🍪' }
+  'Snacks':    { photo:'https://images.unsplash.com/photo-1621447504864-d8686f12c84a?w=1000', title:'Snacks Time',    sub:'Chatpata aur crunchy',         emoji:'🍪' },
+  'Water':     { photo:'https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?w=1000', title:'Paani Ki Dukan', sub:'Bisleri, Kinley aur bhi bahut kuch', emoji:'💧' }
 };
 
 let carouselIndex = 0;
@@ -558,6 +560,7 @@ const SEARCH_KEYWORD_CATEGORY = {
   'haldi':'masala','mirch':'masala','jeera':'masala','masala':'masala',
   'chai':'beverages','coffee':'beverages','cold':'beverages',
   'sabun':'personal_care','shampoo':'personal_care','tooth':'personal_care',
+  'pani':'water','paani':'water','bisleri':'water','kinley':'water','aquafina':'water','bailley':'water','mineral':'water','bottle':'water',
 };
 // Do words kitne "close" hain, yeh check karta hai (spelling mistakes tolerate karega)
 function levenshteinDistance(a, b){
