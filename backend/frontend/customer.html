@@ -421,12 +421,12 @@ function iconFor(name){
   return map[name] ? `<img src="${map[name]}" style="width:36px;height:36px;object-fit:cover;border-radius:6px;">` : "🛒";
 }
 const CATEGORIES = [
-  {icon:'🌾', label:'Anaj', keyword:'chawal'},
-  {icon:'🥛', label:'Dairy', keyword:'doodh'},
-  {icon:'🥔', label:'Sabzi', keyword:'sabzi'},
-  {icon:'🌶️', label:'Masala', keyword:'masala'},
-  {icon:'🍵', label:'Chai/Coffee', keyword:'chai'},
-  {icon:'🍪', label:'Snacks', keyword:'biskut'}
+  {icon:'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=200', label:'Anaj', keyword:'chawal'},
+  {icon:'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=200', label:'Dairy', keyword:'doodh'},
+  {icon:'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=200', label:'Sabzi', keyword:'sabzi'},
+  {icon:'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=200', label:'Masala', keyword:'masala'},
+  {icon:'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=200', label:'Chai/Coffee', keyword:'chai'},
+  {icon:'https://images.unsplash.com/photo-1621447504864-d8686f12c84a?w=200', label:'Snacks', keyword:'biskut'}
 ];
 const CATEGORY_THEMES = {
   'Anaj':      { photo:'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=1000', title:'Anaj & Grocery', sub:'Roz ka raashan, ek jagah', emoji:'🌾' },
@@ -543,7 +543,9 @@ function renderCategories(){
   if(!row) return;
   row.innerHTML = CATEGORIES.map(c => `
     <div class="cat-item" onclick="document.getElementById('item-search').value='${c.keyword}'; filterCatalog('${c.keyword}'); applyCategoryTheme('${c.label}');">
-      <div class="cat-circle">${c.icon}</div>
+      <div class="cat-circle" style="background:none; padding:0; overflow:hidden;">
+        <img src="${c.icon}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+      </div>
       <span>${c.label}</span>
     </div>`).join('');
 }
