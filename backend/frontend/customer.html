@@ -284,8 +284,16 @@ body.photo-active .item-card {
 .hero-slide .hs-emoji{ font-size:1.6rem; position:relative; z-index:1; }
 .hero-slide .hs-title{ font-size:1.25rem; font-weight:800; position:relative; z-index:1; }
 .hero-slide .hs-sub{ font-size:.82rem; opacity:.9; position:relative; z-index:1; }
+.page-bg-layer{
+  position:fixed; inset:0; z-index:-2;
+  background-size:cover; background-position:center;
+  opacity:0; transition:opacity 1.2s ease-in-out;
+}
+.page-bg-layer.visible{ opacity:.4; }
 </style>
 </head>
+<div id="page-bg-a" class="page-bg-layer"></div>
+<div id="page-bg-b" class="page-bg-layer"></div>
 <body>
 
 <header>
@@ -448,12 +456,27 @@ function renderHeroCarousel(){
   startCarouselAutoSlide();
 }
 
+let activeBgLayer = 'a';
 function showSlide(index){
   carouselLabels.forEach((label, i) => {
     const el = document.getElementById(`hero-slide-${i}`);
     if(el) el.classList.toggle('active', i === index);
   });
   carouselIndex = index;
+
+  const label = carouselLabels[index];
+  const theme = CATEGORY_THEMES[label];
+  if(theme){
+    const showLayerId = activeBgLayer === 'a' ? 'page-bg-b' : 'page-bg-a';
+    const hideLayerId = activeBgLayer === 'a' ? 'page-bg-a' : 'page-bg-b';
+    const showLayer = document.getElementById(showLayerId);
+    const hideLayer = document.getElementById(hideLayerId);
+    showLayer.style.backgroundImage = `url('${theme.photo}')`;
+    showLayer.classList.add('visible');
+    hideLayer.classList.remove('visible');
+    activeBgLayer = activeBgLayer === 'a' ? 'b' : 'a';
+    document.body.classList.add('photo-active');
+  }
 }
 
 function startCarouselAutoSlide(){
@@ -469,13 +492,6 @@ function applyCategoryTheme(label){
   if(index === -1) return;
   showSlide(index);
   startCarouselAutoSlide();
-
-  const theme = CATEGORY_THEMES[label];
-  document.body.style.backgroundImage = `linear-gradient(rgba(255,243,233,.4), rgba(255,243,233,.4)), url('${theme.photo}')`;
-  document.body.style.backgroundSize = 'cover';
-  document.body.style.backgroundAttachment = 'fixed';
-  document.body.style.backgroundPosition = 'center';
-  document.body.classList.add('photo-active');
 }
 let itemUnitById = {}; // item.id -> backend unit ("kg","litre","piece",...)
 
