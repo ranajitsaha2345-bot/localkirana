@@ -108,9 +108,9 @@
 .ie-unit{ flex:1; }
 .ie-price{ flex:0.8; }
 .ie-save{ flex:none; width:auto; padding:8px 12px; white-space:nowrap; }
-.ai-name{ flex:1.3; }
-.ai-unit{ flex:1; }
-.ai-price{ flex:0.7; }
+.ai-name{ flex:1.4; min-width:0; }
+.ai-unit{ flex:1; min-width:0; }
+.ai-price{ flex:0.8; min-width:0; }
 .ai-save{ flex:none; width:auto; padding:10px 14px; white-space:nowrap; }
   .avail-btn{width:42px; height:42px; border-radius:10px; font-size:1.1rem; font-weight:800;}
   .avail-ok{background:#E3F5E9; color:var(--green-ok); border:2px solid var(--green-ok);}
@@ -312,25 +312,14 @@ function editInventoryItem(shopItemId, name, price){
         <h2>Add New Item</h2>
         <div class="add-item-row">
           <input id="new-item-name" placeholder="Item name" class="ai-name" />
-          <select id="new-item-category" class="ai-unit">
-            <option value="grocery">Anaj/Grocery</option>
-            <option value="dairy">Dairy</option>
-            <option value="vegetables">Sabzi</option>
-            <option value="masala">Masala</option>
-            <option value="beverages">Chai/Coffee</option>
-            <option value="snacks">Snacks</option>
-            <option value="water">Water</option>
-            <option value="general">Other</option>
-          </select>
           <select id="new-item-unit" class="ai-unit">
             <option value="packet">1 Packet</option>
             <option value="kg">1 Kg</option>
             <option value="litre">1 Litre</option>
           </select>
           <input id="new-item-price" type="number" step="0.5" placeholder="Price" class="ai-price" />
-          <input id="new-item-image" type="text" placeholder="Photo URL (optional)" class="ai-name" style="flex-basis:100%;" />
-          <button class="btn-accent ai-save" onclick="createItem()">Save</button>
         </div>
+        <button class="btn-accent ai-save" style="width:100%; margin-top:8px;" onclick="createItem()">Save</button>
       </section>
       <section class="panel">
         <h2>Shop Item List</h2>
@@ -1210,8 +1199,8 @@ async function createItem(){
   if(!requireLogin()) return;
   const name = document.getElementById('new-item-name').value.trim();
   const unit = document.getElementById('new-item-unit').value;
-  const category = document.getElementById('new-item-category').value;
-  const imageUrl = document.getElementById('new-item-image').value.trim();
+  const category = 'general'; // default — dropdown removed from UI
+  const imageUrl = ''; // photo url field removed from UI
   const price = parseFloat(document.getElementById('new-item-price').value);
 
   if(!name){ toast('Enter item name'); return; }
@@ -1225,7 +1214,6 @@ async function createItem(){
   }
 
   let itemUrl = `${API}/shop/items?name=${encodeURIComponent(name)}&unit=${encodeURIComponent(unit)}&category=${encodeURIComponent(category)}`;
-  if(imageUrl) itemUrl += `&image_url=${encodeURIComponent(imageUrl)}`;
 
   const itemRes = await fetch(itemUrl, {
     method: 'POST', headers: authHeaders()
@@ -1242,8 +1230,6 @@ async function createItem(){
   toast(editingShopItemId ? 'Item update ho gaya!' : 'Item added!');
   document.getElementById('new-item-name').value = '';
   document.getElementById('new-item-price').value = '';
-  document.getElementById('new-item-image').value = '';
-  document.getElementById('new-item-category').value = 'grocery';
   document.querySelector('.ai-save').innerText = 'Save';
   editingShopItemId = null;
   loadInventory();
