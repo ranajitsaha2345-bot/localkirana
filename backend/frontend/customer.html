@@ -942,7 +942,7 @@ async function loadCatalog(){
     return `
     <div class="item-card" data-name="${it.name}" data-category="${it.category || ''}">
       <span class="qty-float hidden" id="qty-float-${it.id}">0</span>
-      <div class="icon">${iconFor(it.name, it.category)}</div>
+      <div class="icon">${it.image_url ? `<img src="${it.image_url}" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">` : iconFor(it.name, it.category)}</div>
       <div class="name">${it.name}</div>
       <div class="unit-hint">${hint}</div>
       <div class="qty-controls">
