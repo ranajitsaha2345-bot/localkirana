@@ -217,6 +217,32 @@ main{ padding-bottom:80px; }
 </style>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+function toggleReadyOrders(){
+  const win = document.getElementById('ready-orders-window');
+  const isHidden = win.classList.contains('hidden');
+  if(isHidden){
+    win.classList.remove('hidden');
+    renderReadyOrders();
+  } else {
+    win.classList.add('hidden');
+  }
+}
+
+function renderReadyOrders(){
+  const body = document.getElementById('ready-orders-body');
+  const readyOrders = allOrders.filter(o => o.status === 'ready');
+  if(readyOrders.length === 0){
+    body.innerHTML = '<div class="chat-msg bot">Abhi koi order ready nahi hai jo customer le kar nahi gaya.</div>';
+    return;
+  }
+  body.innerHTML = readyOrders.map(o => `
+    <div class="chat-msg bot" style="margin-bottom:10px;">
+      <strong>${o.customer_name}</strong><br>
+      Order #${o.id} — Ready hai, abhi tak pickup nahi hua<br>
+      ${o.customer_phone ? `<a href="tel:${o.customer_phone}" class="btn-primary" style="display:inline-block; margin-top:6px; text-decoration:none;">📞 Call Karo (${o.customer_phone})</a>` : 'Phone number nahi mila'}
+    </div>
+  `).join('');
+}
 <script>
   let editingShopItemId = null;
   let uploadedImageBase64 = '';
@@ -1314,5 +1340,13 @@ async function deleteInventoryItem(shopItemId){
   loadInventory();
 }
 </script>
+<button class="chat-fab" onclick="toggleReadyOrders()">📞</button>
+<div id="ready-orders-window" class="chat-window hidden">
+  <div class="chat-header">
+    <strong>Customer Ko Call Karo</strong>
+    <button onclick="toggleReadyOrders()" style="background:none; color:#fff; font-size:1.2rem; padding:0;">✕</button>
+  </div>
+  <div id="ready-orders-body" class="chat-body"></div>
+</div>
 </body>
 </html>

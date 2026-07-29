@@ -38,7 +38,7 @@ def _to_shop_order_out(db: Session, so: models.ShopOrder) -> schemas.ShopOrderOu
     ]
     return schemas.ShopOrderOut(
         id=so.id, order_id=so.order_id, shop_id=so.shop_id, shop_name=shop.name,
-        customer_id=customer.id, customer_name=customer.name,
+        customer_id=customer.id, customer_name=customer.name, customer_phone=customer.phone, customer_phone=customer.phone,
         status=so.status, payment_mode=so.payment_mode, payment_status=so.payment_status,
         amount=so.amount, verification_code=so.verification_code, qr_token=so.qr_token,
         items=items, created_at=so.created_at, ready_at=so.ready_at,

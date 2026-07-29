@@ -137,6 +137,7 @@ class ShopOrderOut(BaseModel):
     shop_name: str
     customer_id: int
     customer_name: str
+    customer_phone: Optional[str] = None
     status: ShopOrderStatus
     payment_mode: Optional[PaymentMode]
     payment_status: PaymentStatus
