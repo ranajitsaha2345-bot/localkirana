@@ -1253,7 +1253,13 @@ function handleImageUpload(event){
 
 function removeImagePreview(){
   uploadedImageBase64 = '';
-  removeImagePreview();
+  function removeImagePreview(){
+  uploadedImageBase64 = '';
+  document.getElementById('new-item-image-file').value = '';
+  document.getElementById('ai-image-preview').classList.add('hidden');
+  document.getElementById('ai-image-remove-btn').classList.add('hidden');
+  document.getElementById('ai-image-preview-text').innerText = 'Gallery Se Photo Add Karo';
+}
   document.getElementById('ai-image-preview').classList.add('hidden');
   document.getElementById('ai-image-remove-btn').classList.add('hidden');
   document.getElementById('ai-image-preview-text').innerText = 'Gallery Se Photo Add Karo';
