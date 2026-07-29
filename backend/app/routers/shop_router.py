@@ -378,3 +378,34 @@ def delete_my_inventory_item(shop_item_id: int, db: Session = Depends(get_db),
     db.delete(shop_item)
     db.commit()
     return {"status": "removed"}
+@router.patch("/status")
+def toggle_shop_status(payload: schemas.ShopStatusUpdate, db: Session = Depends(get_db),
+                        user: models.User = Depends(require_shopkeeper)):
+    """Dukandar apni dukan open/close karta hai."""
+    shop = _get_owned_shop(db, user)
+    shop.is_open = payload.is_open
+    db.commit()
+    return {"status": "ok", "is_open": shop.is_open}
+
+
+@router.get("/status")
+def get_shop_status(db: Session = Depends(get_db),
+                     user: models.User = Depends(require_shopkeeper)):
+    shop = _get_owned_shop(db, user)
+    return {"is_open": shop.is_open}
+@router.get("/status")
+def get_shop_status(db: Session = Depends(get_db),
+                     user: models.User = Depends(require_shopkeeper)):
+    """Dukandar ki dukan abhi open hai ya band."""
+    shop = _get_owned_shop(db, user)
+    return {"is_open": shop.is_open}
+
+
+@router.patch("/status")
+def toggle_shop_status(payload: schemas.ShopStatusUpdate, db: Session = Depends(get_db),
+                        user: models.User = Depends(require_shopkeeper)):
+    """Dukandar apni dukan open/close karta hai."""
+    shop = _get_owned_shop(db, user)
+    shop.is_open = payload.is_open
+    db.commit()
+    return {"status": "ok", "is_open": shop.is_open}

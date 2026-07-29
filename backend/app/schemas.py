@@ -178,3 +178,5 @@ class RazorpayVerifyRequest(BaseModel):
     razorpay_order_id: str
     razorpay_payment_id: str
     razorpay_signature: str
+class ShopStatusUpdate(BaseModel):
+    is_open: bool
