@@ -112,7 +112,25 @@
 .ai-unit{ flex:1; min-width:0; }
 .ai-price{ flex:0.8; min-width:0; }
 .ai-save{ flex:none; width:auto; padding:10px 14px; white-space:nowrap; }
-  .avail-btn{width:42px; height:42px; border-radius:10px; font-size:1.1rem; font-weight:800;}
+.add-item-image-row{
+  display:flex; align-items:center; gap:8px; margin-top:8px;
+}
+.ai-image-upload-btn{
+  flex:1; display:flex; align-items:center; justify-content:center; gap:8px;
+  border:1.5px dashed var(--red); border-radius:10px; padding:10px;
+  font-size:.82rem; font-weight:600; color:var(--red-dark); cursor:pointer;
+  background:#FFF8F4;
+}
+.ai-image-upload-btn:active{ transform:scale(.98); }
+#ai-image-preview{
+  width:44px; height:44px; border-radius:8px; object-fit:cover;
+  border:1px solid var(--line); flex:none;
+}
+#ai-image-remove-btn{
+  width:30px; height:30px; flex:none; background:var(--red); color:#fff;
+  border-radius:50%; font-size:.8rem; font-weight:800; padding:0;
+}
+.avail-btn{width:42px; height:42px; border-radius:10px; font-size:1.1rem; font-weight:800;}
   .avail-ok{background:#E3F5E9; color:var(--green-ok); border:2px solid var(--green-ok);}
   .avail-no{background:#FBE3DD; color:var(--red); border:2px solid var(--red);}
   .avail-ok.active{background:var(--green-ok); color:#fff;}
@@ -201,6 +219,7 @@ main{ padding-bottom:80px; }
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
   let editingShopItemId = null;
+  let uploadedImageBase64 = '';
 
 function editInventoryItem(shopItemId, name, price){
   editingShopItemId = shopItemId;
@@ -319,11 +338,18 @@ function editInventoryItem(shopItemId, name, price){
           </select>
           <input id="new-item-price" type="number" step="0.5" placeholder="Price" class="ai-price" />
         </div>
+      
+        <div class="add-item-image-row">
+          <label for="new-item-image-file" class="ai-image-upload-btn">
+            <span id="ai-image-preview-icon">📷</span>
+            <span id="ai-image-preview-text">Gallery Se Photo Add Karo</span>
+          </label>
+          <input type="file" id="new-item-image-file" accept="image/*" style="display:none;" onchange="handleImageUpload(event)" />
+          <img id="ai-image-preview" class="hidden" />
+          <button type="button" id="ai-image-remove-btn" class="hidden" onclick="removeImagePreview()">✕</button>
+        </div>
+      
         <button class="btn-accent ai-save" style="width:100%; margin-top:8px;" onclick="createItem()">Save</button>
-      </section>
-      <section class="panel">
-        <h2>Shop Item List</h2>
-        <div id="inventory-list" class="inventory-grid"></div>
       </section>
     </div>
 <!-- CATEGORY PICKER MODAL -->
@@ -1194,13 +1220,47 @@ function addFromTemplate(name, unit){
 function closeCategoryModal(){
   document.getElementById('category-modal').classList.add('hidden');
 }
+function handleImageUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const img = new Image();
+    img.onload = function(){
+      const canvas = document.createElement('canvas');
+      const maxSize = 500;
+      let w = img.width, h = img.height;
+      if(w > h){ if(w > maxSize){ h = h * (maxSize / w); w = maxSize; } }
+      else { if(h > maxSize){ w = w * (maxSize / h); h = maxSize; } }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      uploadedImageBase64 = canvas.toDataURL('image/jpeg', 0.7);
+
+      document.getElementById('ai-image-preview').src = uploadedImageBase64;
+      document.getElementById('ai-image-preview').classList.remove('hidden');
+      document.getElementById('ai-image-remove-btn').classList.remove('hidden');
+      document.getElementById('ai-image-preview-text').innerText = 'Photo Add Ho Gayi ✓';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeImagePreview(){
+  uploadedImageBase64 = '';
+  removeImagePreview();
+  document.getElementById('ai-image-preview').classList.add('hidden');
+  document.getElementById('ai-image-remove-btn').classList.add('hidden');
+  document.getElementById('ai-image-preview-text').innerText = 'Gallery Se Photo Add Karo';
+}
 
 async function createItem(){
   if(!requireLogin()) return;
   const name = document.getElementById('new-item-name').value.trim();
   const unit = document.getElementById('new-item-unit').value;
   const category = 'general'; // default — dropdown removed from UI
-  const imageUrl = ''; // photo url field removed from UI
+  const imageUrl = uploadedImageBase64;
   const price = parseFloat(document.getElementById('new-item-price').value);
 
   if(!name){ toast('Enter item name'); return; }
