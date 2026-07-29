@@ -391,6 +391,20 @@ function editInventoryItem(shopItemId, name, price){
     </div>
   </div>
 </main>
+<button class="chat-fab" onclick="toggleSupportChat()">💬</button>
+
+<div id="support-chat-window" class="chat-window hidden">
+  <div class="chat-header">
+    <span>🛠️ Customer Care</span>
+    <button onclick="toggleSupportChat()" style="background:none;color:#fff;font-size:1.1rem;">✕</button>
+  </div>
+  <div class="chat-body" id="chat-body"></div>
+  <div class="chat-quick-replies" id="chat-quick-replies"></div>
+  <div class="chat-input-row">
+    <input type="text" id="chat-input" placeholder="Apna sawal likho..." onkeypress="if(event.key==='Enter') sendSupportMessage()">
+    <button class="btn-accent" onclick="sendSupportMessage()">Bhejo</button>
+  </div>
+</div>
 
 <script>
 const API = "https://localkirana-production.up.railway.app";
@@ -672,6 +686,10 @@ async function loadOrders(){
   const res = await fetch(`${API}/shop/orders`, {headers: authHeaders()});
   if(!res.ok) return;
   const orders = await res.json();
+
+  const activeOrder = orders.find(o => o.status === 'ready') || orders.find(o => o.status === 'confirmed');
+  window._activeCustomerPhone = activeOrder ? activeOrder.customer_phone : null;
+
   const wrap = document.getElementById('orders-list');
   wrap.innerHTML = orders.filter(o => o.status !== 'completed').map(renderOrderCard).join('') || '<div class="panel">No new orders yet.</div>';
 }
@@ -707,7 +725,8 @@ function renderOrderCard(so){
       ${renderContactButtons(so.customer_phone)}
       <button class="btn-accent" style="margin-top:8px" onclick="markReady(${so.id})">Ready — Items Prepared</button>`;
   } else if(so.status === 'ready'){
-    footer = `<div class="hint">Customer is on the way. Order ID: <strong>${so.id}</strong> — confirm from Pickup Verify tab.</div>`;
+    footer = `<div class="hint">Customer is on the way. Order ID: <strong>${so.id}</strong> — confirm from Pickup Verify tab.</div>
+      ${renderContactButtons(so.customer_phone)}`;
   }
 
   return `
