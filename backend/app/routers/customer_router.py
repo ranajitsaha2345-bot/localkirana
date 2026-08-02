@@ -326,3 +326,58 @@ async def scan_shop_qr(
         "shop_order_id": so.id,
         "shop_order_status": so.status,
     }
+@router.get("/items/{item_id}/shops")
+def shops_for_item(
+    item_id: int,
+    latitude: float | None = None,
+    longitude: float | None = None,
+    db: Session = Depends(get_db),
+):
+    """Ek particular item kis-kis dukan mein milta hai — paas + sasta pehle."""
+    item = db.query(models.Item).get(item_id)
+    if not item:
+        raise HTTPException(404, "Item nahi mila")
+
+    ranked = matching.rank_shops_for_item(db, item_id, latitude, longitude)
+    if not ranked:
+        return {"item_id": item.id, "item_name": item.name, "shops": []}
+
+    shops_out = []
+    for shop_item, distance_km in ranked:
+        shops_out.append({
+            "shop_id": shop_item.shop_id,
+            "shop_name": shop_item.shop.name,
+            "shop_address": shop_item.shop.address,
+            "price": shop_item.price,
+            "unit": item.unit,
+            "distance_km": round(distance_km, 2) if distance_km is not None else None,
+        })
+
+    return {"item_id": item.id, "item_name": item.name, "shops": shops_out}
+
+
+@router.get("/shops/{shop_id}/items")
+def shop_catalog(shop_id: int, db: Session = Depends(get_db)):
+    """Ek dukan ka poora catalog — dukan naam par click karne par khulta hai."""
+    shop = db.query(models.Shop).get(shop_id)
+    if not shop:
+        raise HTTPException(404, "Dukan nahi mili")
+
+    rows = (
+        db.query(models.ShopItem)
+        .join(models.Item)
+        .filter(models.ShopItem.shop_id == shop_id, models.ShopItem.in_stock == True)  # noqa: E712
+        .all()
+    )
+    items = [
+        {
+            "item_id": r.item.id,
+            "name": r.item.name,
+            "unit": r.item.unit,
+            "category": r.item.category,
+            "image_url": r.item.image_url,
+            "price": r.price,
+        }
+        for r in rows
+    ]
+    return {"shop_id": shop.id, "shop_name": shop.name, "shop_address": shop.address, "items": items}

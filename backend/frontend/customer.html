@@ -11,6 +11,9 @@
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
+
+
+
 :root{
   --ink:#2B1810;
   --red:#E6372F;
@@ -304,6 +307,21 @@ body.photo-active .item-card {
   opacity:0; transition:opacity 1.2s ease-in-out;
 }
 .page-bg-layer.active { opacity:.4; }
+.shop-list-row{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:12px; border:1px solid var(--line); border-radius:12px; margin-bottom:8px; cursor:pointer;
+}
+.shop-list-row:active{ transform:scale(.98); }
+.shop-list-row.best-shop{ border:2px solid var(--green-ok); background:#F3FBF6; }
+.best-badge{
+  display:inline-block; background:var(--green-ok); color:#fff; font-size:.6rem; font-weight:800;
+  padding:2px 8px; border-radius:10px; margin-left:6px; vertical-align:middle;
+}
+.price-tag{ font-weight:800; color:var(--red-dark); font-size:1rem; }
+.btn-shops{
+  width:100%; padding:4px 2px; font-size:.58rem; margin-top:3px; border-radius:7px;
+  background:#fff; border:1.5px solid var(--plum); color:var(--plum);
+}
 </style>
 </head>
 <body>
@@ -402,6 +420,26 @@ body.photo-active .item-card {
 </section>
   
 </main>
+
+<div id="shop-list-modal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:60; display:flex; align-items:center; justify-content:center; padding:16px;">
+  <div class="panel" style="max-width:480px; width:100%; max-height:85vh; overflow-y:auto;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <h2 style="margin:0;" id="shop-list-title">Dukan List</h2>
+      <button class="btn-outline btn-sm" onclick="closeShopListModal()">✕ Band Karo</button>
+    </div>
+    <div id="shop-list-content"></div>
+  </div>
+</div>
+
+<div id="shop-catalog-modal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:60; display:flex; align-items:center; justify-content:center; padding:16px;">
+  <div class="panel" style="max-width:480px; width:100%; max-height:85vh; overflow-y:auto;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <h2 style="margin:0;" id="shop-catalog-title">Dukan Catalog</h2>
+      <button class="btn-outline btn-sm" onclick="closeShopCatalogModal()">✕ Band Karo</button>
+    </div>
+    <div id="shop-catalog-content"></div>
+  </div>
+</div>
 
 <script>
 const API = "https://localkirana-production.up.railway.app";
@@ -950,6 +988,7 @@ async function loadCatalog(){
         <button class="qty-btn" onclick="adjustPending(${it.id}, 1)">+</button>
       </div>
       <button class="btn-buy" onclick="confirmBuy(${it.id}, '${it.name.replace(/'/g,"\\'")}')">Add</button>
+      <button class="btn-shops" onclick="showShopsForItem(${it.id}, '${it.name.replace(/'/g,"\\'")}')">🏪 Dukan Dekho</button>
     </div>
   `;
   }).join('');
@@ -1450,6 +1489,63 @@ function showQuickReplies(){
   ];
   const wrap = document.getElementById('chat-quick-replies');
   wrap.innerHTML = replies.map(r => `<button class="chat-quick-btn" onclick="handleQuickReply('${r.replace(/'/g,"\\'")}')">${r}</button>`).join('');
+}
+async function showShopsForItem(itemId, itemName){
+  function afterLocation(lat, lng){
+    fetch(`${API}/customer/items/${itemId}/shops?latitude=${lat||''}&longitude=${lng||''}`, {headers: authHeaders()})
+      .then(res => res.json())
+      .then(data => renderShopListModal(data));
+  }
+  if(window._lastLat && window._lastLng){
+    afterLocation(window._lastLat, window._lastLng);
+  } else {
+    navigator.geolocation.getCurrentPosition(
+      pos => { window._lastLat = pos.coords.latitude; window._lastLng = pos.coords.longitude; afterLocation(pos.coords.latitude, pos.coords.longitude); },
+      () => afterLocation(null, null)
+    );
+  }
+}
+
+function renderShopListModal(data){
+  document.getElementById('shop-list-title').innerText = data.item_name + ' — Kaunsi Dukan Mein Hai';
+  const content = document.getElementById('shop-list-content');
+  if(!data.shops.length){
+    content.innerHTML = '<div class="hint">Yeh item abhi kisi dukan mein available nahi hai.</div>';
+  } else {
+    content.innerHTML = data.shops.map((s, i) => `
+      <div class="shop-list-row ${i===0 ? 'best-shop' : ''}" onclick="openShopCatalog(${s.shop_id}, '${s.shop_name.replace(/'/g,"\\'")}')">
+        <div>
+          <strong>${s.shop_name}</strong> ${i===0 ? '<span class="best-badge">Sabse Paas + Sasta</span>' : ''}
+          <div class="hint">${s.distance_km !== null ? s.distance_km + ' km door' : 'Distance pata nahi'}</div>
+        </div>
+        <div class="price-tag">₹${s.price}/${s.unit}</div>
+      </div>
+    `).join('');
+  }
+  document.getElementById('shop-list-modal').classList.remove('hidden');
+}
+
+function closeShopListModal(){
+  document.getElementById('shop-list-modal').classList.add('hidden');
+}
+
+async function openShopCatalog(shopId, shopName){
+  closeShopListModal();
+  const res = await fetch(`${API}/customer/shops/${shopId}/items`, {headers: authHeaders()});
+  const data = await res.json();
+  document.getElementById('shop-catalog-title').innerText = data.shop_name + ' — Poora Catalog';
+  const content = document.getElementById('shop-catalog-content');
+  content.innerHTML = data.items.map(it => `
+    <div class="item-row">
+      <span class="name">${it.name}</span>
+      <span style="font-weight:700; color:var(--red-dark);">₹${it.price}/${it.unit}</span>
+    </div>
+  `).join('') || '<div class="hint">Is dukan mein abhi koi item nahi hai.</div>';
+  document.getElementById('shop-catalog-modal').classList.remove('hidden');
+}
+
+function closeShopCatalogModal(){
+  document.getElementById('shop-catalog-modal').classList.add('hidden');
 }
 
 function handleQuickReply(text){

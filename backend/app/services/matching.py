@@ -89,3 +89,39 @@ def find_alternate_shops_for_item(
     )
     candidates.sort(key=lambda c: c.price)
     return candidates
+def rank_shops_for_item(
+    db: Session,
+    item_id: int,
+    customer_lat: Optional[float] = None,
+    customer_lng: Optional[float] = None,
+) -> list[tuple[models.ShopItem, Optional[float]]]:
+    """
+    Item bechne wali saari dukano ko 'paas + sasta' ke combined score se sort karta hai.
+    Score jitna kam, utna upar. Distance na ho to sirf price se sort hota hai.
+    """
+    candidates = (
+        db.query(models.ShopItem)
+        .join(models.Shop)
+        .filter(
+            models.ShopItem.item_id == item_id,
+            models.ShopItem.in_stock == True,  # noqa: E712
+            models.Shop.is_open == True,  # noqa: E712
+        )
+        .all()
+    )
+    if not candidates:
+        return []
+
+    scored = []
+    for c in candidates:
+        if customer_lat is not None and customer_lng is not None:
+            dist = _distance_km(customer_lat, customer_lng, c.shop.latitude, c.shop.longitude)
+            # paas + sasta dono ka combined weight — distance ka asar price ke hisaab se
+            score = c.price * (1 + dist * 0.02)
+        else:
+            dist = None
+            score = c.price
+        scored.append((c, dist, score))
+
+    scored.sort(key=lambda x: x[2])
+    return [(c, dist) for c, dist, _ in scored]
