@@ -961,16 +961,13 @@ function showStep1() {
 
 function onLoggedIn(data){
   token = data.access_token; myRole = data.role; myUserId = data.user_id;
-  saveSession(data);
   document.getElementById('user-badge').innerText = `${data.name} · ${data.role}`;
   document.querySelector('.back-btn').classList.add('show');
   panelStack = ['shop-panel'];
   applyPanel('shop-panel');
-  document.getElementById('order-tracker').classList.remove('hidden');
   renderCategories();
   loadCatalog();
   connectWS();
-  checkHistoryAvailability();
 }
 function saveSession(data){
   localStorage.setItem('access_token', data.access_token);
@@ -1163,6 +1160,7 @@ function renderContactButtons(phone){
 }
 
 function renderOrderCard(so){
+  document.getElementById('order-tracker').classList.remove('hidden');
   let el = document.getElementById(`order-${so.id}`);
   if(!el){
     el = document.createElement('div');
