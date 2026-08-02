@@ -567,22 +567,35 @@ async function sendGoogleLogin(credential, phone, lat, lng){
 
 function onLoggedIn(data){
   token = data.access_token; myUserId = data.user_id;
-  document.getElementById('user-badge').innerText = data.name;
-  document.getElementById('auth-panel').classList.add('hidden');
-  document.getElementById('app-content').classList.remove('hidden');
-  document.querySelector('.back-btn').classList.add('show');
-  loadOrders(); loadCatalogAndInventory(); connectWS();
-  setInterval(loadOrders, 8000);
-}
-
-function onLoggedIn(data){
-  token = data.access_token; myUserId = data.user_id;
+  saveShopSession(data);
   document.getElementById('user-badge').innerText = data.name;
   document.getElementById('auth-panel').classList.add('hidden');
   document.getElementById('app-content').classList.remove('hidden');
   document.querySelector('.back-btn').classList.add('show');
   loadOrders(); loadCatalogAndInventory(); connectWS(); loadShopStatus();
   setInterval(loadOrders, 8000);
+}
+
+function saveShopSession(data){
+  localStorage.setItem('shop_access_token', data.access_token);
+  localStorage.setItem('shop_user_id', data.user_id);
+  localStorage.setItem('shop_user_name', data.name);
+  localStorage.removeItem('shop_is_guest');
+}
+
+function tryRestoreShopSession(){
+  const isGuest = localStorage.getItem('shop_is_guest');
+  if(isGuest === 'true'){
+    skipToGuest();
+    return;
+  }
+  const savedToken = localStorage.getItem('shop_access_token');
+  if(!savedToken) return;
+  onLoggedIn({
+    access_token: savedToken,
+    user_id: parseInt(localStorage.getItem('shop_user_id')) || null,
+    name: localStorage.getItem('shop_user_name') || 'User',
+  });
 }
 
 function openForgotPassword(){
@@ -895,6 +908,8 @@ function selectCountry(flag, code){
 
 function skipToGuest(){
   token = null; myUserId = null;
+  localStorage.setItem('shop_is_guest', 'true');
+  localStorage.removeItem('shop_access_token');
   document.getElementById('user-badge').innerText = 'Guest User';
   document.getElementById('auth-panel').classList.add('hidden');
   document.getElementById('app-content').classList.remove('hidden');
@@ -1109,7 +1124,7 @@ function toast(msg){
   setTimeout(() => t.remove(), 3500);
 }
 </script>
-
+tryRestoreShopSession();
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
