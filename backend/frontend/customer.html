@@ -322,6 +322,17 @@ body.photo-active .item-card {
   width:100%; padding:4px 2px; font-size:.58rem; margin-top:3px; border-radius:7px;
   background:#fff; border:1.5px solid var(--plum); color:var(--plum);
 }
+.star-rating{ color:#FFB800; font-size:.85rem; }
+.review-popup-overlay{
+  position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:70;
+  display:flex; align-items:center; justify-content:center; padding:16px;
+}
+.review-stars{ display:flex; gap:8px; justify-content:center; margin:14px 0; }
+.review-star{ font-size:2rem; cursor:pointer; color:#ddd; transition:color .15s; }
+.review-star.filled{ color:#FFB800; }
+.review-item{ padding:10px 0; border-bottom:1px dashed var(--line); }
+.review-item .rv-head{ display:flex; justify-content:space-between; font-size:.85rem; font-weight:700; }
+.review-item .rv-comment{ font-size:.82rem; color:var(--muted); margin-top:4px; }
 </style>
 </head>
 <body>
@@ -1239,6 +1250,9 @@ function connectWS(){
     } else if(event === 'order_received'){
       toast(data.message);
       refreshOrders();
+      if(data.shop_order_id && data.shop_name){
+        setTimeout(() => openReviewPopup(data.shop_order_id, data.shop_name), 800);
+      }
     } else if(event === 'inventory_updated'){
       handleInventoryUpdate(data);
     }
@@ -1262,6 +1276,7 @@ async function reopenCurrentShopCatalog(){
   const data = await res.json();
   document.getElementById('shop-catalog-title').innerText = data.shop_name + ' — Poora Catalog';
   const content = document.getElementById('shop-catalog-content');
+  content.innerHTML = `<div style="text-align:center; margin-bottom:10px;">${renderStarsHtml(data.average_rating)} ${data.total_reviews ? `(${data.total_reviews} reviews)` : ''}</div>`;
   content.innerHTML = data.items.map(it => `
     <div class="item-row">
       <span class="name">${it.name} <span class="hint" style="font-weight:400;">(${it.unit})</span></span>
@@ -1546,6 +1561,8 @@ function renderShopListModal(data){
         <div>
           <strong>${s.shop_name}</strong> ${i===0 ? '<span class="best-badge">Sabse Paas + Sasta</span>' : ''}
           <div class="hint">${s.distance_km !== null ? s.distance_km + ' km door' : 'Distance pata nahi'}</div>
+          <div>${renderStarsHtml(s.average_rating)} ${s.total_reviews ? `(${s.total_reviews})` : ''}</div>
+          <div>${renderStarsHtml(s.average_rating)} ${s.total_reviews ? `(${s.total_reviews})` : ''}</div>
         </div>
         <div class="price-tag">₹${s.price}/${s.unit}</div>
       </div>
@@ -1566,7 +1583,8 @@ async function openShopCatalog(shopId, shopName){
   const data = await res.json();
   document.getElementById('shop-catalog-title').innerText = data.shop_name + ' — Poora Catalog';
   const content = document.getElementById('shop-catalog-content');
-  content.innerHTML = data.items.map(it => `
+  content.innerHTML = `<div style="text-align:center; margin-bottom:10px;">${renderStarsHtml(data.average_rating)} ${data.total_reviews ? `(${data.total_reviews} reviews)` : ''}</div>`;
+  content.innerHTML += data.items.map(it => `
     <div class="item-row">
       <span class="name">${it.name} <span class="hint" style="font-weight:400;">(${it.unit})</span></span>
       <span style="font-weight:700; color:var(--red-dark); margin-right:8px;">₹${it.price}</span>
@@ -1638,6 +1656,54 @@ function toast(msg){
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 3500);
 }
+let currentReviewShopOrderId = null;
+let currentReviewRating = 0;
+
+function openReviewPopup(shopOrderId, shopName){
+  currentReviewShopOrderId = shopOrderId;
+  currentReviewRating = 0;
+  document.getElementById('review-shop-name').innerText = shopName + ' — Order Kaisa Raha?';
+  document.getElementById('review-comment').value = '';
+  renderReviewStars();
+  document.getElementById('review-popup').classList.remove('hidden');
+}
+
+function renderReviewStars(){
+  const wrap = document.getElementById('review-stars');
+  wrap.innerHTML = '';
+  for(let i = 1; i <= 5; i++){
+    const span = document.createElement('span');
+    span.className = 'review-star' + (i <= currentReviewRating ? ' filled' : '');
+    span.innerText = '★';
+    span.onclick = () => { currentReviewRating = i; renderReviewStars(); };
+    wrap.appendChild(span);
+  }
+}
+
+function closeReviewPopup(){
+  document.getElementById('review-popup').classList.add('hidden');
+  currentReviewShopOrderId = null;
+}
+
+async function submitReview(){
+  if(!currentReviewRating){ toast('Kam se kam 1 star toh do'); return; }
+  const comment = document.getElementById('review-comment').value.trim();
+  const res = await fetch(`${API}/customer/shop-orders/${currentReviewShopOrderId}/review`, {
+    method:'POST', headers: authHeaders(),
+    body: JSON.stringify({rating: currentReviewRating, comment: comment || null})
+  });
+  if(!res.ok){ toast('Review submit nahi hua: ' + (await res.text())); return; }
+  toast('Dhanyawad! Review submit ho gaya 🙏');
+  closeReviewPopup();
+}
+
+function renderStarsHtml(avg){
+  if(avg === null || avg === undefined) return '<span class="hint">Abhi koi review nahi</span>';
+  const full = Math.round(avg);
+  let stars = '';
+  for(let i = 1; i <= 5; i++) stars += i <= full ? '★' : '☆';
+  return `<span class="star-rating">${stars} ${avg}</span>`;
+}
 </script>
 <script>
   if ('serviceWorker' in navigator) {
@@ -1674,6 +1740,17 @@ function toast(msg){
   <div class="chat-input-row">
     <input type="text" id="chat-input" placeholder="Apna sawal likho..." onkeypress="if(event.key==='Enter') sendSupportMessage()">
     <button class="btn-primary" onclick="sendSupportMessage()">Bhejo</button>
+  </div>
+</div>
+<div id="review-popup" class="hidden review-popup-overlay">
+  <div class="panel" style="max-width:400px; width:100%; text-align:center;">
+    <h2 id="review-shop-name">Order Kaisa Raha?</h2>
+    <div class="review-stars" id="review-stars"></div>
+    <textarea id="review-comment" placeholder="Kuch likhna chaho to (optional)" style="width:100%; padding:10px; border:1px solid var(--line); border-radius:10px; min-height:70px; font-family:inherit;"></textarea>
+    <div style="display:flex; gap:8px; margin-top:12px;">
+      <button class="btn-outline" style="flex:1;" onclick="closeReviewPopup()">Skip Karo</button>
+      <button class="btn-accent" style="flex:1;" onclick="submitReview()">Submit Karo</button>
+    </div>
   </div>
 </div>
 </body>
