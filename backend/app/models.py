@@ -174,3 +174,15 @@ class Review(Base):
     shop = relationship("Shop")
     customer = relationship("User")
     shop_order = relationship("ShopOrder")
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    shop_order_id = Column(Integer, ForeignKey("shop_orders.id"), nullable=False)
+    sender_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    sender_role = Column(Enum(UserRole), nullable=False)
+    message = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    shop_order = relationship("ShopOrder")
+    sender = relationship("User")

@@ -200,3 +200,17 @@ class ReviewOut(BaseModel):
 class ShopRatingSummary(BaseModel):
     average_rating: Optional[float] = None
     total_reviews: int = 0
+class ChatMessageCreate(BaseModel):
+    message: str
+
+
+class ChatMessageOut(BaseModel):
+    id: int
+    sender_id: int
+    sender_role: UserRole
+    sender_name: str
+    message: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

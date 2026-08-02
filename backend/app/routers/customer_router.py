@@ -442,3 +442,56 @@ def _get_shop_rating(db: Session, shop_id: int) -> tuple[float | None, int]:
         return None, 0
     avg = sum(r.rating for r in reviews) / len(reviews)
     return round(avg, 1), len(reviews)
+@router.get("/shop-orders/{shop_order_id}/messages", response_model=list[schemas.ChatMessageOut])
+def get_messages_customer(
+    shop_order_id: int, db: Session = Depends(get_db),
+    user: models.User = Depends(require_customer),
+):
+    so = db.query(models.ShopOrder).get(shop_order_id)
+    if not so or so.order.customer_id != user.id:
+        raise HTTPException(404, "Order nahi mila")
+    msgs = (
+        db.query(models.ChatMessage)
+        .filter(models.ChatMessage.shop_order_id == shop_order_id)
+        .order_by(models.ChatMessage.created_at)
+        .all()
+    )
+    return [
+        schemas.ChatMessageOut(
+            id=m.id, sender_id=m.sender_id, sender_role=m.sender_role,
+            sender_name=m.sender.name, message=m.message, created_at=m.created_at,
+        )
+        for m in msgs
+    ]
+
+
+@router.post("/shop-orders/{shop_order_id}/messages", response_model=schemas.ChatMessageOut)
+async def send_message_customer(
+    shop_order_id: int, payload: schemas.ChatMessageCreate,
+    db: Session = Depends(get_db), user: models.User = Depends(require_customer),
+):
+    so = db.query(models.ShopOrder).get(shop_order_id)
+    if not so or so.order.customer_id != user.id:
+        raise HTTPException(404, "Order nahi mila")
+
+    text = payload.message.strip()
+    if not text:
+        raise HTTPException(400, "Khali message nahi bhej sakte")
+
+    msg = models.ChatMessage(
+        shop_order_id=shop_order_id, sender_id=user.id,
+        sender_role=models.UserRole.customer, message=text,
+    )
+    db.add(msg)
+    db.commit()
+    db.refresh(msg)
+
+    shop = db.query(models.Shop).get(so.shop_id)
+    await realtime.manager.send_to_user(
+        shop.owner_id, "new_message",
+        {"shop_order_id": shop_order_id, "sender_name": user.name, "message": text},
+    )
+    return schemas.ChatMessageOut(
+        id=msg.id, sender_id=msg.sender_id, sender_role=msg.sender_role,
+        sender_name=user.name, message=msg.message, created_at=msg.created_at,
+    )
