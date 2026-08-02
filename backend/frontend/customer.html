@@ -1537,11 +1537,22 @@ async function openShopCatalog(shopId, shopName){
   const content = document.getElementById('shop-catalog-content');
   content.innerHTML = data.items.map(it => `
     <div class="item-row">
-      <span class="name">${it.name}</span>
-      <span style="font-weight:700; color:var(--red-dark);">₹${it.price}/${it.unit}</span>
+      <span class="name">${it.name} <span class="hint" style="font-weight:400;">(${it.unit})</span></span>
+      <span style="font-weight:700; color:var(--red-dark); margin-right:8px;">₹${it.price}</span>
+      <button class="btn-buy" style="width:auto; padding:6px 12px;" onclick="addShopItemToCart(${it.item_id}, '${it.name.replace(/'/g,"\\'")}', '${it.unit}')">+ Add</button>
     </div>
   `).join('') || '<div class="hint">Is dukan mein abhi koi item nahi hai.</div>';
   document.getElementById('shop-catalog-modal').classList.remove('hidden');
+}
+
+function addShopItemToCart(itemId, name, unit){
+  itemUnitById[itemId] = unit;
+  const info = getUnitInfo(unit);
+  const current = cart[itemId] || 0;
+  cart[itemId] = current + info.step;
+  cartNames[itemId] = name;
+  renderFloatingCart();
+  toast(`${name} shopping list mein add ho gaya!`);
 }
 
 function closeShopCatalogModal(){
