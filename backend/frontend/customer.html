@@ -1139,7 +1139,7 @@ async function placeOrder(){
   if(!res.ok){ toast('Order nahi ban paya: ' + (await res.text())); return; }
   const shopOrders = await res.json();
   activeShopOrderIds = shopOrders.map(so => so.id);
-  goBack();
+  document.getElementById('match-panel').classList.add('hidden');
   shopOrders.forEach(renderOrderCard);
   toast('Order dukandar ko bhej diya gaya!');
   showHistoryButton();
