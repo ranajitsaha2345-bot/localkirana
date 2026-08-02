@@ -339,7 +339,12 @@ async def _complete_pickup(db: Session, so: models.ShopOrder) -> schemas.ShopOrd
     # dono taraf confirmation - customer aur dukandar
     await realtime.manager.send_to_user(
         customer_id, "order_received",
-        {"shop_order_id": so.id, "message": f"Order confirm ho gaya - {shop.name} se mil gaya"},
+        {
+            "shop_order_id": so.id,
+            "shop_id": shop.id,
+            "shop_name": shop.name,
+            "message": f"Order confirm ho gaya - {shop.name} se mil gaya",
+        },
     )
     await realtime.manager.send_to_user(
         shop.owner_id, "order_completed",

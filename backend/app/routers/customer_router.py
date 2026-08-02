@@ -344,6 +344,7 @@ def shops_for_item(
 
     shops_out = []
     for shop_item, distance_km in ranked:
+        rating_info = _get_shop_rating(db, shop_item.shop_id)
         shops_out.append({
             "shop_id": shop_item.shop_id,
             "shop_name": shop_item.shop.name,
@@ -351,6 +352,8 @@ def shops_for_item(
             "price": shop_item.price,
             "unit": item.unit,
             "distance_km": round(distance_km, 2) if distance_km is not None else None,
+            "average_rating": rating_info[0],
+            "total_reviews": rating_info[1],
         })
 
     return {"item_id": item.id, "item_name": item.name, "shops": shops_out}
@@ -380,4 +383,62 @@ def shop_catalog(shop_id: int, db: Session = Depends(get_db)):
         }
         for r in rows
     ]
-    return {"shop_id": shop.id, "shop_name": shop.name, "shop_address": shop.address, "items": items}
+    rating_info = _get_shop_rating(db, shop.id)
+    return {
+        "shop_id": shop.id, "shop_name": shop.name, "shop_address": shop.address,
+        "items": items, "average_rating": rating_info[0], "total_reviews": rating_info[1],
+    }
+
+@router.post("/shop-orders/{shop_order_id}/review", response_model=schemas.ReviewOut)
+def submit_review(
+    shop_order_id: int,
+    payload: schemas.ReviewCreate,
+    db: Session = Depends(get_db),
+    user: models.User = Depends(require_customer),
+):
+    """Order complete hone ke baad customer dukan ko review de sakta hai — ek order, ek review."""
+    so = db.query(models.ShopOrder).get(shop_order_id)
+    if not so or so.order.customer_id != user.id:
+        raise HTTPException(404, "Order nahi mila")
+    if so.status != models.ShopOrderStatus.completed:
+        raise HTTPException(400, "Sirf pickup complete hue order par review de sakte ho")
+
+    existing = db.query(models.Review).filter(models.Review.shop_order_id == shop_order_id).first()
+    if existing:
+        raise HTTPException(400, "Is order ka review pehle hi diya ja chuka hai")
+
+    review = models.Review(
+        shop_order_id=shop_order_id, shop_id=so.shop_id, customer_id=user.id,
+        rating=payload.rating, comment=payload.comment,
+    )
+    db.add(review)
+    db.commit()
+    db.refresh(review)
+    return schemas.ReviewOut(
+        id=review.id, customer_name=user.name, rating=review.rating,
+        comment=review.comment, created_at=review.created_at,
+    )
+
+
+@router.get("/shops/{shop_id}/reviews", response_model=list[schemas.ReviewOut])
+def get_shop_reviews(shop_id: int, db: Session = Depends(get_db)):
+    """Baaki customers ke liye — dukan ke saare reviews, naye pehle."""
+    reviews = (
+        db.query(models.Review)
+        .filter(models.Review.shop_id == shop_id)
+        .order_by(models.Review.created_at.desc())
+        .all()
+    )
+    return [
+        schemas.ReviewOut(
+            id=r.id, customer_name=r.customer.name, rating=r.rating,
+            comment=r.comment, created_at=r.created_at,
+        )
+        for r in reviews
+    ]
+def _get_shop_rating(db: Session, shop_id: int) -> tuple[float | None, int]:
+    reviews = db.query(models.Review).filter(models.Review.shop_id == shop_id).all()
+    if not reviews:
+        return None, 0
+    avg = sum(r.rating for r in reviews) / len(reviews)
+    return round(avg, 1), len(reviews)

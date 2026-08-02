@@ -159,3 +159,18 @@ class ShopOrderItem(Base):
 
     shop_order = relationship("ShopOrder", back_populates="items")
     item = relationship("Item")
+
+class Review(Base):
+    __tablename__ = "reviews"
+
+    id = Column(Integer, primary_key=True, index=True)
+    shop_order_id = Column(Integer, ForeignKey("shop_orders.id"), nullable=False, unique=True)
+    shop_id = Column(Integer, ForeignKey("shops.id"), nullable=False)
+    customer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    rating = Column(Integer, nullable=False)  # 1 se 5
+    comment = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    shop = relationship("Shop")
+    customer = relationship("User")
+    shop_order = relationship("ShopOrder")

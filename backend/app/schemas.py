@@ -181,3 +181,22 @@ class RazorpayVerifyRequest(BaseModel):
     razorpay_signature: str
 class ShopStatusUpdate(BaseModel):
     is_open: bool
+class ReviewCreate(BaseModel):
+    rating: int = Field(ge=1, le=5)
+    comment: Optional[str] = None
+
+
+class ReviewOut(BaseModel):
+    id: int
+    customer_name: str
+    rating: int
+    comment: Optional[str]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ShopRatingSummary(BaseModel):
+    average_rating: Optional[float] = None
+    total_reviews: int = 0
