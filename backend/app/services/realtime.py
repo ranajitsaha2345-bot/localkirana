@@ -35,5 +35,14 @@ class ConnectionManager:
             except Exception:
                 self.disconnect(user_id, ws)
 
+async def broadcast(self, event: str, data: dict):
+        """Sabhi connected users (customer + shopkeeper) ko event bhejta hai."""
+        payload = json.dumps({"event": event, "data": data})
+        for user_id, connections in list(self.active.items()):
+            for ws in list(connections):
+                try:
+                    await ws.send_text(payload)
+                except Exception:
+                    self.disconnect(user_id, ws)
 
 manager = ConnectionManager()

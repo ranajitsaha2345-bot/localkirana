@@ -74,8 +74,8 @@ def create_master_item(name: str, unit: str = "unit", category: str = "general",
 
 
 @router.post("/inventory")
-def upsert_inventory(payload: schemas.ShopItemUpsert, db: Session = Depends(get_db),
-                      user: models.User = Depends(require_shopkeeper)):
+async def upsert_inventory(payload: schemas.ShopItemUpsert, db: Session = Depends(get_db),
+                            user: models.User = Depends(require_shopkeeper)):
     """Dukandar apni dukan ke item ka price/stock set ya update karta hai."""
     shop = _get_owned_shop(db, user)
     item = db.query(models.Item).get(payload.item_id)
@@ -97,6 +97,7 @@ def upsert_inventory(payload: schemas.ShopItemUpsert, db: Session = Depends(get_
         )
         db.add(shop_item)
     db.commit()
+    await realtime.manager.broadcast("inventory_updated", {"shop_id": shop.id, "item_id": item.id})
     return {"status": "ok", "item": item.name, "price": payload.price, "in_stock": payload.in_stock}
 
 
@@ -368,15 +369,17 @@ def get_my_inventory(db: Session = Depends(get_db),
 
 
 @router.delete("/inventory/{shop_item_id}")
-def delete_my_inventory_item(shop_item_id: int, db: Session = Depends(get_db),
-                              user: models.User = Depends(require_shopkeeper)):
+async def delete_my_inventory_item(shop_item_id: int, db: Session = Depends(get_db),
+                                    user: models.User = Depends(require_shopkeeper)):
     """Dukandar apni list se ek item hata deta hai (sirf apni dukan se, catalog se nahi)."""
     shop = _get_owned_shop(db, user)
     shop_item = db.query(models.ShopItem).get(shop_item_id)
     if not shop_item or shop_item.shop_id != shop.id:
         raise HTTPException(404, "Yeh item tumhari dukan ki list mein nahi hai")
+    item_id = shop_item.item_id
     db.delete(shop_item)
     db.commit()
+    await realtime.manager.broadcast("inventory_updated", {"shop_id": shop.id, "item_id": item_id})
     return {"status": "removed"}
 @router.patch("/status")
 def toggle_shop_status(payload: schemas.ShopStatusUpdate, db: Session = Depends(get_db),
