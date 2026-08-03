@@ -71,6 +71,8 @@ class ItemOut(BaseModel):
     unit: str
     category: str
     image_url: Optional[str] = None
+    starting_price: Optional[float] = None
+    shop_count: int = 0
 
     class Config:
         from_attributes = True

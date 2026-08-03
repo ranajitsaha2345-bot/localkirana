@@ -18,7 +18,30 @@ def list_items(category: str | None = None, search: str | None = None, db: Sessi
         query = query.filter(models.Item.category == category)
     if search:
         query = query.filter(models.Item.name.ilike(f"%{search}%"))
-    return query.all()
+    items = query.all()
+
+    price_rows = (
+        db.query(
+            models.ShopItem.item_id,
+            func.min(models.ShopItem.price).label("min_price"),
+            func.count(models.ShopItem.id).label("shop_count"),
+        )
+        .filter(models.ShopItem.in_stock == True)  # noqa: E712
+        .group_by(models.ShopItem.item_id)
+        .all()
+    )
+    price_map = {row.item_id: (row.min_price, row.shop_count) for row in price_rows}
+
+    result = []
+    for it in items:
+        min_price, shop_count = price_map.get(it.id, (None, 0))
+        result.append(
+            schemas.ItemOut(
+                id=it.id, name=it.name, unit=it.unit, category=it.category,
+                image_url=it.image_url, starting_price=min_price, shop_count=shop_count,
+            )
+        )
+    return result
 
 
 @router.get("/categories")

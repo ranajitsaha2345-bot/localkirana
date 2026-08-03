@@ -1015,11 +1015,15 @@ async function loadCatalog(){
   el.innerHTML = catalogItems.map(it => {
     const info = getUnitInfo(it.unit);
     const hint = info.base === 'pcs' ? `1 pc/click` : `${info.step}${info.base}/click`;
+    const priceHtml = it.starting_price != null
+      ? `<div class="unit" style="font-weight:800; color:var(--red-dark);">₹${it.starting_price}${it.shop_count > 1 ? ` se+` : ''}</div>`
+      : `<div class="unit" style="color:var(--muted); font-size:.6rem;">Price nahi mila</div>`;
     return `
     <div class="item-card" data-name="${it.name}" data-category="${it.category || ''}">
       <span class="qty-float hidden" id="qty-float-${it.id}">0</span>
       <div class="icon">${it.image_url ? `<img src="${it.image_url}" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">` : iconFor(it.name, it.category)}</div>
       <div class="name">${it.name}</div>
+      ${priceHtml}
       <div class="unit-hint">${hint}</div>
       <div class="qty-controls">
         <button class="qty-btn minus" onclick="adjustPending(${it.id}, -1)">−</button>
