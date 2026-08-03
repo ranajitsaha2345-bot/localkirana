@@ -590,7 +590,6 @@ function showSlide(index){
     const activeItem = document.getElementById(`cat-item-${catIndex}`);
     if(activeItem){
       activeItem.classList.add('active');
-      activeItem.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
     }
   }
 }
