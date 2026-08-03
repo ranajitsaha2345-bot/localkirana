@@ -514,32 +514,40 @@ async function verifyOtp(){
   onLoggedIn(data);
 }
 
-let lastInvalidToastPhone = '';
-function updateGoogleButtonState(){
+let toastTimer = null; // pending "invalid number" toast ko track karne ke liye
+
+function updateGoogleButtonState() {
   const phone = document.getElementById('phone').value.trim();
   const validPhone = /^\d{6,15}$/.test(phone) && !/^(\d)\1+$/.test(phone);
   const wrap = document.getElementById('google-btn-wrap');
   const phoneBox = document.querySelector('.phone-box');
   const label = document.querySelector('.floating-label');
-  const hint = document.getElementById('phone-hint');
   const termsAccepted = document.getElementById('terms-checkbox').checked;
 
-  if(validPhone && termsAccepted){
+  // User abhi type kar raha hai / fix kar raha hai — purana pending toast cancel karo
+  if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; }
+
+  if (validPhone && termsAccepted) {
     wrap.style.opacity = '1';
     wrap.style.pointerEvents = 'auto';
-    hint.innerText = 'Now continue with Google';
+    document.getElementById('phone-hint').innerText = 'Now continue with Google';
     phoneBox.style.borderColor = 'var(--green-ok)';
     label.style.color = 'var(--green-ok)';
-    lastInvalidToastPhone = '';
   } else {
     wrap.style.opacity = '0.4';
     wrap.style.pointerEvents = 'none';
-    hint.innerText = validPhone && !termsAccepted ? 'Kripya Terms & Conditions accept karo' : 'Enter number, then continue with Google';
-    phoneBox.style.borderColor = '';
-    label.style.color = '';
-    if(phone.length >= 6 && phone !== lastInvalidToastPhone){
-      toast('Enter valid number');
-      lastInvalidToastPhone = phone;
+    phoneBox.style.borderColor = validPhone ? 'var(--green-ok)' : '';
+    label.style.color = validPhone ? 'var(--green-ok)' : '';
+
+    if (validPhone && !termsAccepted) {
+      // Number sahi hai, sirf terms baaki hai — yeh error NAHI hai, toast mat dikhao
+      document.getElementById('phone-hint').innerText = 'Kripya Terms & Conditions accept karo';
+    } else {
+      document.getElementById('phone-hint').innerText = 'Enter number, then continue with Google';
+      // Sirf tab jab number sach mein galat ho, aur thodi der ruk kar (typing khatam hone do)
+      if (phone.length >= 6) {
+        toastTimer = setTimeout(() => { toast('Enter valid number'); }, 800);
+      }
     }
   }
 }
