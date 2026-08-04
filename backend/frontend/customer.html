@@ -123,16 +123,21 @@ button:active{transform:scale(.97);}
 .btn-sm{padding:6px 12px; font-size:.82rem;}
 
 /* catalog grid */
-#catalog{ display:grid; grid-template-columns:repeat(6, 1fr); gap:6px; }
+#catalog{ display:grid; grid-template-columns:repeat(6, 1fr); gap:5px; }
 .item-card{
-  border:1px solid var(--line); border-radius:10px; padding:5px 4px 7px;
+  border:1px solid var(--line); border-radius:8px; padding:4px 3px 5px;
   background:#FFFCF9;
-  display:flex; flex-direction:column; align-items:center; gap:4px;
+  display:flex; flex-direction:column; align-items:center; gap:2px;
   text-align:center; position:relative;
 }
+.icon-wrap{ width:100%; position:relative; }
 .item-card .icon{
-  width:100%; height:48px; border-radius:10px; display:flex; align-items:center; justify-content:center;
-  font-size:1.4rem; background:linear-gradient(135deg, #FFE3D3, #FFD1DC); overflow:hidden;
+  width:100%; height:38px; border-radius:8px; display:flex; align-items:center; justify-content:center;
+  font-size:1.1rem; background:linear-gradient(135deg, #FFE3D3, #FFD1DC); overflow:hidden;
+}
+.price-badge{
+  position:absolute; top:2px; left:2px; background:var(--red); color:#fff;
+  font-size:.5rem; font-weight:800; border-radius:5px; padding:1px 4px; z-index:2;
 }
 .item-card .name{ font-size:.62rem; font-weight:700; line-height:1.15; min-height:2.1em; display:flex; align-items:center; justify-content:center; }
 .item-card .unit{ font-size:.72rem; color:var(--muted); font-weight:400; }
@@ -144,16 +149,20 @@ button:active{transform:scale(.97);}
   min-width:16px; height:16px;
   display:flex; align-items:center; justify-content:center;
 }
-.item-card .unit-hint{ font-size:.5rem; color:var(--muted); margin-top:-2px; }
-.qty-controls{ display:flex; gap:4px; width:100%; justify-content:center; }
+.item-card .unit-hint{ font-size:.48rem; color:var(--muted); margin-top:-1px; }
+.qty-controls{ display:flex; gap:3px; width:100%; justify-content:center; }
 .qty-btn{
-  width:20px; height:20px; padding:0; font-size:.75rem; border-radius:6px;
+  width:18px; height:18px; padding:0; font-size:.7rem; border-radius:5px;
   background:var(--paper); color:var(--red-dark); border:1px solid var(--line);
   display:flex; align-items:center; justify-content:center; line-height:1;
 }
 .btn-buy{
-  width:100%; padding:5px 2px; font-size:.62rem; border-radius:8px;
+  width:100%; padding:4px 2px; font-size:.58rem; border-radius:6px;
   background:linear-gradient(135deg, var(--orange), var(--red)); color:#fff;
+}
+.btn-shops{
+  width:100%; padding:2px 2px; font-size:.5rem; border-radius:6px;
+  background:var(--paper); color:var(--muted); border:1px solid var(--line); margin-top:2px;
 }
 
 .item-row{
@@ -1031,25 +1040,27 @@ async function loadCatalog(){
   const el = document.getElementById('catalog');
   el.innerHTML = catalogItems.map(it => {
     const info = getUnitInfo(it.unit);
-    const hint = info.base === 'pcs' ? `1 pc/click` : `${info.step}${info.base}/click`;
-    const priceHtml = it.starting_price != null
-      ? `<div class="unit" style="font-weight:800; color:var(--red-dark);">₹${it.starting_price}${it.shop_count > 1 ? ` se+` : ''}</div>`
-      : `<div class="unit" style="color:var(--muted); font-size:.6rem;">Price nahi mila</div>`;
+    const hint = info.base === 'pcs' ? `1 pc` : `${info.step}${info.base}`;
+    const priceBadge = it.starting_price != null
+      ? `<div class="price-badge">₹${it.starting_price}${it.shop_count > 1 ? '+' : ''}</div>`
+      : '';
     return `
     <div class="item-card" data-name="${it.name}" data-category="${it.category || ''}">
       <span class="qty-float hidden" id="qty-float-${it.id}">0</span>
-      <div class="icon">${it.image_url ? `<img src="${it.image_url}" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">` : iconFor(it.name, it.category)}</div>
+      <div class="icon-wrap">
+        ${priceBadge}
+        <div class="icon">${it.image_url ? `<img src="${it.image_url}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">` : iconFor(it.name, it.category)}</div>
+      </div>
       <div class="name">${it.name}</div>
-      ${priceHtml}
       <div class="unit-hint">${hint}</div>
       <div class="qty-controls">
-        <button class="qty-btn minus" onclick="adjustPending(${it.id}, -1)">−</button>
+        <button class="qty-btn minus" onclick="adjustPending(${it.id}, -1)">-</button>
         <button class="qty-btn" onclick="adjustPending(${it.id}, 1)">+</button>
       </div>
       <button class="btn-buy" onclick="confirmBuy(${it.id}, '${it.name.replace(/'/g,"\\'")}')">Add</button>
-      <button class="btn-shops" onclick="showShopsForItem(${it.id}, '${it.name.replace(/'/g,"\\'")}')">🏪 Dukan Dekho</button>
+      <button class="btn-shops" onclick="showShopsForItem(${it.id}, '${it.name.replace(/'/g,"\\'")}')">Show Shop</button>
     </div>
-  `;
+    `;
   }).join('');
 }
 
