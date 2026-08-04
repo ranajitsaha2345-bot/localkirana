@@ -412,9 +412,9 @@ body.photo-active .item-card {
     <div id="catalog"></div>
   <!-- NO RESULTS SECTION -->
 <div id="no-results" class="hidden" style="text-align:center; padding:20px 10px;">
-  <video id="no-results-video" style="width: 100%; max-width: 280px; border-radius: 14px; background: #f2f2f2;" autoplay loop muted playsinline>
-    <source src="/assets/no-item-found.mp4" type="video/mp4">
-</video>
+  <video id="no-results-video" autoplay muted loop playsinline style="width:100%; max-width:280px; border-radius:14px;">
+    <source src="/static/no-item-found.mp4" type="video/mp4">
+  </video>
   <p style="margin-top:10px; font-size:16px; color:#999;">
     Koi item nahi mila
   </p>
@@ -736,14 +736,16 @@ function filterCatalog(q){
   });
   
   // Show/hide no-results video
-  const noResults = document.getElementById('no-results');
-  if(q !== '' && !hasVisibleItems){
-    noResults.classList.remove('hidden');
-  } else {
-    noResults.classList.add('hidden');
-  }
+const noResults = document.getElementById('no-results');
+if(q !== '' && !hasVisibleItems){
+  noResults.classList.remove('hidden');
+  const vid = document.getElementById('no-results-video');
+  vid.currentTime = 0;
+  vid.play().catch(e => console.log('video play blocked:', e));
+} else {
+  noResults.classList.add('hidden');
 }
-
+}
 // ---------------- AUTH LOGIC (FREE GMAIL OTP) ----------------
 const countries = [
 {flag:"af",code:"+93",name:"Afghanistan"},{flag:"al",code:"+355",name:"Albania"},{flag:"dz",code:"+213",name:"Algeria"},
