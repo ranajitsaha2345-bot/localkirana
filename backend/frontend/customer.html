@@ -675,15 +675,10 @@ function renderCategories(){
   renderHeroCarousel();
 }
 const SEARCH_KEYWORD_CATEGORY = {
-  'biskut':'snacks','biscuit':'snacks','namkeen':'snacks','chips':'snacks',
-  'dal':'grocery','chawal':'grocery','atta':'grocery','chini':'grocery','tel':'grocery','sarson':'grocery',
-  'aloo':'vegetables','pyaz':'vegetables','tamatar':'vegetables','sabzi':'vegetables','bhindi':'vegetables','gobi':'vegetables',
-  'seb':'fruits','kela':'fruits','aam':'fruits','santra':'fruits',
-  'doodh':'dairy','dahi':'dairy','paneer':'dairy','ghee':'dairy',
-  'haldi':'masala','mirch':'masala','jeera':'masala','masala':'masala',
+  'sabzi':'vegetables',
   'chai':'beverages','coffee':'beverages','cold':'beverages',
   'sabun':'personal_care','shampoo':'personal_care','tooth':'personal_care',
-  'pani':'water','paani':'water','bisleri':'water','kinley':'water','aquafina':'water','bailley':'water','mineral':'water','bottle':'water',
+  'pani':'water','paani':'water',
 };
 // Do words kitne "close" hain, yeh check karta hai (spelling mistakes tolerate karega)
 function levenshteinDistance(a, b){
