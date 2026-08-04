@@ -711,7 +711,7 @@ function fuzzyMatch(query, target){
   const targetWords = target.split(/\s+/);
   for(const word of targetWords){
     if(word.startsWith(query)) return true;
-    const maxDistance = query.length <= 3 ? 1 : query.length <= 6 ? 2 : 3;
+    const maxDistance = query.length <= 3 ? 0 : query.length <= 6 ? 1 : 2;
     if(levenshteinDistance(query, word.slice(0, query.length + maxDistance)) <= maxDistance) return true;
   }
   return false;
