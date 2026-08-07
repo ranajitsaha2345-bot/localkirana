@@ -234,6 +234,7 @@ function editInventoryItem(shopItemId, name, price){
       callback: handleGoogleLogin
     });
     google.accounts.id.renderButton(document.getElementById("g_id_signin"), { theme: "outline", size: "large" });
+    checkLocationGate();
   };
 </script>
 </head>
@@ -248,6 +249,15 @@ function editInventoryItem(shopItemId, name, price){
   </header>
 
 <main>
+<!-- LOCATION REQUIRED GATE -->
+<div id="location-gate" class="hidden" style="position:fixed; inset:0; background:var(--paper); z-index:999; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px;">
+  <div style="font-size:3rem; margin-bottom:10px;">📍</div>
+  <h2 style="margin:0 0 10px;">Location Zaroori Hai</h2>
+  <p style="color:var(--muted); max-width:320px; margin-bottom:20px;">
+    Customers tak sahi order pahunchane ke liye Wait ko aapki dukan ka location chahiye. Kripya location permission allow karo.
+  </p>
+  <button class="btn-accent" onclick="requestShopkeeperLocation()" style="padding:12px 28px;">Location On Karo</button>
+</div>
   <div id="auth-panel" class="panel">
 
     <h2 class="auth-heading" style="margin-bottom:14px;">Enter your number</h2>
@@ -410,6 +420,41 @@ function editInventoryItem(shopItemId, name, price){
 <script>
 const API = "https://localkirana-production.up.railway.app";
 let token = null, myUserId = null, ws = null;
+let shopkeeperLat = null, shopkeeperLng = null;
+
+function checkLocationGate(){
+  const gate = document.getElementById('location-gate');
+  if(!navigator.geolocation){
+    gate.classList.remove('hidden');
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      shopkeeperLat = pos.coords.latitude;
+      shopkeeperLng = pos.coords.longitude;
+      gate.classList.add('hidden');
+    },
+    (err) => {
+      gate.classList.remove('hidden');
+    },
+    { enableHighAccuracy: true, timeout: 8000 }
+  );
+}
+
+function requestShopkeeperLocation(){
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      shopkeeperLat = pos.coords.latitude;
+      shopkeeperLng = pos.coords.longitude;
+      document.getElementById('location-gate').classList.add('hidden');
+      toast('Location mil gaya!');
+    },
+    (err) => {
+      toast('Location allow karna zaroori hai app chalane ke liye');
+    },
+    { enableHighAccuracy: true, timeout: 8000 }
+  );
+}
 let unreadOrders = 0;
 
 function updateOrdersBadge(){
