@@ -373,6 +373,40 @@ async def scan_shop_qr(
         "shop_order_id": so.id,
         "shop_order_status": so.status,
     }
+class LocationUpdate(BaseModel):
+    shop_order_id: int
+    latitude: float
+    longitude: float
+
+
+@router.post("/shop-orders/{shop_order_id}/location")
+async def update_customer_location(
+    shop_order_id: int,
+    payload: LocationUpdate,
+    db: Session = Depends(get_db),
+    user: models.User = Depends(require_customer),
+):
+    """Customer order 'ready' hone ke baad apni live location bhejta hai, dukandar ko dikhane ke liye."""
+    so = db.query(models.ShopOrder).get(shop_order_id)
+    if not so or so.order.customer_id != user.id:
+        raise HTTPException(404, "Order nahi mila")
+
+    active_statuses = [models.ShopOrderStatus.confirmed, models.ShopOrderStatus.ready]
+    if so.status not in active_statuses:
+        raise HTTPException(400, "Sirf confirmed/ready order ke liye location bhej sakte ho")
+
+    shop = db.query(models.Shop).get(so.shop_id)
+    await realtime.manager.send_to_user(
+        shop.owner_id,
+        "customer_location",
+        {
+            "shop_order_id": so.id,
+            "latitude": payload.latitude,
+            "longitude": payload.longitude,
+        },
+    )
+    return {"status": "ok"}
+
 @router.get("/items/{item_id}/shops")
 def shops_for_item(
     item_id: int,

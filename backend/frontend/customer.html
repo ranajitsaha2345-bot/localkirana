@@ -1318,7 +1318,18 @@ if(so.status === 'awaiting_payment'){
       if(!err) document.getElementById(`qr-box-${so.id}`).appendChild(canvas);
     });
   }
+
+  if(so.status === 'confirmed' || so.status === 'ready'){
+    startSendingLocation(so.id);
+  } else {
+    stopSendingLocation();
+  }
+}if(so.status === 'confirmed' || so.status === 'ready'){
+  startSendingLocation(so.id);
+} else {
+  stopSendingLocation();
 }
+
 
 // ---------------- PAYMENT ----------------
 async function payOnline(shopOrderId, amount){
@@ -1383,6 +1394,35 @@ function connectWS(){
   };
   ws.onclose = () => setTimeout(connectWS, 3000);
 }
+let locationWatchId = null;
+
+function startSendingLocation(shopOrderId){
+  if(!navigator.geolocation) return;
+  if(locationWatchId !== null) navigator.geolocation.clearWatch(locationWatchId);
+
+  locationWatchId = navigator.geolocation.watchPosition(
+    (pos) => {
+      fetch(`${API}/customer/shop-orders/${shopOrderId}/location`, {
+        method: 'POST', headers: authHeaders(),
+        body: JSON.stringify({
+          shop_order_id: shopOrderId,
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+        }),
+      }).catch(() => {});
+    },
+    () => {},
+    { enableHighAccuracy: true, maximumAge: 10000, timeout: 10000 }
+  );
+}
+
+function stopSendingLocation(){
+  if(locationWatchId !== null){
+    navigator.geolocation.clearWatch(locationWatchId);
+    locationWatchId = null;
+  }
+}
+
 function handleInventoryUpdate(data){
   // Agar customer abhi kisi dukan ka catalog dekh raha hai, use turant refresh karo
   if(window._openShopCatalogId && window._openShopCatalogId === data.shop_id){
