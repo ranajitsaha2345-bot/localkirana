@@ -12,8 +12,15 @@ class ScanShopRequest(BaseModel):
     qr_data: str
 
 @router.get("/items", response_model=list[schemas.ItemOut])
-def list_items(category: str | None = None, search: str | None = None, db: Session = Depends(get_db)):
-    """Poora catalog - dal, chini, oil, biskut, etc. Category aur search se filter hota hai."""
+def list_items(
+    category: str | None = None,
+    search: str | None = None,
+    latitude: float | None = None,
+    longitude: float | None = None,
+    db: Session = Depends(get_db),
+):
+    """Poora catalog. Price sabse sasti (globally) dikhti hai, lekin has_nearby_shop batata hai
+    ki customer ke 15km radius mein koi shop ye item bechti hai ya nahi - isi se 'no result' tay hota hai."""
     query = db.query(models.Item)
     if category and category != "all":
         query = query.filter(models.Item.category == category)
@@ -21,25 +28,40 @@ def list_items(category: str | None = None, search: str | None = None, db: Sessi
         query = query.filter(models.Item.name.ilike(f"%{search}%"))
     items = query.all()
 
-    price_rows = (
-        db.query(
-            models.ShopItem.item_id,
-            func.min(models.ShopItem.price).label("min_price"),
-            func.count(models.ShopItem.id).label("shop_count"),
-        )
-        .filter(models.ShopItem.in_stock == True)  # noqa: E712
-        .group_by(models.ShopItem.item_id)
+    shop_item_rows = (
+        db.query(models.ShopItem)
+        .join(models.Shop)
+        .filter(models.ShopItem.in_stock == True, models.Shop.is_open == True)  # noqa: E712
         .all()
     )
-    price_map = {row.item_id: (row.min_price, row.shop_count) for row in price_rows}
+
+    price_map: dict[int, list] = {}   # item_id -> [best_price, shop_count]
+    nearby_map: dict[int, bool] = {}  # item_id -> koi shop 15km ke andar hai
+
+    for row in shop_item_rows:
+        current = price_map.get(row.item_id)
+        if current is None:
+            price_map[row.item_id] = [row.price, 1]
+        else:
+            current[1] += 1
+            if row.price < current[0]:
+                current[0] = row.price
+
+        if latitude is not None and longitude is not None:
+            dist = matching._distance_km(latitude, longitude, row.shop.latitude, row.shop.longitude)
+            if dist is not None and dist <= matching.NEARBY_RADIUS_KM:
+                nearby_map[row.item_id] = True
 
     result = []
     for it in items:
-        min_price, shop_count = price_map.get(it.id, (None, 0))
+        entry = price_map.get(it.id)
+        min_price, shop_count = (entry[0], entry[1]) if entry else (None, 0)
+        has_nearby = nearby_map.get(it.id, False) if (latitude is not None and longitude is not None) else True
         result.append(
             schemas.ItemOut(
                 id=it.id, name=it.name, unit=it.unit, category=it.category,
                 image_url=it.image_url, starting_price=min_price, shop_count=shop_count,
+                has_nearby_shop=has_nearby,
             )
         )
     return result

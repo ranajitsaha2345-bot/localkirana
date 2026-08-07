@@ -73,6 +73,7 @@ class ItemOut(BaseModel):
     image_url: Optional[str] = None
     starting_price: Optional[float] = None
     shop_count: int = 0
+    has_nearby_shop: bool = True
 
     class Config:
         from_attributes = True

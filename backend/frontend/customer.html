@@ -364,6 +364,16 @@ body.photo-active .item-card {
 </header>
 
 <main>
+<!-- LOCATION REQUIRED GATE -->
+<div id="location-gate" class="hidden" style="position:fixed; inset:0; background:var(--paper); z-index:999; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px;">
+  <div style="font-size:3rem; margin-bottom:10px;">📍</div>
+  <h2 style="margin:0 0 10px;">Location Zaroori Hai</h2>
+  <p style="color:var(--muted); max-width:320px; margin-bottom:20px;">
+    Aapke paas ki dukanein dikhane ke liye Wait ko aapka location chahiye. Kripya location permission allow karo.
+  </p>
+  <button class="btn-accent" onclick="startCatalog()" style="padding:12px 28px;">Location On Karo</button>
+</div>
+
 
   <!-- ============ AUTH CONTAINER ============ -->
   <div id="auth-panel" class="panel">
@@ -734,7 +744,8 @@ function filterCatalog(q){
   document.querySelectorAll('#catalog .item-card').forEach(card => {
     const nameMatch = fuzzyMatch(q, card.dataset.name);
     const categoryMatch = matchedCategory && card.dataset.category === matchedCategory;
-    const show = q === '' || nameMatch || categoryMatch;
+    const nearOk = card.dataset.nearby !== 'false';
+    const show = (q === '' || nameMatch || categoryMatch) && nearOk;
     card.style.display = show ? '' : 'none';
     if(show) hasVisibleItems = true;
   });
@@ -872,7 +883,7 @@ function skipToGuest() {
 
   renderCategories();
   toast('Guest mode active! Order ke liye login zaroori hoga.');
-  loadCatalog();
+  startCatalog();
 }
 let lastInvalidToastPhone = '';
 
@@ -998,7 +1009,7 @@ function onLoggedIn(data){
   panelStack = ['shop-panel'];
   applyPanel('shop-panel');
   renderCategories();
-  loadCatalog();
+  startCatalog();
   connectWS();
 }
 function saveSession(data){
@@ -1029,10 +1040,35 @@ function authHeaders(){ return {'Authorization': `Bearer ${token}`, 'Content-Typ
 
 // ---------------- CATALOG ----------------
 let cartNames = {};
+
 let pendingQty = {};
+function startCatalog(){
+  const gate = document.getElementById('location-gate');
+  if(!navigator.geolocation){
+    gate.classList.remove('hidden');
+    gate.querySelector('p').innerText = 'Aapka device/browser location support nahi karta. Wait use karne ke liye location zaroori hai.';
+    gate.querySelector('button').style.display = 'none';
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      window._custLat = pos.coords.latitude;
+      window._custLng = pos.coords.longitude;
+      gate.classList.add('hidden');
+      loadCatalog();
+    },
+    () => {
+      gate.classList.remove('hidden');
+    }
+  );
+}
 
 async function loadCatalog(){
-  const res = await fetch(`${API}/customer/items`, {headers: authHeaders()});
+  let url = `${API}/customer/items`;
+  if(window._custLat != null && window._custLng != null){
+    url += `?latitude=${window._custLat}&longitude=${window._custLng}`;
+  }
+  const res = await fetch(url, {headers: authHeaders()});
   catalogItems = await res.json();
   itemUnitById = {};
   catalogItems.forEach(it => { itemUnitById[it.id] = it.unit; });
@@ -1045,7 +1081,7 @@ async function loadCatalog(){
       ? `<div class="price-badge">₹${it.starting_price}${it.shop_count > 1 ? '+' : ''}</div>`
       : '';
     return `
-    <div class="item-card" data-name="${it.name}" data-category="${it.category || ''}">
+    <div class="item-card" data-name="${it.name}" data-category="${it.category || ''}" data-nearby="${it.has_nearby_shop}">
       <span class="qty-float hidden" id="qty-float-${it.id}">0</span>
       <div class="icon-wrap">
         ${priceBadge}
