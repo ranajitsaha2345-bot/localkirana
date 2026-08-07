@@ -1015,7 +1015,6 @@ function skipToGuest(){
 // ---------------- WEBSOCKET ----------------
 function connectWS(){
   const wsUrl = API.replace('http', 'ws') + `/ws?token=${token}`;
-  ws = new WebSocket(wsUrl);
   ws.onmessage = (msg) => {
     const {event, data} = JSON.parse(msg.data);
     if(event === 'new_order'){
@@ -1025,7 +1024,9 @@ function connectWS(){
       loadOrders();
     }
     else if(event === 'order_completed'){ toast(`Order delivered to ${data.customer_name}`); loadOrders(); }
-    else if(event === 'customer_location'){ updateCustomerLocationUI(data); }
+    else if(event === 'customer_location'){
+      updateCustomerLocationDisplay(data.shop_order_id, data.latitude, data.longitude);
+    }
   };
   function _distanceKm(lat1, lon1, lat2, lon2){
   const R = 6371;
