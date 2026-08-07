@@ -1324,12 +1324,7 @@ if(so.status === 'awaiting_payment'){
   } else {
     stopSendingLocation();
   }
-}if(so.status === 'confirmed' || so.status === 'ready'){
-  startSendingLocation(so.id);
-} else {
-  stopSendingLocation();
 }
-
 
 // ---------------- PAYMENT ----------------
 async function payOnline(shopOrderId, amount){
