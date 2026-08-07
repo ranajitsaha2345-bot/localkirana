@@ -780,7 +780,37 @@ function renderContactButtons(phone){
       </a>
     </div>`;
 }
+function calculateDistance(lat1, lon1, lat2, lon2){
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const d = R * c;
+  return d < 1 ? Math.round(d * 1000) + ' m' : d.toFixed(1) + ' km';
+}
 
+function updateCustomerLocationDisplay(shopOrderId, lat, lng){
+  const container = document.getElementById(`customer-location-${shopOrderId}`);
+  if(!container) return;
+
+  let distanceHtml = '';
+  if(shopkeeperLat !== null && shopkeeperLng !== null){
+    const dist = calculateDistance(shopkeeperLat, shopkeeperLng, lat, lng);
+    distanceHtml = `<div style="font-weight:700; color:var(--red-dark); margin:8px 0 6px;">📍 Customer ${dist} door hai</div>`;
+  }
+
+  const delta = 0.01;
+  const bbox = `${lng - delta},${lat - delta},${lng + delta},${lat + delta}`;
+  container.innerHTML = `
+    ${distanceHtml}
+    <iframe width="100%" height="180" frameborder="0" style="border-radius:10px; border:1px solid var(--line);"
+      src="https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&marker=${lat},${lng}">
+    </iframe>
+  `;
+}
 function renderOrderCard(so){
   const itemsHtml = so.items.map(i => `
     <div class="item-check-row">
@@ -795,11 +825,12 @@ function renderOrderCard(so){
   } else if(so.status === 'confirmed'){
     footer = `<div class="hint">Payment: <strong>${so.payment_status}</strong></div>
       ${renderContactButtons(so.customer_phone)}
+      <div id="customer-location-${so.id}"></div>
       <button class="btn-accent" style="margin-top:8px" onclick="markReady(${so.id})">Ready — Items Prepared</button>`;
-    } else if(so.status === 'ready'){
-      footer = `<div class="hint">Customer is on the way. Order ID: <strong>${so.id}</strong> — confirm from Pickup Verify tab.</div>
-      ${renderContactButtons(so.customer_phone)}`;
-    }
+  } else if(so.status === 'ready'){
+    footer = `<div class="hint">Customer is on the way. Order ID: <strong>${so.id}</strong> — confirm from Pickup Verify tab.</div>
+      <div id="customer-location-${so.id}"></div>`;
+  }
 
     const locationHtml = (so.status === 'confirmed' || so.status === 'ready')
       ? `<div class="hint" id="loc-${so.id}" style="margin-top:6px;">📍 Customer location: waiting for update...</div>`
