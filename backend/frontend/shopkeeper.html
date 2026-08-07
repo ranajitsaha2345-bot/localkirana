@@ -750,7 +750,6 @@ function renderOrderCard(so){
   } else if(so.status === 'confirmed'){
     footer = `<div class="hint">Payment: <strong>${so.payment_status}</strong></div>
       ${renderContactButtons(so.customer_phone)}
-      ${renderContactButtons(so.customer_phone)}
       <button class="btn-accent" style="margin-top:8px" onclick="markReady(${so.id})">Ready — Items Prepared</button>`;
     } else if(so.status === 'ready'){
       footer = `<div class="hint">Customer is on the way. Order ID: <strong>${so.id}</strong> — confirm from Pickup Verify tab.</div>
@@ -950,7 +949,7 @@ function connectWS(){
       loadOrders();
     }
     else if(event === 'order_completed'){ toast(`Order delivered to ${data.customer_name}`); loadOrders(); }
-    else if(event === 'customer_location'){ updateCustomerLocationUI(data); }
+    else if(event === 'location_update'){ updateCustomerLocationUI(data); }
   };
   function _distanceKm(lat1, lon1, lat2, lon2){
   const R = 6371;
