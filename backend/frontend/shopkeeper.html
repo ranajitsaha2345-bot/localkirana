@@ -949,7 +949,7 @@ function connectWS(){
       loadOrders();
     }
     else if(event === 'order_completed'){ toast(`Order delivered to ${data.customer_name}`); loadOrders(); }
-    else if(event === 'location_update'){ updateCustomerLocationUI(data); }
+    else if(event === 'customer_location'){ updateCustomerLocationUI(data); }
   };
   function _distanceKm(lat1, lon1, lat2, lon2){
   const R = 6371;
