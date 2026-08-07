@@ -138,6 +138,9 @@ class ShopOrderOut(BaseModel):
     order_id: int
     shop_id: int
     shop_name: str
+    shop_address: Optional[str] = None
+    shop_latitude: Optional[float] = None
+    shop_longitude: Optional[float] = None
     customer_id: int
     customer_name: str
     customer_phone: Optional[str] = None

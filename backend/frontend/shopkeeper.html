@@ -712,6 +712,12 @@ async function loadOrders(){
   const activeOrder = orders.find(o => o.status === 'ready') || orders.find(o => o.status === 'confirmed');
   window._activeCustomerPhone = activeOrder ? activeOrder.customer_phone : null;
 
+  const trackable = orders.find(o => o.status === 'confirmed' || o.status === 'ready');
+  if(trackable && trackable.shop_latitude != null){
+    window._myShopLat = trackable.shop_latitude;
+    window._myShopLng = trackable.shop_longitude;
+  }
+
   const wrap = document.getElementById('orders-list');
   wrap.innerHTML = orders.filter(o => o.status !== 'completed').map(renderOrderCard).join('') || '<div class="panel">No new orders yet.</div>';
 }
@@ -746,12 +752,16 @@ function renderOrderCard(so){
       ${renderContactButtons(so.customer_phone)}
       ${renderContactButtons(so.customer_phone)}
       <button class="btn-accent" style="margin-top:8px" onclick="markReady(${so.id})">Ready — Items Prepared</button>`;
-  } else if(so.status === 'ready'){
-    footer = `<div class="hint">Customer is on the way. Order ID: <strong>${so.id}</strong> — confirm from Pickup Verify tab.</div>
+    } else if(so.status === 'ready'){
+      footer = `<div class="hint">Customer is on the way. Order ID: <strong>${so.id}</strong> — confirm from Pickup Verify tab.</div>
       ${renderContactButtons(so.customer_phone)}`;
-  }
+    }
 
-  return `
+    const locationHtml = (so.status === 'confirmed' || so.status === 'ready')
+      ? `<div class="hint" id="loc-${so.id}" style="margin-top:6px;">📍 Customer location: waiting for update...</div>`
+      : '';
+
+    return `
     <div class="panel order-card">
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <strong>${so.customer_name}</strong>
@@ -760,6 +770,7 @@ function renderOrderCard(so){
       <div class="hint">Order ID: ${so.id} · Total: ₹${so.amount.toFixed(2)}</div>
       ${itemsHtml}
       ${footer}
+      ${locationHtml}
     </div>`;
 }
 
@@ -939,7 +950,28 @@ function connectWS(){
       loadOrders();
     }
     else if(event === 'order_completed'){ toast(`Order delivered to ${data.customer_name}`); loadOrders(); }
+    else if(event === 'customer_location'){ updateCustomerLocationUI(data); }
   };
+  function _distanceKm(lat1, lon1, lat2, lon2){
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2)**2;
+  return R * 2 * Math.asin(Math.sqrt(a));
+}
+
+function updateCustomerLocationUI(data){
+  const el = document.getElementById(`loc-${data.shop_order_id}`);
+  if(!el) return;
+  let distText = '';
+  if(window._myShopLat != null && window._myShopLng != null){
+    const d = _distanceKm(window._myShopLat, window._myShopLng, data.latitude, data.longitude);
+    distText = ` — ${d.toFixed(2)} km door`;
+  }
+  const now = new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'});
+  el.innerHTML = `📍 Customer location${distText} <span style="opacity:.6;">(updated ${now})</span>`;
+}
+
   ws.onclose = () => setTimeout(connectWS, 3000);
 }
 async function openDailySummary(){

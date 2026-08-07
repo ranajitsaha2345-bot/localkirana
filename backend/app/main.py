@@ -1,3 +1,4 @@
+import json
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import os
@@ -114,8 +115,36 @@ async def websocket_endpoint(websocket: WebSocket, token: str = Query(...)):
     await manager.connect(user_id, websocket)
     try:
         while True:
-            # client se kuch aane ki zaroorat nahi, bas connection zinda rakhna hai
-            await websocket.receive_text()
+            raw = await websocket.receive_text()
+            try:
+                msg = json.loads(raw)
+            except (json.JSONDecodeError, TypeError):
+                continue
+
+            if msg.get("event") == "location_update":
+                shop_order_id = msg.get("shop_order_id")
+                lat = msg.get("latitude")
+                lng = msg.get("longitude")
+                if shop_order_id is None or lat is None or lng is None:
+                    continue
+
+                db = SessionLocal()
+                try:
+                    so = db.query(models.ShopOrder).get(shop_order_id)
+                    if not so:
+                        continue
+                    shop = db.query(models.Shop).get(so.shop_id)
+                    if not shop:
+                        continue
+                    # Sirf customer khud apna location bhejega - shopkeeper ko relay karo
+                    if so.order.customer_id == user_id:
+                        await manager.send_to_user(
+                            shop.owner_id,
+                            "customer_location",
+                            {"shop_order_id": shop_order_id, "latitude": lat, "longitude": lng},
+                        )
+                finally:
+                    db.close()
     except WebSocketDisconnect:
         manager.disconnect(user_id, websocket)
 # Frontend files serve karne ke liye

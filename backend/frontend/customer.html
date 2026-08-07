@@ -1217,6 +1217,32 @@ async function placeOrder(){
   shopOrders.forEach(renderOrderCard);
   toast('Order dukandar ko bhej diya gaya!');
   showHistoryButton();
+  startLiveLocationSharing(shopOrders.map(so => so.id));
+}
+
+let _locationWatchId = null;
+function startLiveLocationSharing(shopOrderIds){
+  if(!navigator.geolocation || !shopOrderIds.length) return;
+  if(_locationWatchId != null) navigator.geolocation.clearWatch(_locationWatchId);
+
+  _locationWatchId = navigator.geolocation.watchPosition(
+    (pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      shopOrderIds.forEach(id => {
+        if(ws && ws.readyState === WebSocket.OPEN){
+          ws.send(JSON.stringify({
+            event: 'location_update',
+            shop_order_id: id,
+            latitude: lat,
+            longitude: lng,
+          }));
+        }
+      });
+    },
+    (err) => { console.log('location watch error:', err); },
+    { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
+  );
 }
 function renderContactButtons(phone){
   if(!phone) return '';
@@ -1274,8 +1300,9 @@ if(so.status === 'awaiting_payment'){
       <div class="hint" style="margin-top:14px;">Dukan mein lage QR ko scan karo, dukandar ko turant pata chal jaayega.</div>
       <button class="btn-primary" style="width:100%; margin-top:8px;" onclick="startShopScanner(${so.id})">Dukan Ka QR Scan Karo</button>
       <div id="shop-qr-reader-${so.id}" style="width:100%; margin-top:10px;"></div>`;
+  } else if(so.status === 'completed'){
+    if(_locationWatchId != null){ navigator.geolocation.clearWatch(_locationWatchId); _locationWatchId = null; }
   }
-
   el.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center;">
       <strong>${so.shop_name}</strong>
