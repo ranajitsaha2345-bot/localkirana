@@ -252,11 +252,11 @@ function editInventoryItem(shopItemId, name, price){
 <!-- LOCATION REQUIRED GATE -->
 <div id="location-gate" class="hidden" style="position:fixed; inset:0; background:var(--paper); z-index:999; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px;">
   <div style="font-size:3rem; margin-bottom:10px;">📍</div>
-  <h2 style="margin:0 0 10px;">Location Zaroori Hai</h2>
+  <h2 style="margin:0 0 10px;">Location Required</h2>
   <p style="color:var(--muted); max-width:320px; margin-bottom:20px;">
-    Customers tak sahi order pahunchane ke liye Wait ko aapki dukan ka location chahiye. Kripya location permission allow karo.
+    Please allow location permission.
   </p>
-  <button class="btn-accent" onclick="requestShopkeeperLocation()" style="padding:12px 28px;">Location On Karo</button>
+  <button class="btn-accent" onclick="requestShopkeeperLocation()" style="padding:12px 28px;">Turn On Location</button>
 </div>
   <div id="auth-panel" class="panel">
 
@@ -276,7 +276,7 @@ function editInventoryItem(shopItemId, name, price){
     <p id="phone-hint" style="text-align:center; color:var(--muted); margin:12px 0; font-size:.85rem;">Enter number, then continue with Google</p>
     <div style="display:flex; align-items:flex-start; gap:8px; margin:10px 0; font-size:.78rem; color:var(--muted);">
       <input type="checkbox" id="terms-checkbox" style="width:auto; margin-top:2px;" onchange="updateGoogleButtonState()">
-      <label for="terms-checkbox">Main <a href="terms.html" target="_blank" style="color:var(--red-dark);">Terms & Conditions aur Privacy Policy</a> se sehmat hoon</label>
+      <label for="terms-checkbox">Main <a href="terms.html" target="_blank" style="color:var(--red-dark);">Terms & Conditions aur Privacy Policy</a> I agree to the</label>
     </div>
     <div id="google-btn-wrap" style="opacity:0.4; pointer-events:none;">
       <div id="g_id_onload"
@@ -305,8 +305,8 @@ function editInventoryItem(shopItemId, name, price){
     </div>
     <div class="shop-toggle-row">
       <div>
-        <div class="shop-toggle-label" id="shop-status-label">Dukan Band Hai</div>
-        <div class="shop-toggle-sub">On karo taaki customers order kar sakein</div>
+        <div class="shop-toggle-label" id="shop-status-label">Closed</div>
+        <div class="shop-toggle-sub">shop Turn on so customers can order</div>
       </div>
       <label class="switch">
         <input type="checkbox" id="shop-open-toggle" onchange="toggleShopStatus(this.checked)">
@@ -314,14 +314,14 @@ function editInventoryItem(shopItemId, name, price){
       </label>
     </div>
 
-    <button class="btn-primary" style="margin-bottom:14px;" onclick="openDailySummary()">🔒 Close Shop — Aaj Ka Hisaab Dekho</button>
+    <button class="btn-primary" style="margin-bottom:14px;" onclick="openDailySummary()">View Today Sale</button>
 
     <!-- DAILY SUMMARY MODAL -->
     <div id="summary-modal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:60; display:flex; align-items:center; justify-content:center; padding:16px;">
       <div class="panel" style="max-width:480px; width:100%; max-height:85vh; overflow-y:auto;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-          <h2 style="margin:0;">Aaj Ka Hisaab</h2>
-          <button class="btn-outline btn-sm" onclick="closeDailySummary()">✕ Band Karo</button>
+          <h2 style="margin:0;">total sale</h2>
+          <button class="btn-outline btn-sm" onclick="closeDailySummary()">✕ Close</button>
         </div>
         <div id="summary-content"></div>
       </div>
@@ -334,7 +334,7 @@ function editInventoryItem(shopItemId, name, price){
 
     <!-- INVENTORY TAB -->
     <div id="tab-content-inventory" class="hidden">
-      <button class="btn-outline" style="width:100%; margin-bottom:14px;" onclick="openCategoryPicker()">🗂️ Categories Se Item Chuno</button>
+      <button class="btn-outline" style="width:100%; margin-bottom:14px;" onclick="openCategoryPicker()">🗂️ Choose Items From Categories</button>
 
       <section class="panel">
         <h2>Add New Item</h2>
@@ -351,7 +351,7 @@ function editInventoryItem(shopItemId, name, price){
         <div class="add-item-image-row">
           <label for="new-item-image-file" class="ai-image-upload-btn">
             <span id="ai-image-preview-icon">📷</span>
-            <span id="ai-image-preview-text">Gallery Se Photo Add Karo</span>
+            <span id="ai-image-preview-text">Add Photo From device</span>
           </label>
           <input type="file" id="new-item-image-file" accept="image/*" style="display:none;" onchange="handleImageUpload(event)" />
           <img id="ai-image-preview" class="hidden" />
@@ -369,8 +369,8 @@ function editInventoryItem(shopItemId, name, price){
 <div id="category-modal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:60; display:flex; align-items:center; justify-content:center; padding:16px;">
   <div class="panel" style="max-width:480px; width:100%; max-height:85vh; overflow-y:auto;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-      <h2 style="margin:0;" id="category-modal-title">Dukan Ki Category Chuno</h2>
-      <button class="btn-outline btn-sm" onclick="closeCategoryModal()">✕ Band Karo</button>
+      <h2 style="margin:0;" id="category-modal-title">Choose Your Shop's Category</h2>
+      <button class="btn-outline btn-sm" onclick="closeCategoryModal()">✕ Close</button>
     </div>
     <div id="category-modal-content"></div>
   </div>
@@ -414,8 +414,8 @@ function editInventoryItem(shopItemId, name, price){
   <div class="chat-body" id="chat-body"></div>
   <div class="chat-quick-replies" id="chat-quick-replies"></div>
   <div class="chat-input-row">
-    <input type="text" id="chat-input" placeholder="Apna sawal likho..." onkeypress="if(event.key==='Enter') sendSupportMessage()">
-    <button class="btn-accent" onclick="sendSupportMessage()">Bhejo</button>
+    <input type="text" id="chat-input" placeholder="Type your question..." onkeypress="if(event.key==='Enter') sendSupportMessage()">
+    <button class="btn-accent" onclick="sendSupportMessage()">Send</button>
   </div>
 </div>
 
@@ -449,10 +449,10 @@ function requestShopkeeperLocation(){
       shopkeeperLat = pos.coords.latitude;
       shopkeeperLng = pos.coords.longitude;
       document.getElementById('location-gate').classList.add('hidden');
-      toast('Location mil gaya!');
+      toast('Location found!');
     },
     (err) => {
-      toast('Location allow karna zaroori hai app chalane ke liye');
+      toast('allow location to use the app');
     },
     { enableHighAccuracy: true, timeout: 8000 }
   );
@@ -588,7 +588,7 @@ function updateGoogleButtonState() {
 
     if (validPhone && !termsAccepted) {
       // Number sahi hai, sirf terms baaki hai — yeh error NAHI hai, toast mat dikhao
-      document.getElementById('phone-hint').innerText = 'Kripya Terms & Conditions accept karo';
+      document.getElementById('phone-hint').innerText = 'Please accept the Terms & Conditions';
     } else {
       document.getElementById('phone-hint').innerText = 'Enter number, then continue with Google';
       // Sirf tab jab number sach mein galat ho, aur thodi der ruk kar (typing khatam hone do)
@@ -668,14 +668,14 @@ function closeForgotPassword(){
 
 async function sendForgotOtp(){
   const phone = document.getElementById('forgot-phone').value;
-  if(!phone){ toast('Phone number daalo'); return; }
+  if(!phone){ toast('Enter phone number'); return; }
   const res = await fetch(`${API}/auth/forgot-password`, {
     method: 'POST', headers: {'Content-Type':'application/json'},
     body: JSON.stringify({phone})
   });
   const data = await res.json();
-  if(!res.ok){ toast(data.detail || 'Kuch galat ho gaya'); return; }
-  toast('OTP Gmail par bhej diya gaya hai');
+  if(!res.ok){ toast(data.detail || 'Something went wrong'); return; }
+  toast('OTP sent to your Gmail');
   document.getElementById('forgot-step1').classList.add('hidden');
   document.getElementById('forgot-step2').classList.remove('hidden');
 }
@@ -684,13 +684,13 @@ async function submitResetPassword(){
   const phone = document.getElementById('forgot-phone').value;
   const otp = document.getElementById('forgot-otp').value;
   const new_password = document.getElementById('forgot-new-password').value;
-  if(!otp || !new_password){ toast('OTP aur naya password daalo'); return; }
+  if(!otp || !new_password){ toast('Enter OTP and new password'); return; }
   const res = await fetch(`${API}/auth/reset-password`, {
     method: 'POST', headers: {'Content-Type':'application/json'},
     body: JSON.stringify({phone, otp, new_password})
   });
   const data = await res.json();
-  if(!res.ok){ toast(data.detail || 'Kuch galat ho gaya'); return; }
+  if(!res.ok){ toast(data.detail || 'Something went wrong'); return; }
   toast('Password changed! Please login now');
   closeForgotPassword();
 }
@@ -728,7 +728,7 @@ function goBack(){
     const prev = tabStack[tabStack.length - 1];
     switchTab(prev, true);
   } else {
-    toast('Yeh pehla tab hai');
+    toast('first tab');
   }
 }
 
@@ -912,7 +912,7 @@ async function verifyByCode(){
     method:'POST', headers: authHeaders(), body: JSON.stringify({code})
   });
   if(res.ok){
-    toast('Pickup confirm ho gaya! ✅');
+    toast('Pickup confirmed! ✅');
     document.getElementById('code-input').value = '';
     loadOrders();
   } else {
@@ -1073,18 +1073,18 @@ async function openDailySummary(){
   const modal = document.getElementById('summary-modal');
   const content = document.getElementById('summary-content');
   modal.classList.remove('hidden');
-  content.innerHTML = '<div class="hint">Load ho raha hai...</div>';
+  content.innerHTML = '<div class="hint">Loading...</div>';
 
   try{
     const res = await fetch(`${API}/shop/orders/history`, {headers: authHeaders()});
-    if(!res.ok){ content.innerHTML = '<div class="hint">Data load nahi hua.</div>'; return; }
+    if(!res.ok){ content.innerHTML = '<div class="hint">Failed to load data.</div>'; return; }
     const allOrders = await res.json();
 
     const today = new Date().toDateString();
     const todayOrders = allOrders.filter(o => new Date(o.created_at).toDateString() === today && o.status === 'completed');
 
     if(!todayOrders.length){
-      content.innerHTML = '<div class="hint">Aaj abhi tak koi order complete nahi hua.</div>';
+      content.innerHTML = '<div class="hint">No orders completed today yet.</div>';
       return;
     }
 
@@ -1117,19 +1117,19 @@ async function openDailySummary(){
       <div class="receipt-line"><span>Online Payment</span><span>₹${onlineTotal.toFixed(2)}</span></div>
       <div class="receipt-line" style="margin-bottom:14px;"><span>Cash Payment</span><span>₹${cashTotal.toFixed(2)}</span></div>
 
-      <h2 style="font-size:.95rem; margin-bottom:8px;">Sabse Zyada Bika</h2>
+      <h2 style="font-size:.95rem; margin-bottom:8px;">Best Selling</h2>
       <div class="receipt-line" style="color:var(--green-ok); font-weight:700;"><span>${topItem ? topItem[0] : '-'}</span><span>${topItem ? topItem[1] : 0} unit</span></div>
 
-      <h2 style="font-size:.95rem; margin:14px 0 8px;">Sabse Kam Bika</h2>
+      <h2 style="font-size:.95rem; margin:14px 0 8px;">low Selling</h2>
       <div class="receipt-line" style="color:var(--red); font-weight:700;"><span>${lowItem ? lowItem[0] : '-'}</span><span>${lowItem ? lowItem[1] : 0} unit</span></div>
 
-      <h2 style="font-size:.95rem; margin:14px 0 8px;">Sabhi Item — Poori List</h2>
+      <h2 style="font-size:.95rem; margin:14px 0 8px;">All Items — Full List</h2>
       ${sortedItems.map(([name, qty]) => `
         <div class="receipt-line"><span>${name}</span><span>${qty} unit</span></div>
       `).join('')}
     `;
   } catch(err){
-    content.innerHTML = '<div class="hint">Kuch galat hua, dobara try karo.</div>';
+    content.innerHTML = '<div class="hint">Something went wrong, please try again.</div>';
   }
 }
 
@@ -1144,14 +1144,14 @@ async function toggleShopStatus(isOpen){
       body: JSON.stringify({is_open: isOpen})
     });
     if(!res.ok){
-      toast('Status change nahi hua: ' + (await res.text()));
+      toast('Status change failed: ' + (await res.text()));
       document.getElementById('shop-open-toggle').checked = !isOpen;
       return;
     }
-    label.innerText = isOpen ? 'Dukan Khuli Hai' : 'Dukan Band Hai';
-    toast(isOpen ? 'Dukan ON — ab order aayenge!' : 'Dukan OFF — order aana band ho gaya');
+    label.innerText = isOpen ? 'Open' : 'Shop is Closed';
+    toast(isOpen ? 'Shop ON — orders will come now!!' : 'Shop OFF — orders have stopped');
   } catch(err){
-    toast('Kuch galat hua');
+    toast('Something went wrong');
     document.getElementById('shop-open-toggle').checked = !isOpen;
   }
 }
@@ -1162,7 +1162,7 @@ async function loadShopStatus(){
     if(!res.ok) return;
     const data = await res.json();
     document.getElementById('shop-open-toggle').checked = !!data.is_open;
-    document.getElementById('shop-status-label').innerText = data.is_open ? 'Dukan Khuli Hai' : 'Dukan Band Hai';
+    document.getElementById('shop-status-label').innerText = data.is_open ? 'Open' : 'Dukan Band Hai';
   } catch(err){}
 }
 let supportChatOpened = false;
@@ -1173,7 +1173,7 @@ function toggleSupportChat(){
   if(isHidden){
     win.classList.remove('hidden');
     if(!supportChatOpened){
-      addBotMessage('Namaste! Main aapki madad ke liye yahan hoon. Neeche se apna sawal chuno ya type karo.');
+      addBotMessage('Choose your question below or type it.');
       showQuickReplies();
       supportChatOpened = true;
     }
@@ -1197,15 +1197,15 @@ function addUserMessage(text){
 function showQuickReplies(){
   const isShopkeeperPage = typeof myUserId !== 'undefined' && document.getElementById('app-content');
   const replies = isShopkeeperPage ? [
-    'Customer nahi aaya',
+    'Customer not arrived',
     'Payment problem',
-    'App mein dikkat hai',
-    'Customer ka number chahiye'
+    'App is having issues',
+    'Need customer number'
   ] : [
-    'Dukan dhoond nahi pa raha',
-    'Dukandar ka number chahiye',
+    'not find the shop',
+    'Need shopkeeper number',
     'Payment problem',
-    'Order cancel karna hai'
+    'Want to cancel order'
   ];
   const wrap = document.getElementById('chat-quick-replies');
   wrap.innerHTML = replies.map(r => `<button class="chat-quick-btn" onclick="handleQuickReply('${r.replace(/'/g,"\\'")}')">${r}</button>`).join('');
@@ -1231,22 +1231,22 @@ function respondToQuery(text){
 
   if(q.includes('dukandar') && (q.includes('number') || q.includes('numbar'))){
     const phone = window._activeShopPhone;
-    reply = phone ? `Dukandar ka number: <strong>${phone}</strong>. Aap Call ya Chat button se seedha baat kar sakte hain.` : 'Abhi koi active order nahi hai jiske dukandar ka number diya ja sake. Pehle order karo, phir Ready hone par yahan se number mil jayega.';
+    reply = phone ? `Shopkeeper's number: <strong>${phone}</strong>. You can talk directly using the Call or Chat button.` : 'There no active order right now to share the shopkeeper number. Place an order first, and youll get it once its Ready.';
   } else if(q.includes('customer') && (q.includes('number') || q.includes('numbar'))){
     const phone = window._activeCustomerPhone;
-    reply = phone ? `Customer ka number: <strong>${phone}</strong>` : 'Abhi koi confirmed order nahi hai jiske customer ka number diya ja sake.';
+    reply = phone ? `Customer's number: <strong>${phone}</strong>` : 'There no confirmed order right now to share the customer number.';
   } else if(q.includes('dukan') && (q.includes('dhoond') || q.includes('mil') || q.includes('nahi'))){
-    reply = 'Chinta mat karo — order ke "Ready" hone par aapko dukan ka exact location aur "Raasta Dikhao" button milega jisse Google Maps khulke direction dikhayega.';
+    reply = 'Dont worry — once the order is "Ready", youll get the shop exact location and a "Show Directions" button opening Google Maps.';
   } else if(q.includes('payment')){
-    reply = 'Payment problem samajh gaye. Kripya thodi der wait karo, jaldi fix ho jayega. Agar 10 minute mein bhi solve na ho, to yahin dobara likho.';
+    reply = 'Got it, payment issue. Please wait a bit, itll be fixed soon. If not resolved in 10 minutes, message here again.';
   } else if(q.includes('customer') && (q.includes('nahi aaya') || q.includes('late') || q.includes('let'))){
-    reply = 'Samajh gaye, customer abhi tak nahi pahuncha. Aap "Customer ka number chahiye" likh kar unhe seedha call/chat kar sakte hain.';
+    reply = 'Understood, the customer hasnt arrived yet. Type "Need customer number" to call/chat with them directly.';
   } else if(q.includes('cancel')){
-    reply = 'Order cancel karne ke liye kripya dukandar se seedha baat karo (Call/Chat button se) ya thodi der wait karo, hum jald hi is feature ko add karenge.';
+    reply = 'To cancel, please talk directly to the shopkeeper (Call/Chat button) or wait — well add this feature soon.';
   } else if(q.includes('app') && (q.includes('dikkat') || q.includes('problem') || q.includes('kaam nahi'))){
-    reply = 'App mein dikkat ke liye maafi chahte hain. Kripya app ko refresh/reload karke dobara try karo. Agar phir bhi problem ho, to thodi der baad try karo.';
+    reply = 'Sorry for the trouble. Please refresh/reload the app and try again. If it still doesnt work, try again shortly.';
   } else {
-    reply = 'Maaf karo, main aapki poori baat samajh nahi paya. Neeche diye options mein se chuno ya thoda alag tarike se likho.';
+    reply = 'Sorry, I couldnt fully understand. Choose from the options below or rephrase.';
   }
 
   setTimeout(() => addBotMessage(reply), 400);
@@ -1346,7 +1346,7 @@ const SHOP_CATEGORY_TEMPLATES = {
 function openCategoryPicker(){
   const modal = document.getElementById('category-modal');
   const content = document.getElementById('category-modal-content');
-  document.getElementById('category-modal-title').innerText = 'Dukan Ki Category Chuno';
+  document.getElementById('category-modal-title').innerText = 'Shop Category';
   modal.classList.remove('hidden');
 
   content.innerHTML = `<div class="category-grid">
@@ -1386,7 +1386,7 @@ function addFromTemplate(name, unit){
   document.querySelector('.ai-save').innerText = 'Save';
   editingShopItemId = null;
   closeCategoryModal();
-  toast(`${name} ready hai — price daalo aur Save dabao`);
+  toast(`${name} is ready — enter the price and press Save`);
   document.getElementById('new-item-name').scrollIntoView({behavior:'smooth', block:'center'});
 }
 
@@ -1413,7 +1413,7 @@ function handleImageUpload(event){
       document.getElementById('ai-image-preview').src = uploadedImageBase64;
       document.getElementById('ai-image-preview').classList.remove('hidden');
       document.getElementById('ai-image-remove-btn').classList.remove('hidden');
-      document.getElementById('ai-image-preview-text').innerText = 'Photo Add Ho Gayi ✓';
+      document.getElementById('ai-image-preview-text').innerText = 'Photo Added ✓';
     };
     img.src = e.target.result;
   };
@@ -1427,11 +1427,11 @@ function removeImagePreview(){
   document.getElementById('new-item-image-file').value = '';
   document.getElementById('ai-image-preview').classList.add('hidden');
   document.getElementById('ai-image-remove-btn').classList.add('hidden');
-  document.getElementById('ai-image-preview-text').innerText = 'Gallery Se Photo Add Karo';
+  document.getElementById('ai-image-preview-text').innerText = 'Add Photo From device';
 }
   document.getElementById('ai-image-preview').classList.add('hidden');
   document.getElementById('ai-image-remove-btn').classList.add('hidden');
-  document.getElementById('ai-image-preview-text').innerText = 'Gallery Se Photo Add Karo';
+  document.getElementById('ai-image-preview-text').innerText = 'Add Photo From device';
 }
 
 async function createItem(){
@@ -1449,7 +1449,7 @@ async function createItem(){
     const delRes = await fetch(`${API}/shop/inventory/${editingShopItemId}`, {
       method: 'DELETE', headers: authHeaders()
     });
-    if(!delRes.ok){ toast('Update nahi hua: ' + (await delRes.text())); return; }
+    if(!delRes.ok){ toast('Update failed: ' + (await delRes.text())); return; }
   }
 
   let itemUrl = `${API}/shop/items?name=${encodeURIComponent(name)}&unit=${encodeURIComponent(unit)}&category=${encodeURIComponent(category)}`;
@@ -1466,7 +1466,7 @@ async function createItem(){
   });
   if(!invRes.ok){ toast('Price could not be saved: ' + (await invRes.text())); return; }
 
-  toast(editingShopItemId ? 'Item update ho gaya!' : 'Item added!');
+  toast(editingShopItemId ? 'Item updated!' : 'Item added!');
   document.getElementById('new-item-name').value = '';
   document.getElementById('new-item-price').value = '';
   document.querySelector('.ai-save').innerText = 'Save';
