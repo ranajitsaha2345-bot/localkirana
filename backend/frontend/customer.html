@@ -148,7 +148,6 @@ button:active{transform:scale(.97);}
   font-size:.55rem; font-weight:800; border-radius:8px; padding:1px 5px;
   min-width:16px; height:16px;
   display:flex; align-items:center; justify-content:center;
-  z-index:5;
 }
 .item-card .unit-hint{ font-size:.48rem; color:var(--muted); margin-top:-1px; }
 .qty-controls{ display:flex; gap:3px; width:100%; justify-content:center; }
@@ -1277,7 +1276,12 @@ function renderOrderCard(so){
     </div>`).join('');
 
     let actionHtml = '';
-  if(so.status === 'awaiting_payment'){
+if(so.status === 'partially_unavailable'){
+  actionHtml = `
+    <div class="hint" style="color:var(--red); margin-bottom:8px;">Kuch items abhi is dukan mein available nahi hain (❌ upar dikh raha hai)</div>
+    <button class="btn-accent" style="width:100%;" onclick="proceedPartial(${so.id})">Jo Mila Wahi Le Lo — Aage Badho</button>
+  `;
+    } else if(so.status === 'awaiting_payment'){
     actionHtml = `
       <div style="display:flex; gap:8px; margin-top:10px;">
         <button class="btn-primary" style="flex:1" onclick="payOnline(${so.id}, ${so.amount})">Online Payment</button>

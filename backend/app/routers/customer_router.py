@@ -222,7 +222,29 @@ def create_payment(
         amount_paise=rp_order["amount"],
         key_id=payment.RAZORPAY_KEY_ID,
     )
+@router.post("/shop-orders/{shop_order_id}/proceed-partial", response_model=schemas.ShopOrderOut)
+def proceed_with_available_items(
+    shop_order_id: int, db: Session = Depends(get_db),
+    user: models.User = Depends(require_customer),
+):
+    """
+    Kuch items unavailable the — customer bolta hai 'jo mila usi ka
+    order aage badhao'. Amount sirf available items ka recalculate hota hai.
+    """
+    so = db.query(models.ShopOrder).get(shop_order_id)
+    if not so or so.order.customer_id != user.id:
+        raise HTTPException(404, "Order nahi mila")
+    if so.status != models.ShopOrderStatus.partially_unavailable:
+        raise HTTPException(400, "Yeh order partial-unavailable state mein nahi hai")
 
+    so.amount = sum(
+        i.unit_price * i.quantity for i in so.items
+        if i.availability == models.ItemAvailability.available
+    )
+    so.status = models.ShopOrderStatus.awaiting_payment
+    db.commit()
+    db.refresh(so)
+    return _to_shop_order_out(db, so)
 
 @router.post("/shop-orders/{shop_order_id}/pay/verify")
 def verify_payment(
