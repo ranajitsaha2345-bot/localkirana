@@ -625,7 +625,7 @@ function onLoggedIn(data){
   document.getElementById('auth-panel').classList.add('hidden');
   document.getElementById('app-content').classList.remove('hidden');
   document.querySelector('.back-btn').classList.add('show');
-  loadOrders(); loadCatalogAndInventory(); connectWS(); loadShopStatus();
+  loadShopStatus(); loadOrders(); loadCatalogAndInventory(); connectWS();
   setInterval(loadOrders, 8000);
 }
 
