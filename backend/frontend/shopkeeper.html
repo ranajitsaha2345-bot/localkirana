@@ -859,8 +859,9 @@ async function loadOrders(){
   wrap.innerHTML = orders.filter(o => o.status !== 'completed').map(renderOrderCard).join('') || '<div class="panel">No new orders yet.</div>';
 
   orders.forEach(o => {
-    const stillPending = o.status === 'confirmed' && o.items.some(i => i.availability !== 'available' && i.availability !== 'not_available');
-    if(stillPending){
+    const needsAction = (o.status === 'pending_shop_review' || o.status === 'confirmed')
+      && o.items.some(i => i.availability !== 'available' && i.availability !== 'not_available');
+    if(needsAction){
       startOrderAlarm(o.id);
     } else {
       stopOrderAlarm(o.id);
