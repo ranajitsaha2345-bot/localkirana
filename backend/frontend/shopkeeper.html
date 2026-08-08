@@ -424,6 +424,55 @@ const API = "https://localkirana-production.up.railway.app";
 let token = null, myUserId = null, ws = null;
 let shopkeeperLat = null, shopkeeperLng = null;
 
+// ---------------- NEW ORDER ALARM (buzzer jab tak confirm na ho) ----------------
+let alarmAudioCtx = null;
+let alarmLoopTimer = null;
+let ringingOrders = new Set();
+
+function unlockAlarmAudio(){
+  if(!alarmAudioCtx){
+    alarmAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if(alarmAudioCtx.state === 'suspended') alarmAudioCtx.resume();
+}
+document.addEventListener('click', unlockAlarmAudio, { once: true });
+
+function playAlarmBeep(){
+  if(!alarmAudioCtx) return;
+  const now = alarmAudioCtx.currentTime;
+  [0, 0.18].forEach(delay => {
+    const osc = alarmAudioCtx.createOscillator();
+    const gain = alarmAudioCtx.createGain();
+    osc.type = 'square';
+    osc.frequency.value = 1000;
+    gain.gain.setValueAtTime(0.35, now + delay);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.15);
+    osc.connect(gain); gain.connect(alarmAudioCtx.destination);
+    osc.start(now + delay);
+    osc.stop(now + delay + 0.16);
+  });
+}
+
+function startOrderAlarm(orderId){
+  if(!orderId) return;
+  ringingOrders.add(orderId);
+  unlockAlarmAudio();
+  if(alarmLoopTimer) return;
+  playAlarmBeep();
+  alarmLoopTimer = setInterval(() => {
+    if(ringingOrders.size === 0){
+      clearInterval(alarmLoopTimer);
+      alarmLoopTimer = null;
+      return;
+    }
+    playAlarmBeep();
+  }, 900);
+}
+
+function stopOrderAlarm(orderId){
+  ringingOrders.delete(orderId);
+}
+
 function checkLocationGate(){
   const gate = document.getElementById('location-gate');
   if(!navigator.geolocation){
@@ -773,6 +822,15 @@ async function loadOrders(){
 
   const wrap = document.getElementById('orders-list');
   wrap.innerHTML = orders.filter(o => o.status !== 'completed').map(renderOrderCard).join('') || '<div class="panel">No new orders yet.</div>';
+
+  orders.forEach(o => {
+    const stillPending = o.status === 'confirmed' && o.items.some(i => i.availability !== 'available' && i.availability !== 'not_available');
+    if(stillPending){
+      startOrderAlarm(o.id);
+    } else {
+      stopOrderAlarm(o.id);
+    }
+  });
 }
 function renderContactButtons(phone){
   if(!phone) return '';
@@ -859,6 +917,7 @@ function renderOrderCard(so){
     </div>`;
 }
 function dismissOrderCard(orderId){
+  stopOrderAlarm(orderId);
   const el = document.getElementById(`order-card-${orderId}`);
   if(el) el.remove();
 }
@@ -1036,6 +1095,7 @@ function connectWS(){
       unreadOrders++;
       updateOrdersBadge();
       toast('New order received!');
+      startOrderAlarm(data.id || data.shop_order_id);
       loadOrders();
     }
     else if(event === 'order_completed'){ toast(`Order delivered to ${data.customer_name}`); loadOrders(); }
