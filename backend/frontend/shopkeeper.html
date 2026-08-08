@@ -313,6 +313,16 @@ function editInventoryItem(shopItemId, name, price){
         <span class="slider"></span>
       </label>
     </div>
+    <div class="shop-toggle-row">
+      <div>
+        <div class="shop-toggle-label">Voice Announcements</div>
+        <div class="shop-toggle-sub">Popups will be spoken out loud</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="voice-toggle" onchange="toggleVoiceSetting(this.checked)">
+        <span class="slider"></span>
+      </label>
+    </div> 
 
     <button class="btn-primary" style="margin-bottom:14px;" onclick="openDailySummary()">View Today Sale</button>
 
@@ -471,6 +481,30 @@ function startOrderAlarm(orderId){
 
 function stopOrderAlarm(orderId){
   ringingOrders.delete(orderId);
+}
+// ---------------- VOICE ANNOUNCEMENTS (popup/toast bolna) ----------------
+function isVoiceEnabled(){
+  return localStorage.getItem('shop_voice_enabled') !== 'false'; // default ON
+}
+
+function setVoiceEnabled(enabled){
+  localStorage.setItem('shop_voice_enabled', enabled ? 'true' : 'false');
+}
+
+function speakText(text){
+  if(!isVoiceEnabled()) return;
+  if(!('speechSynthesis' in window)) return;
+  const clean = String(text).replace(/<[^>]*>/g, ''); // HTML tags hata do
+  const utter = new SpeechSynthesisUtterance(clean);
+  utter.lang = 'en-IN';
+  utter.rate = 1;
+  window.speechSynthesis.cancel(); // purani speech rok kar nayi bolo
+  window.speechSynthesis.speak(utter);
+}
+
+function toggleVoiceSetting(checked){
+  setVoiceEnabled(checked);
+  toast(checked ? 'Voice announcements ON' : 'Voice announcements OFF');
 }
 
 function checkLocationGate(){
@@ -676,6 +710,7 @@ function onLoggedIn(data){
   document.getElementById('auth-panel').classList.add('hidden');
   document.getElementById('app-content').classList.remove('hidden');
   document.querySelector('.back-btn').classList.add('show');
+  document.getElementById('voice-toggle').checked = isVoiceEnabled();
   loadShopStatus(); loadOrders(); loadCatalogAndInventory(); connectWS();
   setInterval(loadOrders, 8000);
 }
@@ -1246,6 +1281,7 @@ function addBotMessage(text){
   const body = document.getElementById('chat-body');
   body.innerHTML += `<div class="chat-msg bot">${text}</div>`;
   body.scrollTop = body.scrollHeight;
+  speakText(text);
 }
 
 function addUserMessage(text){
@@ -1314,9 +1350,11 @@ function respondToQuery(text){
 
 function toast(msg){
   const t = document.createElement('div');
-  t.className = 'toast'; t.innerText = typeof msg === 'string' ? msg : JSON.stringify(msg);
+  const text = typeof msg === 'string' ? msg : JSON.stringify(msg);
+  t.className = 'toast'; t.innerText = text;
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 3500);
+  speakText(text);
 }
 </script>
 
