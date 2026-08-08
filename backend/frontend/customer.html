@@ -1291,10 +1291,13 @@ if(so.status === 'partially_unavailable'){
       </div>
       <div class="hint">Cash on pickup 10 online orders ke baad unlock hota hai.</div>`;
   } else if(so.status === 'confirmed'){
+    const routeSrc = (so.shop_latitude && window._custLat != null)
+      ? `https://www.google.com/maps?saddr=${window._custLat},${window._custLng}&daddr=${so.shop_latitude},${so.shop_longitude}&output=embed`
+      : so.shop_latitude ? `https://www.google.com/maps?q=${so.shop_latitude},${so.shop_longitude}&output=embed` : null;
     actionHtml = `
       <div class="hint" style="margin-top:8px;">📍 ${so.shop_address || ''}</div>
-      ${so.shop_latitude ? `<iframe style="width:100%; height:180px; border:0; border-radius:12px; margin-top:8px;" loading="lazy"
-        src="https://www.google.com/maps?q=${so.shop_latitude},${so.shop_longitude}&output=embed"></iframe>` : ''}
+      ${routeSrc ? `<iframe style="width:100%; height:220px; border:0; border-radius:12px; margin-top:8px;" loading="lazy"
+        src="${routeSrc}"></iframe>` : ''}
       <div class="hint">Dukandar order taiyar kar raha hai — ready hote hi aapko pata chal jaayega.</div>`;
   } else if(so.status === 'ready'){
     actionHtml = `
@@ -1503,10 +1506,16 @@ function showMap(data){
     distanceHtml = `<div class="hint" style="font-size:.85rem; margin-bottom:6px;">📍 Dukan yahan se ${distText} door hai</div>`;
   }
 
+  const routeSrc = (window._lastLat && window._lastLng && data.shop_latitude && data.shop_longitude)
+    ? `https://www.google.com/maps?saddr=${window._lastLat},${window._lastLng}&daddr=${data.shop_latitude},${data.shop_longitude}&output=embed`
+    : `https://www.google.com/maps?q=${data.shop_latitude},${data.shop_longitude}&output=embed`;
+
   mapDiv.innerHTML = `
     ${distanceHtml}
+    <iframe style="width:100%; height:220px; border:0; border-radius:12px; margin-bottom:8px;" loading="lazy"
+      src="${routeSrc}"></iframe>
     <a href="https://www.google.com/maps/dir/?api=1&destination=${data.shop_latitude},${data.shop_longitude}" target="_blank" style="text-decoration:none;">
-      <button class="btn-primary" style="width:100%;">📍 Shop Location</button>
+      <button class="btn-primary" style="width:100%;">📍 Poori App Mein Navigate Karo</button>
     </a>`;
 }
 
