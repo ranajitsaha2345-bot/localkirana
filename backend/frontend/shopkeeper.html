@@ -395,7 +395,9 @@ function editInventoryItem(shopItemId, name, price){
         <div class="hint" style="margin-bottom:10px;">
           Print this or keep it on screen at your shop. When a customer scans it, you'll instantly get their order details.
         </div>
-        <div id="my-qr-box" style="text-align:center; padding:16px;"></div>
+        <div id="my-qr-box" style="text-align:center; padding:16px; position:relative;">
+  <a id="qr-download-btn" download="my-shop-qr.png" style="position:absolute; top:0; right:0; background:var(--red); color:#fff; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; text-decoration:none; font-size:1.1rem; box-shadow:0 4px 10px rgba(0,0,0,.15);">⬇️</a>
+</div>
         <div id="my-qr-name" class="hint" style="text-align:center; font-weight:700; font-size:1rem; color:var(--red-dark);"></div>
       </section>
     </div>
@@ -738,13 +740,19 @@ async function loadMyShopQR(){
   const data = await res.json();
   document.getElementById('my-qr-name').innerText = data.shop_name;
   const box = document.getElementById('my-qr-box');
-  box.innerHTML = '';
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(data.qr_data)}`;
+
   const img = document.createElement('img');
-  img.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(data.qr_data)}`;
+  img.src = qrUrl;
   img.alt = 'Dukan QR Code';
   img.style.width = '220px';
   img.style.height = '220px';
   box.appendChild(img);
+
+  const downloadBtn = document.getElementById('qr-download-btn');
+  downloadBtn.href = qrUrl;
+  downloadBtn.download = `${data.shop_name.replace(/\s+/g, '-')}-QR.png`;
+
   myShopQRLoaded = true;
 }
 
