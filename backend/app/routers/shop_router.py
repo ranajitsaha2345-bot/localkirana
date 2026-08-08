@@ -193,20 +193,21 @@ async def mark_item_availability(
         any_unavailable = any(
             i.availability == models.ItemAvailability.not_available for i in all_items
         )
+        # dono cases mein amount recompute karo (sirf available items ka)
+        shop_order.amount = sum(
+            i.unit_price * i.quantity for i in all_items
+            if i.availability == models.ItemAvailability.available
+        )
         if any_unavailable:
             shop_order.status = models.ShopOrderStatus.partially_unavailable
         else:
             shop_order.status = models.ShopOrderStatus.awaiting_payment
-            # recompute amount sirf available items ka (agar kuch removed ho)
-            shop_order.amount = sum(
-                i.unit_price * i.quantity for i in all_items
-                if i.availability == models.ItemAvailability.available
-            )
-            await realtime.manager.send_to_user(
-                shop_order.order.customer_id,
-                "ready_for_payment",
-                {"shop_order_id": shop_order.id, "amount": shop_order.amount},
-            )
+
+        await realtime.manager.send_to_user(
+            shop_order.order.customer_id,
+            "ready_for_payment",
+            {"shop_order_id": shop_order.id, "amount": shop_order.amount},
+        )
 
     db.commit()
     db.refresh(soi)
