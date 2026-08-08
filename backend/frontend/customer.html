@@ -1011,6 +1011,7 @@ function onLoggedIn(data){
   renderCategories();
   startCatalog();
   connectWS();
+  refreshOrders();
 }
 function saveSession(data){
   localStorage.setItem('access_token', data.access_token);
