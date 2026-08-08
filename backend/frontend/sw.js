@@ -33,6 +33,15 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
+  const url = new URL(event.request.url);
+
+  // API calls hamesha fresh network se — kabhi cache mat karo
+  if (url.pathname.startsWith("/customer/") || url.pathname.startsWith("/shop/") || url.pathname.startsWith("/api/")) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
+  // Static files ke liye cache-first
   event.respondWith(
     caches.match(event.request).then((response) => {
       return response || fetch(event.request);
