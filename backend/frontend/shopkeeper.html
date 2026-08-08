@@ -1051,7 +1051,11 @@ function updateCustomerLocationUI(data){
     distText = ` — ${d.toFixed(2)} km door`;
   }
   const now = new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'});
-  el.innerHTML = `📍 Customer location${distText} <span style="opacity:.6;">(updated ${now})</span>`;
+  el.innerHTML = `
+    📍 Customer location${distText} <span style="opacity:.6;">(updated ${now})</span>
+    <iframe style="width:100%; height:180px; border:0; border-radius:12px; margin-top:8px;" loading="lazy"
+      src="https://www.google.com/maps?q=${data.latitude},${data.longitude}&z=16&output=embed"></iframe>
+  `;
 }
 
   ws.onclose = () => setTimeout(connectWS, 3000);
