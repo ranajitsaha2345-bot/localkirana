@@ -407,6 +407,9 @@ def get_shop_status(db: Session = Depends(get_db),
                      user: models.User = Depends(require_shopkeeper)):
     """Dukandar ki dukan abhi open hai ya band."""
     shop = _get_owned_shop(db, user)
+    if shop.is_open is None:
+        shop.is_open = True
+        db.commit()
     return {"is_open": shop.is_open}
 
 
