@@ -837,16 +837,22 @@ function renderOrderCard(so){
       : '';
 
     return `
-    <div class="panel order-card">
+    <div class="panel order-card" id="order-card-${so.id}" style="position:relative; padding-top:34px;">
+      <span style="position:absolute; top:8px; left:12px; font-size:.7rem; font-weight:700; color:var(--muted);">#${so.id}</span>
+      <span onclick="dismissOrderCard(${so.id})" style="position:absolute; top:6px; right:10px; cursor:pointer; font-size:1.1rem; color:var(--red); font-weight:800; line-height:1;">✕</span>
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <strong>${so.customer_name}</strong>
         <span class="status-pill status-${so.status}">${so.status.replace(/_/g,' ')}</span>
       </div>
-      <div class="hint">Order ID: ${so.id} · Total: ₹${so.amount.toFixed(2)}</div>
+      <div class="hint">Total: ₹${so.amount.toFixed(2)}</div>
       ${itemsHtml}
       ${footer}
       ${locationHtml}
     </div>`;
+}
+function dismissOrderCard(orderId){
+  const el = document.getElementById(`order-card-${orderId}`);
+  if(el) el.remove();
 }
 
 async function setAvailability(shopOrderItemId, availability){
