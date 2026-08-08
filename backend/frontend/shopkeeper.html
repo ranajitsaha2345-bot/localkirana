@@ -858,6 +858,11 @@ async function loadOrders(){
   const wrap = document.getElementById('orders-list');
   wrap.innerHTML = orders.filter(o => o.status !== 'completed').map(renderOrderCard).join('') || '<div class="panel">No new orders yet.</div>';
 
+  const validOrderIds = new Set(orders.map(o => o.id));
+  Array.from(ringingOrders).forEach(id => {
+    if(!validOrderIds.has(id)) ringingOrders.delete(id);
+  });
+
   orders.forEach(o => {
     const needsAction = (o.status === 'pending_shop_review' || o.status === 'confirmed')
       && o.items.some(i => i.availability !== 'available' && i.availability !== 'not_available');
