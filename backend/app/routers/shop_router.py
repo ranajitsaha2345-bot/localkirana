@@ -116,6 +116,28 @@ def list_shop_orders(status_filter: str | None = None, db: Session = Depends(get
     orders = q.order_by(models.ShopOrder.created_at.desc()).all()
     return [_to_shop_order_out(db, so) for so in orders]
 
+@router.get("/orders/history", response_model=list[schemas.ShopOrderOut])
+def get_shop_order_history(db: Session = Depends(get_db),
+                            user: models.User = Depends(require_shopkeeper)):
+    """Dukandar ke saare completed orders — 'Aaj Ka Hisaab' summary ke liye."""
+    shop = _get_owned_shop(db, user)
+    orders = (
+        db.query(models.ShopOrder)
+        .filter(models.ShopOrder.shop_id == shop.id, models.ShopOrder.status == models.ShopOrderStatus.completed)
+        .order_by(models.ShopOrder.completed_at.desc())
+        .all()
+    )
+    return [_to_shop_order_out(db, so) for so in orders]
+
+
+@router.get("/orders/{shop_order_id}", response_model=schemas.ShopOrderOut)
+def get_shop_order(shop_order_id: int, db: Session = Depends(get_db),
+                    user: models.User = Depends(require_shopkeeper)):
+    shop = _get_owned_shop(db, user)
+    so = db.query(models.ShopOrder).get(shop_order_id)
+    if not so or so.shop_id != shop.id:
+        raise HTTPException(404, "Order nahi mila")
+    return _to_shop_order_out(db, so)
 
 @router.get("/orders/{shop_order_id}", response_model=schemas.ShopOrderOut)
 def get_shop_order(shop_order_id: int, db: Session = Depends(get_db),
