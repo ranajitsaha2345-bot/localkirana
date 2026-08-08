@@ -1367,6 +1367,12 @@ async function payCash(shopOrderId){
   if(!res.ok){ toast(await res.text()); return; }
   toast('Cash on pickup confirm ho gaya');
 }
+async function proceedPartial(shopOrderId){
+  const res = await fetch(`${API}/customer/shop-orders/${shopOrderId}/proceed-partial`, {method:'POST', headers: authHeaders()});
+  if(!res.ok){ toast('Kuch gadbad hui: ' + (await res.text())); return; }
+  toast('Order confirm ho gaya, ab payment karo');
+  refreshOrders();
+}
 
 // ---------------- WEBSOCKET (REAL-TIME) ----------------
 function connectWS(){
