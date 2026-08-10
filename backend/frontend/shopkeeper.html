@@ -285,6 +285,10 @@ window.onload = function() {
       <label for="terms-checkbox">i read <a href="terms.html" target="_blank" style="color:var(--red-dark);">Terms & Conditions aur Privacy Policy</a> I agree </label>
     </div>
     <div id="google-btn-wrap" style="opacity:0.4; pointer-events:none;">
+      <div id="google-fallback-msg" class="hidden" style="text-align:center; margin-top:10px; font-size:.78rem; color:var(--red-dark);">
+        ⚠️ Google Sign-In load nahi ho paya. Kripya page refresh karo ya thodi der baad try karo. Agar problem bani rahe to support se contact karo.
+        <br><button class="btn-outline btn-sm" style="margin-top:6px;" onclick="location.reload()">🔄 Refresh Karo</button>
+      </div>
       <div id="g_id_onload"
            data-client_id="331552152118-9kbvonm08obtu4fjepnvc46b4lkdjid8.apps.googleusercontent.com"
            data-callback="handleGoogleLogin">
@@ -651,6 +655,16 @@ async function verifyOtp(){
 }
 
 let toastTimer = null; // pending "invalid number" toast ko track karne ke liye
+
+function checkGoogleButtonLoaded(){
+  setTimeout(() => {
+    const gsiButton = document.querySelector('.g_id_signin iframe');
+    if(!gsiButton){
+      document.getElementById('google-fallback-msg').classList.remove('hidden');
+    }
+  }, 5000);
+}
+checkGoogleButtonLoaded();
 
 function updateGoogleButtonState() {
   const phone = document.getElementById('phone').value.trim();
