@@ -229,14 +229,18 @@ function editInventoryItem(shopItemId, name, price){
   document.querySelector('.ai-save').innerText = 'Update';
   document.getElementById('new-item-name').scrollIntoView({behavior:'smooth', block:'center'});
 }
-  window.onload = function() {
+window.onload = function() {
+  tryRestoreShopSession();
+  if(!token){
     google.accounts.id.initialize({
       client_id: "331552152118-9kbvonm08obtu4fjepnvc46b4lkdjid8.apps.googleusercontent.com",
       callback: handleGoogleLogin
     });
-    google.accounts.id.renderButton(document.getElementById("g_id_signin"), { theme: "outline", size: "large" });
-    checkLocationGate();
-  };
+    const gBtn = document.getElementById("g_id_signin");
+    if(gBtn) google.accounts.id.renderButton(gBtn, { theme: "outline", size: "large" });
+  }
+  checkLocationGate();
+};
 </script>
 </head>
 <body>
@@ -1588,7 +1592,6 @@ async function deleteInventoryItem(shopItemId){
   toast('Item removed');
   loadInventory();
 }
-tryRestoreShopSession();
 </script>
 </body>
 </html>
