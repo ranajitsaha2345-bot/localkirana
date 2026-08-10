@@ -603,10 +603,6 @@ function getShopLocation(callback){
 function loadGoogleButton(){
   if(window.google && window.google.accounts){
     console.log("✅ Google Sign-In loaded!");
-    window.google.accounts.id.initialize({
-      client_id: "331552152118-9kbvonm08obtu4fjepnvc46b4lkdjid8.apps.googleusercontent.com",
-      callback: handleGoogleLogin
-    });
   } else {
     console.warn("❌ Google Sign-In failed to load");
     toast("Google login temporarily unavailable — refresh karo");
