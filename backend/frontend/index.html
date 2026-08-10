@@ -1046,7 +1046,8 @@ function loadGoogleButton(){
     console.log("✅ Google Sign-In loaded!");
     window.google.accounts.id.initialize({
       client_id: "331552152118-9kbvonm08obtu4fjepnvc46b4lkdjid8.apps.googleusercontent.com",
-      callback: handleGoogleLogin
+      callback: handleGoogleLogin,
+      use_fedcm_for_prompt: false
     });
   } else {
     console.warn("❌ Google Sign-In failed to load");
