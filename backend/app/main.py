@@ -34,7 +34,10 @@ app = FastAPI(title="Wait API", version="1.0.0")
 # Production mein allow_origins ko apni actual domain tak limit karna
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://localkirana.vercel.app",
+        "https://localkirana-git-main-ranajitsaha2345-bots-projects.vercel.app",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
