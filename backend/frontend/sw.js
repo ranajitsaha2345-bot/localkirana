@@ -4,10 +4,10 @@ const FILES_TO_CACHE = [
   "/shopkeeper.html",
   "/manifest.json",
   "/shop-manifest.json",
-  "/static/icon-192.png",
-  "/static/icon-512.png",
-  "/static/shop-icon-192.png",
-  "/static/shop-icon-512.png",
+  "/icon-192.png",
+  "/icon-512.png",
+  "/shop-icon-192.png",
+  "/shop-icon-512.png"
 ];
 
 self.addEventListener("install", (event) => {
