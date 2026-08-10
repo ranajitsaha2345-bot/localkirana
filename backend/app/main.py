@@ -154,7 +154,7 @@ app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
 
 @app.get("/customer.html")
 def serve_customer():
-    return FileResponse(os.path.join(FRONTEND_DIR, "customer.html"))
+    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
 
 @app.get("/shopkeeper.html")
 def serve_shopkeeper():
@@ -162,7 +162,7 @@ def serve_shopkeeper():
 
 @app.get("/")
 def serve_root():
-    return FileResponse(os.path.join(FRONTEND_DIR, "customer.html"))
+    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
 
 @app.get("/manifest.json")
 def serve_manifest():

@@ -1,6 +1,6 @@
 const CACHE_NAME = "wait-cache-v1";
 const FILES_TO_CACHE = [
-  "/customer.html",
+  "/index.html",
   "/shopkeeper.html",
   "/manifest.json",
   "/shop-manifest.json",
