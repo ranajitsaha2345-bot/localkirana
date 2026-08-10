@@ -49,25 +49,30 @@ def _to_shop_order_out(db: Session, so: models.ShopOrder) -> schemas.ShopOrderOu
 # ---------------------------------------------------------------------------
 # Inventory - dukandar apni dukan mein items aur price set karta hai
 # ---------------------------------------------------------------------------
+class ItemCreatePayload(BaseModel):
+    name: str
+    unit: str = "unit"
+    category: str = "general"
+    image_url: str | None = None
+
+
 @router.post("/items", response_model=schemas.ItemOut)
-def create_master_item(name: str, unit: str = "unit", category: str = "general",
-                        image_url: str | None = None,
+def create_master_item(payload: ItemCreatePayload,
                         db: Session = Depends(get_db),
                         user: models.User = Depends(require_shopkeeper)):
     """Agar catalog mein item pehle se nahi hai (jaise 'dal', 'chini'), to yeh banata hai."""
-    clean_name = name.strip()
-    clean_image = image_url.strip() if image_url and image_url.strip() else None
+    clean_name = payload.name.strip()
+    clean_image = payload.image_url.strip() if payload.image_url and payload.image_url.strip() else None
     existing = db.query(models.Item).filter(
         func.lower(models.Item.name) == clean_name.lower()
     ).first()
     if existing:
-        # agar existing item ki photo nahi hai aur nayi photo di gayi hai, to update kar do
         if clean_image and not existing.image_url:
             existing.image_url = clean_image
             db.commit()
             db.refresh(existing)
         return existing
-    item = models.Item(name=clean_name, unit=unit, category=category, image_url=clean_image)
+    item = models.Item(name=clean_name, unit=payload.unit, category=payload.category, image_url=clean_image)
     db.add(item)
     db.commit()
     db.refresh(item)

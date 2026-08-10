@@ -1558,13 +1558,7 @@ function handleImageUpload(event){
 
 function removeImagePreview(){
   uploadedImageBase64 = '';
-  function removeImagePreview(){
-  uploadedImageBase64 = '';
   document.getElementById('new-item-image-file').value = '';
-  document.getElementById('ai-image-preview').classList.add('hidden');
-  document.getElementById('ai-image-remove-btn').classList.add('hidden');
-  document.getElementById('ai-image-preview-text').innerText = 'Add Photo From device';
-}
   document.getElementById('ai-image-preview').classList.add('hidden');
   document.getElementById('ai-image-remove-btn').classList.add('hidden');
   document.getElementById('ai-image-preview-text').innerText = 'Add Photo From device';
@@ -1588,10 +1582,9 @@ async function createItem(){
     if(!delRes.ok){ toast('Update failed: ' + (await delRes.text())); return; }
   }
 
-  let itemUrl = `${API}/shop/items?name=${encodeURIComponent(name)}&unit=${encodeURIComponent(unit)}&category=${encodeURIComponent(category)}`;
-
-  const itemRes = await fetch(itemUrl, {
-    method: 'POST', headers: authHeaders()
+  const itemRes = await fetch(`${API}/shop/items`, {
+    method: 'POST', headers: authHeaders(),
+    body: JSON.stringify({ name, unit, category, image_url: imageUrl || null })
   });
   if(!itemRes.ok){ toast('Error creating item: ' + (await itemRes.text())); return; }
   const item = await itemRes.json();
@@ -1607,6 +1600,7 @@ async function createItem(){
   document.getElementById('new-item-price').value = '';
   document.querySelector('.ai-save').innerText = 'Save';
   editingShopItemId = null;
+  removeImagePreview();
   loadInventory();
 }
 
