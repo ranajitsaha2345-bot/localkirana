@@ -10,7 +10,7 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://accounts.google.com/gsi/client" async defer onload="loadGoogleButton()"></script>
 <style>
 
 
@@ -1024,6 +1024,7 @@ function saveSession(data){
   localStorage.removeItem('is_guest');
 }
 
+
 function tryRestoreSession(){
   const isGuest = localStorage.getItem('is_guest');
   if(isGuest === 'true'){
@@ -1040,6 +1041,18 @@ function tryRestoreSession(){
   });
 }
 
+function loadGoogleButton(){
+  if(window.google && window.google.accounts){
+    console.log("✅ Google Sign-In loaded!");
+    window.google.accounts.id.initialize({
+      client_id: "331552152118-9kbvonm08obtu4fjepnvc46b4lkdjid8.apps.googleusercontent.com",
+      callback: handleGoogleLogin
+    });
+  } else {
+    console.warn("❌ Google Sign-In failed to load");
+    toast("Google login temporarily unavailable — refresh karo");
+  }
+}
 function authHeaders(){ return {'Authorization': `Bearer ${token}`, 'Content-Type':'application/json'}; }
 
 // ---------------- CATALOG ----------------
