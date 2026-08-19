@@ -1167,6 +1167,7 @@ function connectWS(){
       unreadOrders++;
       updateOrdersBadge();
       toast('New order received!');
+      speakText(`Naya order aaya hai. Order number ${data.shop_order_id || data.id}. Turant check karo.`);
       startOrderAlarm(data.id || data.shop_order_id);
       loadOrders();
     }
