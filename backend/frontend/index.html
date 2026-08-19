@@ -387,6 +387,11 @@ body.photo-active .item-card {
 </style>
 </head>
 <body>
+<!-- SPLASH SCREEN -->
+<div id="splash-screen" style="position:fixed; inset:0; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; background:linear-gradient(135deg, var(--plum), var(--red-dark)); transition:opacity 0.4s ease;">
+  <img src="icon-512.png" alt="Wait Logo" style="width:110px; height:110px; border-radius:24px; box-shadow:0 8px 24px rgba(0,0,0,.3);" />
+  <h1 style="color:#fff; margin-top:16px; font-family:'Poppins','Segoe UI',sans-serif; font-size:1.2rem;">Wait 🏮</h1>
+</div>
 <div id="page-bg-a" class="page-bg-layer active"></div>
 <div id="page-bg-b" class="page-bg-layer"></div>
 
@@ -1949,6 +1954,15 @@ function renderStarsHtml(avg){
   return `<span class="star-rating">${stars} ${avg}</span>`;
 }
 </script>
+window.addEventListener('load', function(){
+  setTimeout(function(){
+    const splash = document.getElementById('splash-screen');
+    if(splash){
+      splash.style.opacity = '0';
+      setTimeout(() => splash.remove(), 400);
+    }
+  }, 800);
+});
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
