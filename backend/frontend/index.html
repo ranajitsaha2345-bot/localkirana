@@ -4,6 +4,7 @@
 <link rel="icon" type="image/png" href="/icon-192.png">
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
 <title>Wait — Apna Saman</title>
 <link rel="manifest" href="manifest.json" />
 <meta name="theme-color" content="#E6372F">
@@ -350,6 +351,39 @@ body.photo-active .item-card {
 .review-item{ padding:10px 0; border-bottom:1px dashed var(--line); }
 .review-item .rv-head{ display:flex; justify-content:space-between; font-size:.85rem; font-weight:700; }
 .review-item .rv-comment{ font-size:.82rem; color:var(--muted); margin-top:4px; }
+/* ============ MOBILE RESPONSIVE ============ */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+  main {
+    max-width: 100%;
+    padding: 8px;
+  }
+  .panel {
+    padding: 12px;
+  }
+  #catalog {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  #catalog {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  header {
+    padding: 12px 16px;
+  }
+  header h1 {
+    font-size: 0.9rem;
+  }
+  .panel {
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+}
 </style>
 </head>
 <body>
