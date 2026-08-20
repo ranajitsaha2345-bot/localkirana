@@ -53,20 +53,20 @@ def list_items(
                 nearby_map[row.item_id] = True
 
     result = []
-for it in items:
-    entry = price_map.get(it.id)
-    if entry is None:
-        continue  # koi bhi dukaan is item ko nahi bechti — customer ko mat dikhao
-    min_price, shop_count = entry[0], entry[1]
-    has_nearby = nearby_map.get(it.id, False) if (latitude is not None and longitude is not None) else True
-    result.append(
-        schemas.ItemOut(
-            id=it.id, name=it.name, unit=it.unit, category=it.category,
-            image_url=it.image_url, starting_price=min_price, shop_count=shop_count,
-            has_nearby_shop=has_nearby,
+    for it in items:
+        entry = price_map.get(it.id)
+        if entry is None:
+            continue  # koi bhi dukaan is item ko nahi bechti — customer ko mat dikhao
+        min_price, shop_count = entry[0], entry[1]
+        has_nearby = nearby_map.get(it.id, False) if (latitude is not None and longitude is not None) else True
+        result.append(
+            schemas.ItemOut(
+                id=it.id, name=it.name, unit=it.unit, category=it.category,
+                image_url=it.image_url, starting_price=min_price, shop_count=shop_count,
+                has_nearby_shop=has_nearby,
+            )
         )
-    )
-return result
+    return result
 
 
 @router.get("/categories")
