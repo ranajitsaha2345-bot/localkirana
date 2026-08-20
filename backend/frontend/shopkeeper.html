@@ -487,6 +487,7 @@ window.onload = function() {
 <script>
 const API = "https://localkirana-493r.onrender.com";
 let token = null, myUserId = null, ws = null;
+let ordersPollTimer = null;
 let shopkeeperLat = null, shopkeeperLng = null;
 
 // ---------------- NEW ORDER ALARM (buzzer jab tak confirm na ho) ----------------
@@ -785,7 +786,8 @@ function onLoggedIn(data){
   document.querySelector('.back-btn').classList.add('show');
   document.getElementById('voice-toggle').checked = isVoiceEnabled();
   loadShopStatus(); loadOrders(); loadCatalogAndInventory(); connectWS();
-  setInterval(loadOrders, 8000);
+  if(ordersPollTimer) clearInterval(ordersPollTimer);
+  ordersPollTimer = setInterval(loadOrders, 8000);
 }
 
 function saveShopSession(data){
@@ -915,7 +917,20 @@ async function loadMyShopQR(){
 
 // ---------------- ORDERS ----------------
 async function loadOrders(){
+  if(!token){
+    if(ordersPollTimer){ clearInterval(ordersPollTimer); ordersPollTimer = null; }
+    return;
+  }
   const res = await fetch(`${API}/shop/orders`, {headers: authHeaders()});
+  if(res.status === 401){
+    token = null;
+    localStorage.removeItem('shop_access_token');
+    if(ordersPollTimer){ clearInterval(ordersPollTimer); ordersPollTimer = null; }
+    toast('Session expired, please login again');
+    document.getElementById('app-content').classList.add('hidden');
+    document.getElementById('auth-panel').classList.remove('hidden');
+    return;
+  }
   if(!res.ok) return;
   const orders = await res.json();
 
