@@ -131,7 +131,7 @@ def rank_shops_for_item(
 
     scored.sort(key=lambda x: x[2])
     return [(c, dist) for c, dist, _ in scored]
-NEARBY_RADIUS_KM = 15.0
+NEARBY_RADIUS_KM = 50.0
 
 
 def has_nearby_stock(db: Session, item_id: int, customer_lat: Optional[float], customer_lng: Optional[float]) -> bool:
