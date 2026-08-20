@@ -1957,6 +1957,8 @@ function renderStarsHtml(avg){
   return `<span class="star-rating">${stars} ${avg}</span>`;
 }
 </script>
+
+<script>
 window.addEventListener('load', function(){
   setTimeout(function(){
     const splash = document.getElementById('splash-screen');
@@ -1966,6 +1968,8 @@ window.addEventListener('load', function(){
     }
   }, 800);
 });
+</script>
+
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
