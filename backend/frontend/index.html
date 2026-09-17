@@ -1326,7 +1326,7 @@ function closeCustomerChat(){
 }
 
 async function loadCustomerChatMessages(shopOrderId){
-  const res = await fetch(`${API}/shop-orders/${shopOrderId}/messages`, {headers: authHeaders()});
+  const res = await fetch(`${API}/customer/shop-orders/${shopOrderId}/messages`, {headers: authHeaders()});
   if(!res.ok){ toast('Chat load failed'); return; }
   const msgs = await res.json();
   const body = document.getElementById('order-chat-body');
@@ -1341,7 +1341,7 @@ async function sendCustomerChatMessage(){
   const text = input.value.trim();
   if(!text || !activeCustomerChatShopOrderId) return;
   input.value = '';
-  const res = await fetch(`${API}/shop-orders/${activeCustomerChatShopOrderId}/messages`, {
+  const res = await fetch(`${API}/customer/shop-orders/${activeCustomerChatShopOrderId}/messages`, {
     method:'POST', headers: authHeaders(),
     body: JSON.stringify({message: text})
   });
