@@ -206,6 +206,20 @@ button:active{transform:scale(.97);}
   display:flex; align-items:center; justify-content:center; gap:6px;
 }
 .contact-btn.call-btn{ background:var(--plum); }
+.chat-badge{
+  position:absolute; top:-6px; right:-6px;
+  background:#e53935; color:#fff; border-radius:50%;
+  width:18px; height:18px; font-size:.65rem; font-weight:700;
+  display:flex; align-items:center; justify-content:center;
+  border:2px solid #fff;
+}
+.chat-badge{
+  position:absolute; top:-6px; right:-6px;
+  background:#e53935; color:#fff; border-radius:50%;
+  width:18px; height:18px; font-size:.65rem; font-weight:700;
+  display:flex; align-items:center; justify-content:center;
+  border:2px solid #fff;
+}
   text-align:center; font-size:2rem; letter-spacing:10px; font-weight:800;
   color:var(--red-dark); background:#FFF0E6; border-radius:12px; padding:14px; margin:10px 0;
 }
@@ -1309,13 +1323,17 @@ function renderContactButtons(phone, shopOrderId){
       <a href="tel:${cleanPhone}" style="flex:1; text-decoration:none;">
         <button class="contact-btn call-btn" style="width:100%;">📞 Call</button>
       </a>
-      <button class="contact-btn" style="width:100%;" onclick="openCustomerChat(${shopOrderId})">💬 Chat</button>
+      <button class="contact-btn" style="width:100%; position:relative;" onclick="openCustomerChat(${shopOrderId})">💬 Chat<span id="chat-badge-${shopOrderId}" class="chat-badge ${unreadChatOrderIds.has(shopOrderId) ? '' : 'hidden'}">●</span></button>
     </div>`;
 }
 let activeCustomerChatShopOrderId = null;
+let unreadChatOrderIds = new Set();
 
 async function openCustomerChat(shopOrderId){
   activeCustomerChatShopOrderId = shopOrderId;
+  unreadChatOrderIds.delete(shopOrderId);
+  const badge = document.getElementById(`chat-badge-${shopOrderId}`);
+  if(badge) badge.classList.add('hidden');
   document.getElementById('order-chat-window').classList.remove('hidden');
   await loadCustomerChatMessages(shopOrderId);
 }
@@ -1494,6 +1512,9 @@ function connectWS(){
       if(activeCustomerChatShopOrderId === data.shop_order_id && !document.getElementById('order-chat-window').classList.contains('hidden')){
         loadCustomerChatMessages(data.shop_order_id);
       } else {
+        unreadChatOrderIds.add(data.shop_order_id);
+        const badge = document.getElementById(`chat-badge-${data.shop_order_id}`);
+        if(badge) badge.classList.remove('hidden');
         toast(`💬 New message: ${data.message}`);
       }
     }
