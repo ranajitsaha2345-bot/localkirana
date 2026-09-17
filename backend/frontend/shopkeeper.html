@@ -134,6 +134,13 @@
   border-radius:50%; font-size:.8rem; font-weight:800; padding:0;
 }
 .avail-btn{width:42px; height:42px; border-radius:10px; font-size:1.1rem; font-weight:800;}
+.chat-badge{
+  position:absolute; top:-6px; right:-6px;
+  background:#e53935; color:#fff; border-radius:50%;
+  width:18px; height:18px; font-size:.65rem; font-weight:700;
+  display:flex; align-items:center; justify-content:center;
+  border:2px solid #fff;
+}
   .avail-ok{background:#E3F5E9; color:var(--green-ok); border:2px solid var(--green-ok);}
   .avail-no{background:#FBE3DD; color:var(--red); border:2px solid var(--red);}
   .avail-ok.active{background:var(--green-ok); color:#fff;}
@@ -979,7 +986,7 @@ function renderContactButtons(phone, shopOrderId){
     <a href="tel:${cleanPhone}" style="flex:1; text-decoration:none;">
       <button class="avail-btn" style="width:100%; height:auto; padding:8px; font-size:.8rem; background:var(--plum); color:#fff; border-radius:8px;">📞 Call</button>
     </a>
-    <button class="avail-btn" style="flex:1; width:100%; height:auto; padding:8px; font-size:.8rem; background:#25D366; color:#fff; border-radius:8px;" onclick="openOrderChat(${shopOrderId})">💬 Chat</button>
+    <button class="avail-btn" style="flex:1; width:100%; height:auto; padding:8px; font-size:.8rem; background:#25D366; color:#fff; border-radius:8px; position:relative;" onclick="openOrderChat(${shopOrderId})">💬 Chat<span id="chat-badge-${shopOrderId}" class="chat-badge ${unreadChatOrderIds.has(shopOrderId) ? '' : 'hidden'}">●</span></button>
     </div>`;
 }
 function calculateDistance(lat1, lon1, lat2, lon2){
@@ -1223,9 +1230,13 @@ function skipToGuest(){
 
 // ---------------- WEBSOCKET ----------------
 let activeChatShopOrderId = null;
+let unreadChatOrderIds = new Set();
 
 async function openOrderChat(shopOrderId){
   activeChatShopOrderId = shopOrderId;
+  unreadChatOrderIds.delete(shopOrderId);
+  const badge = document.getElementById(`chat-badge-${shopOrderId}`);
+  if(badge) badge.classList.add('hidden');
   document.getElementById('order-chat-window').classList.remove('hidden');
   await loadOrderChatMessages(shopOrderId);
 }
@@ -1274,9 +1285,14 @@ function connectWS(){
   if(activeChatShopOrderId === data.shop_order_id && !document.getElementById('order-chat-window').classList.contains('hidden')){
     loadOrderChatMessages(data.shop_order_id);
   } else {
+    unreadChatOrderIds.add(data.shop_order_id);
+    const badge = document.getElementById(`chat-badge-${data.shop_order_id}`);
+    if(badge) badge.classList.remove('hidden');
     toast(`💬 New message: ${data.message}`);
   }
- } else if(event === 'order_completed'){ toast(`Order delivered to ${data.customer_name}`); loadOrders(); }
+}
+
+else if(event === 'order_completed'){ toast(`Order delivered to ${data.customer_name}`); loadOrders(); }
     else if(event === 'customer_location'){
       updateCustomerLocationDisplay(data.shop_order_id, data.latitude, data.longitude);
     }
