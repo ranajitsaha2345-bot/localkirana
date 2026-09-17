@@ -15,6 +15,7 @@ class UserCreate(BaseModel):
     # agar shopkeeper hai to yeh bhi bhejna
     shop_name: Optional[str] = None
     shop_address: Optional[str] = None
+    shop_phone: Optional[str] = None
     shop_latitude: Optional[float] = None
     shop_longitude: Optional[float] = None
     
@@ -139,6 +140,7 @@ class ShopOrderOut(BaseModel):
     shop_id: int
     shop_name: str
     shop_address: Optional[str] = None
+    shop_phone: Optional[str] = None
     shop_latitude: Optional[float] = None
     shop_longitude: Optional[float] = None
     customer_id: int
