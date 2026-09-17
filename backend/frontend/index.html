@@ -1325,23 +1325,25 @@ function renderContactButtons(phone, shopOrderId){
       <a href="tel:${cleanPhone}" style="flex:1; text-decoration:none;">
         <button class="contact-btn call-btn" style="width:100%;">📞 Call</button>
       </a>
-      <button id="chat-btn-${shopOrderId}" class="contact-btn ${unreadChatOrderIds.has(shopOrderId) ? 'chat-unread' : ''}" style="width:100%;" onclick="openCustomerChat(${shopOrderId})">💬 Chat</button>
+      <button id="chat-btn-${shopOrderId}" class="contact-btn" style="width:100%;position:relative;" onclick="openCustomerChat(${shopOrderId})">💬 Chat<span id="chat-count-${shopOrderId}" class="chat-badge" style="display:${unreadChatCounts[shopOrderId] ? 'flex' : 'none'};">${unreadChatCounts[shopOrderId] || ''}</span></button>
     </div>`;
 }
 let activeCustomerChatShopOrderId = null;
 let unreadChatOrderIds = new Set();
+let unreadChatCounts = {};
 
 async function openCustomerChat(shopOrderId){
   activeCustomerChatShopOrderId = shopOrderId;
   unreadChatOrderIds.delete(shopOrderId);
+  unreadChatCounts[shopOrderId] = 0;
+  const countEl = document.getElementById(`chat-count-${shopOrderId}`);
+  if(countEl){ countEl.style.display = 'none'; countEl.textContent = ''; }
   document.getElementById('order-chat-window').classList.remove('hidden');
   await loadCustomerChatMessages(shopOrderId);
 }
 
 function closeCustomerChat(){
   document.getElementById('order-chat-window').classList.add('hidden');
-  const btn = document.getElementById(`chat-btn-${activeCustomerChatShopOrderId}`);
-  if(btn) btn.classList.remove('chat-unread');
   activeCustomerChatShopOrderId = null;
 }
 
@@ -1520,8 +1522,9 @@ ws.onmessage = (msg) => {
         loadCustomerChatMessages(data.shop_order_id);
       } else {
         unreadChatOrderIds.add(data.shop_order_id);
-        const btn = document.getElementById(`chat-btn-${data.shop_order_id}`);
-        if(btn) btn.classList.add('chat-unread');
+unreadChatCounts[data.shop_order_id] = (unreadChatCounts[data.shop_order_id] || 0) + 1;
+const countEl = document.getElementById(`chat-count-${data.shop_order_id}`);
+if(countEl){ countEl.textContent = unreadChatCounts[data.shop_order_id]; countEl.style.display = 'flex'; }
         toast(`💬 New message: ${data.message}`);
       }
     }
