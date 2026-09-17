@@ -1491,7 +1491,12 @@ async function proceedPartial(shopOrderId){
 function connectWS(){
   const wsUrl = API.replace('http', 'ws') + `/ws?token=${token}`;
   ws = new WebSocket(wsUrl);
-  ws.onmessage = (msg) => {
+let wsHeartbeat = setInterval(() => {
+  if(ws && ws.readyState === WebSocket.OPEN){
+    ws.send(JSON.stringify({event:'ping'}));
+  }
+}, 25000);
+ws.onmessage = (msg) => {
     const {event, data} = JSON.parse(msg.data);
     if(event === 'item_not_available'){
       toast(`${data.item_name} ${data.shop_name} mein nahi hai. Alternatives dekh rahe hain.`);
@@ -1521,7 +1526,8 @@ function connectWS(){
       }
     }
   };
-  ws.onclose = () => setTimeout(connectWS, 3000);
+  ws.onclose = () => { clearInterval(wsHeartbeat); setTimeout(connectWS, 3000); };
+ws.onerror = () => { try{ ws.close(); }catch(e){} };
 }
 let locationWatchId = null;
 
