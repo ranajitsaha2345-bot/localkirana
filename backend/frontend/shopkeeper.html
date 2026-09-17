@@ -483,7 +483,17 @@ window.onload = function() {
     <button class="btn-accent" onclick="sendSupportMessage()">Send</button>
   </div>
 </div>
-
+<div id="order-chat-window" class="chat-window hidden">
+  <div class="chat-header">
+    <span id="order-chat-title">🛍️ Order Chat</span>
+    <button onclick="closeOrderChat()" style="background:none;color:#fff;font-size:1.1rem;">✕</button>
+  </div>
+  <div class="chat-body" id="order-chat-body"></div>
+  <div class="chat-input-row">
+    <input type="text" id="order-chat-input" placeholder="Type your message..." onkeypress="if(event.key==='Enter') sendOrderChatMessage()">
+    <button class="btn-accent" onclick="sendOrderChatMessage()">Send</button>
+  </div>
+</div>
 <script>
 const API = "https://localkirana-493r.onrender.com";
 let token = null, myUserId = null, ws = null;
@@ -961,18 +971,15 @@ async function loadOrders(){
     }
   });
 }
-function renderContactButtons(phone){
+function renderContactButtons(phone, shopOrderId){
   if(!phone) return '';
   const cleanPhone = phone.replace(/\D/g,'');
-  const waNumber = cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone;
   return `
-    <div class="contact-row">
-      <a href="tel:${cleanPhone}" style="flex:1; text-decoration:none;">
-        <button class="avail-btn" style="width:100%; height:auto; padding:8px; font-size:.8rem; background:var(--plum); color:#fff; border-radius:8px;">📞 Call</button>
-      </a>
-      <a href="https://wa.me/${waNumber}" target="_blank" style="flex:1; text-decoration:none;">
-        <button class="avail-btn" style="width:100%; height:auto; padding:8px; font-size:.8rem; background:#25D366; color:#fff; border-radius:8px;">💬 Chat</button>
-      </a>
+  <div class="contact-row">
+    <a href="tel:${cleanPhone}" style="flex:1; text-decoration:none;">
+      <button class="avail-btn" style="width:100%; height:auto; padding:8px; font-size:.8rem; background:var(--plum); color:#fff; border-radius:8px;">📞 Call</button>
+    </a>
+    <button class="avail-btn" style="flex:1; width:100%; height:auto; padding:8px; font-size:.8rem; background:#25D366; color:#fff; border-radius:8px;" onclick="openOrderChat(${shopOrderId})">💬 Chat</button>
     </div>`;
 }
 function calculateDistance(lat1, lon1, lat2, lon2){
@@ -1019,7 +1026,7 @@ function renderOrderCard(so){
     footer = `<div class="hint">Customer is making payment — please wait.</div>`;
   } else if(so.status === 'confirmed'){
     footer = `<div class="hint">Payment: <strong>${so.payment_status}</strong></div>
-      ${renderContactButtons(so.customer_phone)}
+      ${renderContactButtons(so.customer_phone, so.id)}
       <div id="customer-location-${so.id}"></div>
       <button class="btn-accent" style="margin-top:8px" onclick="markReady(${so.id})">Ready — Items Prepared</button>`;
   } else if(so.status === 'ready'){
@@ -1215,20 +1222,61 @@ function skipToGuest(){
 }
 
 // ---------------- WEBSOCKET ----------------
+let activeChatShopOrderId = null;
+
+async function openOrderChat(shopOrderId){
+  activeChatShopOrderId = shopOrderId;
+  document.getElementById('order-chat-window').classList.remove('hidden');
+  await loadOrderChatMessages(shopOrderId);
+}
+
+function closeOrderChat(){
+  document.getElementById('order-chat-window').classList.add('hidden');
+  activeChatShopOrderId = null;
+}
+
+async function loadOrderChatMessages(shopOrderId){
+  const res = await fetch(`${API}/shop/orders/${shopOrderId}/messages`, {headers: authHeaders()});
+  if(!res.ok){ toast('Chat load failed'); return; }
+  const msgs = await res.json();
+  const body = document.getElementById('order-chat-body');
+  body.innerHTML = msgs.map(m =>
+    `<div class="chat-msg ${m.sender_role === 'shopkeeper' ? 'user' : 'bot'}">${m.message}</div>`
+  ).join('');
+  body.scrollTop = body.scrollHeight;
+}
+
+async function sendOrderChatMessage(){
+  const input = document.getElementById('order-chat-input');
+  const text = input.value.trim();
+  if(!text || !activeChatShopOrderId) return;
+  input.value = '';
+  const res = await fetch(`${API}/shop/orders/${activeChatShopOrderId}/messages`, {
+    method:'POST', headers: authHeaders(),
+    body: JSON.stringify({message: text})
+  });
+  if(!res.ok){ toast('Message send failed'); return; }
+  await loadOrderChatMessages(activeChatShopOrderId);
+}
 function connectWS(){
   const wsUrl = API.replace('http', 'ws') + `/ws?token=${token}`;
   ws = new WebSocket(wsUrl);
   ws.onmessage = (msg) => {
     const {event, data} = JSON.parse(msg.data);
-    if(event === 'new_order'){
-      unreadOrders++;
-      updateOrdersBadge();
-      toast('New order received!');
-      speakText(`Naya order aaya hai. Order number ${data.shop_order_id || data.id}. Turant check karo.`);
-      startOrderAlarm(data.id || data.shop_order_id);
-      loadOrders();
-    }
-    else if(event === 'order_completed'){ toast(`Order delivered to ${data.customer_name}`); loadOrders(); }
+  if(event === 'new_order'){
+  unreadOrders++;
+  updateOrdersBadge();
+  toast('New order received!');
+  speakText(`Naya order aaya hai. Order number ${data.shop_order_id || data.id}. Turant check karo.`);
+  startOrderAlarm(data.id || data.shop_order_id);
+  loadOrders();
+} else if(event === 'new_message'){
+  if(activeChatShopOrderId === data.shop_order_id && !document.getElementById('order-chat-window').classList.contains('hidden')){
+    loadOrderChatMessages(data.shop_order_id);
+  } else {
+    toast(`💬 New message: ${data.message}`);
+  }
+ } else if(event === 'order_completed'){ toast(`Order delivered to ${data.customer_name}`); loadOrders(); }
     else if(event === 'customer_location'){
       updateCustomerLocationDisplay(data.shop_order_id, data.latitude, data.longitude);
     }

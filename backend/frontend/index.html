@@ -1301,21 +1301,53 @@ function startLiveLocationSharing(shopOrderIds){
     { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
   );
 }
-function renderContactButtons(phone){
+function renderContactButtons(phone, shopOrderId){
   if(!phone) return '';
   const cleanPhone = phone.replace(/\D/g,'');
-  const waNumber = cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone;
   return `
     <div class="contact-row">
       <a href="tel:${cleanPhone}" style="flex:1; text-decoration:none;">
         <button class="contact-btn call-btn" style="width:100%;">📞 Call</button>
       </a>
-      <a href="https://wa.me/${waNumber}" target="_blank" style="flex:1; text-decoration:none;">
-        <button class="contact-btn" style="width:100%;">💬 Chat</button>
-      </a>
+      <button class="contact-btn" style="width:100%;" onclick="openCustomerChat(${shopOrderId})">💬 Chat</button>
     </div>`;
 }
+let activeCustomerChatShopOrderId = null;
 
+async function openCustomerChat(shopOrderId){
+  activeCustomerChatShopOrderId = shopOrderId;
+  document.getElementById('order-chat-window').classList.remove('hidden');
+  await loadCustomerChatMessages(shopOrderId);
+}
+
+function closeCustomerChat(){
+  document.getElementById('order-chat-window').classList.add('hidden');
+  activeCustomerChatShopOrderId = null;
+}
+
+async function loadCustomerChatMessages(shopOrderId){
+  const res = await fetch(`${API}/shop-orders/${shopOrderId}/messages`, {headers: authHeaders()});
+  if(!res.ok){ toast('Chat load failed'); return; }
+  const msgs = await res.json();
+  const body = document.getElementById('order-chat-body');
+  body.innerHTML = msgs.map(m =>
+    `<div class="chat-msg ${m.sender_role === 'customer' ? 'user' : 'bot'}">${m.message}</div>`
+  ).join('');
+  body.scrollTop = body.scrollHeight;
+}
+
+async function sendCustomerChatMessage(){
+  const input = document.getElementById('order-chat-input');
+  const text = input.value.trim();
+  if(!text || !activeCustomerChatShopOrderId) return;
+  input.value = '';
+  const res = await fetch(`${API}/shop-orders/${activeCustomerChatShopOrderId}/messages`, {
+    method:'POST', headers: authHeaders(),
+    body: JSON.stringify({message: text})
+  });
+  if(!res.ok){ toast('Message send failed'); return; }
+  await loadCustomerChatMessages(activeCustomerChatShopOrderId);
+}
 function renderOrderCard(so){
   document.getElementById('order-tracker').classList.remove('hidden');
   let el = document.getElementById(`order-${so.id}`);
@@ -1359,7 +1391,7 @@ if(so.status === 'partially_unavailable'){
       <div id="qr-box-${so.id}" style="text-align:center; margin-top:10px;"></div>
       <div class="code-box">${so.verification_code}</div>
       <div class="hint">Show this QR or tell this code to the shopkeeper for pickup</div>
-      ${renderContactButtons(so.shop_phone)}
+      ${renderContactButtons(so.shop_phone, so.id)}
 
       <div id="map-${so.id}" style="margin-top:14px;"></div>
 
@@ -1457,6 +1489,12 @@ function connectWS(){
       }
     } else if(event === 'inventory_updated'){
       handleInventoryUpdate(data);
+    } else if(event === 'new_message'){
+      if(activeCustomerChatShopOrderId === data.shop_order_id && !document.getElementById('order-chat-window').classList.contains('hidden')){
+        loadCustomerChatMessages(data.shop_order_id);
+      } else {
+        toast(`💬 New message: ${data.message}`);
+      }
     }
   };
   ws.onclose = () => setTimeout(connectWS, 3000);
@@ -2003,6 +2041,17 @@ window.addEventListener('load', function(){
   <div class="chat-input-row">
     <input type="text" id="chat-input" placeholder="Type your question..." onkeypress="if(event.key==='Enter') sendSupportMessage()">
     <button class="btn-primary" onclick="sendSupportMessage()">Send</button>
+  </div>
+</div>
+<div id="order-chat-window" class="chat-window hidden">
+  <div class="chat-header">
+    <strong id="order-chat-title">🛍️ Shop Chat</strong>
+    <button onclick="closeCustomerChat()" style="background:none; color:#fff; font-size:1.2rem; padding:0;">✕</button>
+  </div>
+  <div class="chat-body" id="order-chat-body"></div>
+  <div class="chat-input-row">
+    <input type="text" id="order-chat-input" placeholder="Type your message..." onkeypress="if(event.key==='Enter') sendCustomerChatMessage()">
+    <button class="btn-primary" onclick="sendCustomerChatMessage()">Send</button>
   </div>
 </div>
 <div id="review-popup" class="hidden review-popup-overlay">
