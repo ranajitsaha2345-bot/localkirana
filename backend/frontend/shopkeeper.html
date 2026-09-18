@@ -1300,6 +1300,10 @@ async function openOrderChat(shopOrderId){
   document.getElementById('order-chat-window').classList.remove('hidden');
   await loadOrderChatMessages(shopOrderId);
 }
+function closeOrderChat(){
+  document.getElementById('order-chat-window').classList.add('hidden');
+  activeChatShopOrderId = null;
+}
 
 async function loadOrderChatMessages(shopOrderId){
   const res = await fetch(`${API}/shop/orders/${shopOrderId}/messages`, {headers: authHeaders()});
