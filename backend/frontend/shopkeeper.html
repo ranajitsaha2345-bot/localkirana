@@ -491,6 +491,14 @@ window.onload = function() {
     <button class="btn-accent" onclick="sendSupportMessage()">Send</button>
   </div>
 </div>
+<div id="new-msg-popup" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:80; display:flex; align-items:center; justify-content:center; padding:16px;">
+  <div class="panel" style="max-width:340px; width:100%; text-align:center;">
+    <div style="font-size:2.2rem;">💬</div>
+    <h2>You have a new message from the customer</h2>
+    <button class="btn-accent" onclick="openUnreadChat()">Open Chat</button>
+    <button class="btn-outline" style="width:100%; margin-top:8px;" onclick="hideChatPopup()">Later</button>
+  </div>
+</div>
 <div id="order-chat-window" class="chat-window hidden">
   <div class="chat-header">
     <span id="order-chat-title">🛍️ Order Chat</span>
@@ -1232,19 +1240,65 @@ function skipToGuest(){
 // ---------------- WEBSOCKET ----------------
 let activeChatShopOrderId = null;
 let unreadChatOrderIds = new Set();
+let chatAlertInterval = null;
+
+function playChatBeep(){
+  try{
+    unlockAlarmAudio();
+    if(!alarmAudioCtx) return;
+    const now = alarmAudioCtx.currentTime;
+    // "bip bip" = two short beeps (softer than the new-order alarm)
+    [0, 0.25].forEach(delay => {
+      const osc = alarmAudioCtx.createOscillator();
+      const gain = alarmAudioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = 660;
+      gain.gain.setValueAtTime(0.3, now + delay);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.15);
+      osc.connect(gain); gain.connect(alarmAudioCtx.destination);
+      osc.start(now + delay);
+      osc.stop(now + delay + 0.16);
+    });
+  }catch(e){}
+}
+
+function showChatPopup(){
+  document.getElementById('new-msg-popup').classList.remove('hidden');
+}
+function hideChatPopup(){
+  document.getElementById('new-msg-popup').classList.add('hidden');
+}
+
+function startChatAlert(){
+  showChatPopup();
+  if(chatAlertInterval) return;
+  playChatBeep();
+  chatAlertInterval = setInterval(() => {
+    if(unreadChatOrderIds.size === 0){ stopChatAlert(); return; }
+    playChatBeep();
+    showChatPopup();   // if shopkeeper closes it, it comes back
+  }, 3000);
+}
+
+function stopChatAlert(){
+  if(chatAlertInterval){ clearInterval(chatAlertInterval); chatAlertInterval = null; }
+  hideChatPopup();
+}
+
+function openUnreadChat(){
+  const id = Array.from(unreadChatOrderIds)[0];
+  hideChatPopup();
+  if(id) openOrderChat(id);
+}
 
 async function openOrderChat(shopOrderId){
   activeChatShopOrderId = shopOrderId;
   unreadChatOrderIds.delete(shopOrderId);
+  const btn = document.getElementById(`chat-btn-${shopOrderId}`);
+  if(btn) btn.classList.remove('chat-unread');
+  if(unreadChatOrderIds.size === 0) stopChatAlert(); else hideChatPopup();
   document.getElementById('order-chat-window').classList.remove('hidden');
   await loadOrderChatMessages(shopOrderId);
-}
-
-function closeOrderChat(){
-  document.getElementById('order-chat-window').classList.add('hidden');
-  const btn = document.getElementById(`chat-btn-${activeChatShopOrderId}`);
-  if(btn) btn.classList.remove('chat-unread');
-  activeChatShopOrderId = null;
 }
 
 async function loadOrderChatMessages(shopOrderId){
@@ -1290,6 +1344,7 @@ function connectWS(){
     const btn = document.getElementById(`chat-btn-${data.shop_order_id}`);
     if(btn) btn.classList.add('chat-unread');
     toast(`💬 New message: ${data.message}`);
+    startChatAlert();
   }
 }
 
