@@ -494,7 +494,7 @@ window.onload = function() {
 <div id="new-msg-popup" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:80; display:flex; align-items:center; justify-content:center; padding:16px;">
   <div class="panel" style="max-width:340px; width:100%; text-align:center;">
     <div style="font-size:2.2rem;">💬</div>
-    <h2>You have a new message from the customer</h2>
+    <h2>Aapke order ka message aaya hai</h2>
     <button class="btn-accent" onclick="openUnreadChat()">Open Chat</button>
     <button class="btn-outline" style="width:100%; margin-top:8px;" onclick="hideChatPopup()">Later</button>
   </div>
@@ -1324,9 +1324,21 @@ async function sendOrderChatMessage(){
   if(!res.ok){ toast('Message send failed'); return; }
   await loadOrderChatMessages(activeChatShopOrderId);
 }
+let wsHeartbeat = null;
+
 function connectWS(){
   const wsUrl = API.replace('http', 'ws') + `/ws?token=${token}`;
   ws = new WebSocket(wsUrl);
+
+  ws.onopen = () => {
+    if(wsHeartbeat) clearInterval(wsHeartbeat);
+    wsHeartbeat = setInterval(() => {
+      if(ws && ws.readyState === WebSocket.OPEN){
+        ws.send(JSON.stringify({event:'ping'}));
+      }
+    }, 25000);
+  };
+
   ws.onmessage = (msg) => {
     const {event, data} = JSON.parse(msg.data);
   if(event === 'new_order'){
@@ -1377,7 +1389,7 @@ function updateCustomerLocationUI(data){
   `;
 }
 
-  ws.onclose = () => setTimeout(connectWS, 3000);
+  ws.onclose = () => { clearInterval(wsHeartbeat); setTimeout(connectWS, 3000); };
 }
 async function openDailySummary(){
   const modal = document.getElementById('summary-modal');
