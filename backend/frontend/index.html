@@ -1357,7 +1357,7 @@ async function doMatch(lines, lat, lng){
     const qtyText = formatQty(l.quantity * info.factor, info);
     return l.available ? `
     <div class="receipt-line">
-      <span>${l.item_name} × ${qtyText}<br><span class="shop">📍 ${l.shop_name} — ₹${l.unit_price}/unit</span></span>
+      <span>${l.item_name} × ${qtyText}<br></span>
       <span>₹${l.line_total.toFixed(2)}</span>
     </div>` : `
     <div class="receipt-line">
