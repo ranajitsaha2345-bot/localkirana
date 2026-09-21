@@ -800,7 +800,7 @@ function formatQty(amount, info){
   return `${amount} pc${amount > 1 ? 's' : ''}`;
 }
 function toBackendQty(displayAmount, info){
-  return +(displayAmount / info.step).toFixed(3);
+  return +(displayAmount / info.factor).toFixed(3);
 }
 function getUnitConfig(name){
   const n = name.toLowerCase();
