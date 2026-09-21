@@ -499,6 +499,15 @@ window.onload = function() {
     <button class="btn-outline" style="width:100%; margin-top:8px;" onclick="hideChatPopup()">Later</button>
   </div>
 </div>
+<div id="pending-review-popup" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:85; display:flex; align-items:center; justify-content:center; padding:16px;">
+  <div class="panel" style="max-width:340px; width:100%; text-align:center;">
+    <div style="font-size:2.2rem;">🔔</div>
+    <h2>Order confirm karo</h2>
+    <p id="pending-review-text" style="font-size:.9rem; margin:10px 0 14px;"></p>
+    <button class="btn-accent" onclick="goToPendingOrder()">Order Dekho</button>
+    <button class="btn-outline" style="width:100%; margin-top:8px;" onclick="hidePendingReviewPopup()">Baad Mein</button>
+  </div>
+</div>
 <div id="order-chat-window" class="chat-window hidden">
   <div class="chat-header">
     <span id="order-chat-title">🛍️ Order Chat</span>
@@ -564,6 +573,32 @@ function startOrderAlarm(orderId){
 function stopOrderAlarm(orderId){
   ringingOrders.delete(orderId);
 }
+// ---------------- PENDING REVIEW REMINDER POPUP ----------------
+function showPendingReviewPopup(){
+  const ids = Array.from(ringingOrders);
+  if(ids.length === 0) return;
+  const idText = ids.map(id => '#' + id).join(', ');
+  document.getElementById('pending-review-text').innerText =
+    `Order ID ${idText} ke items aapne ✓ ya ✕ nahi kiye, isliye buzzer baj raha hai. Please confirm karein.`;
+  document.getElementById('pending-review-popup').classList.remove('hidden');
+}
+
+function hidePendingReviewPopup(){
+  document.getElementById('pending-review-popup').classList.add('hidden');
+}
+
+function goToPendingOrder(){
+  const id = Array.from(ringingOrders)[0];
+  hidePendingReviewPopup();
+  switchTab('orders');
+  const card = id && document.getElementById(`order-card-${id}`);
+  if(card) card.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+// har 30 second mein yaad dilao, jab tak buzzer baj raha hai
+setInterval(() => {
+  if(ringingOrders.size > 0) showPendingReviewPopup();
+}, 30000);
 // ---------------- VOICE ANNOUNCEMENTS (popup/toast bolna) ----------------
 function isVoiceEnabled(){
   return localStorage.getItem('shop_voice_enabled') !== 'false'; // default ON
