@@ -1348,16 +1348,19 @@ async function doMatch(lines, lat, lng){
   document.getElementById('shop-panel').classList.add('hidden');
   document.getElementById('shop-panel').classList.add('hidden');
   showPanel('match-panel');
-  document.getElementById('match-lines').innerHTML = matchedLines.map(l => l.available ? `
+  document.getElementById('match-lines').innerHTML = matchedLines.map(l => {
+    const info = getUnitInfo(itemUnitById[l.item_id]);
+    const qtyText = formatQty(l.quantity * info.factor, info);
+    return l.available ? `
     <div class="receipt-line">
-      <span>${l.item_name} × ${l.quantity}<br><span class="shop">📍 ${l.shop_name} — ₹${l.unit_price}/unit</span></span>
+      <span>${l.item_name} × ${qtyText}<br><span class="shop">📍 ${l.shop_name} — ₹${l.unit_price}/unit</span></span>
       <span>₹${l.line_total.toFixed(2)}</span>
     </div>` : `
     <div class="receipt-line">
-      <span>${l.item_name} × ${l.quantity}<br><span class="shop" style="color:var(--red)">❌ Not available </span></span>
+      <span>${l.item_name} × ${qtyText}<br><span class="shop" style="color:var(--red)">❌ Not available </span></span>
       <span>—</span>
-    </div>`
-  ).join('');
+    </div>`;
+  }).join('');
   document.getElementById('grand-total').innerText = `₹${data.grand_total.toFixed(2)}`;
 }
 
