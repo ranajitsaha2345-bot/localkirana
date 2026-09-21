@@ -129,6 +129,7 @@ class ShopOrderItemOut(BaseModel):
     quantity: float
     unit_price: float
     availability: ItemAvailability
+    unit: Optional[str] = None
 
     class Config:
         from_attributes = True

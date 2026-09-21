@@ -34,6 +34,7 @@ def _to_shop_order_out(db: Session, so: models.ShopOrder) -> schemas.ShopOrderOu
         schemas.ShopOrderItemOut(
             id=i.id, item_id=i.item_id, item_name=i.item.name,
             quantity=i.quantity, unit_price=i.unit_price, availability=i.availability,
+            unit=getattr(i.item, 'unit', None),
         )
         for i in so.items
     ]

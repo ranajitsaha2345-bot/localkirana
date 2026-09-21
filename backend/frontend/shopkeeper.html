@@ -1078,10 +1078,25 @@ function updateCustomerLocationDisplay(shopOrderId, lat, lng){
     </iframe>
   `;
 }
+function formatQty(qty, unit){
+  const q = Number(qty);
+  const u = (unit || '').toLowerCase();
+  if(u === 'kg'){
+    return q < 1 ? `${Math.round(q * 1000)} gm` : `${+q.toFixed(2)} kg`;
+  }
+  if(u === 'litre' || u === 'liter'){
+    return q < 1 ? `${Math.round(q * 1000)} ml` : `${+q.toFixed(2)} litre`;
+  }
+  if(u === 'packet'){
+    return `${+q.toFixed(2)} packet`;
+  }
+  return `× ${+q.toFixed(2)}`;
+}
+
 function renderOrderCard(so){
   const itemsHtml = so.items.map(i => `
     <div class="item-check-row">
-      <span class="name">${i.item_name} × ${i.quantity} <br><span class="hint">₹${i.unit_price}/unit</span></span>
+    <span class="name">${i.item_name} ${formatQty(i.quantity, i.unit)} — ₹${+(i.unit_price * i.quantity).toFixed(2)}</span>
       <button class="avail-btn avail-ok ${i.availability==='available'?'active':''}" onclick="setAvailability(${i.id}, 'available', ${so.id})">✓</button>
 <button class="avail-btn avail-no ${i.availability==='not_available'?'active':''}" onclick="setAvailability(${i.id}, 'not_available', ${so.id})">✕</button>
     </div>`).join('');
