@@ -223,10 +223,7 @@ async def mark_item_availability(
     }
 
 
-# ---------------------------------------------------------------------------
-# RULE 2 support: shopkeeper dekh sake customer cash ke liye eligible hai ya nahi
-# (Asli 10-order rule /customer/... routes mein enforce hota hai, yeh sirf info hai)
-# ---------------------------------------------------------------------------
+
 @router.post("/orders/{shop_order_id}/confirm-review", response_model=schemas.ShopOrderOut)
 async def confirm_order_review(shop_order_id: int, db: Session = Depends(get_db),
                                 user: models.User = Depends(require_shopkeeper)):
@@ -262,7 +259,11 @@ async def confirm_order_review(shop_order_id: int, db: Session = Depends(get_db)
         {"shop_order_id": so.id, "amount": so.amount},
     )
     return _to_shop_order_out(db, so)
-    
+# ---------------------------------------------------------------------------
+# RULE 2 support: shopkeeper dekh sake customer cash ke liye eligible hai ya nahi
+# (Asli 10-order rule /customer/... routes mein enforce hota hai, yeh sirf info hai)
+# ---------------------------------------------------------------------------
+
 @router.get("/orders/{shop_order_id}/customer-eligibility")
 def customer_eligibility(shop_order_id: int, db: Session = Depends(get_db),
                           user: models.User = Depends(require_shopkeeper)):
