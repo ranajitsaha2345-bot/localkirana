@@ -988,14 +988,9 @@ async function loadOrders(){
   });
 }
 function renderContactButtons(phone, shopOrderId){
-  if(!phone) return '';
-  const cleanPhone = phone.replace(/\D/g,'');
   return `
   <div class="contact-row">
-    <a href="tel:${cleanPhone}" style="flex:1; text-decoration:none;">
-      <button class="avail-btn" style="width:100%; height:auto; padding:8px; font-size:.8rem; background:var(--plum); color:#fff; border-radius:8px;">📞 Call</button>
-    </a>
-    <button id="chat-btn-${shopOrderId}" class="avail-btn ${unreadChatOrderIds.has(shopOrderId) ? 'chat-unread' : ''}" style="flex:1; width:100%; height:auto; padding:8px; font-size:.8rem; background:#25D366; color:#fff; border-radius:8px;" onclick="openOrderChat(${shopOrderId})">💬 Chat</button>
+    <button id="chat-btn-${shopOrderId}" class="avail-btn ${unreadChatOrderIds.has(shopOrderId) ? 'chat-unread' : ''}" style="width:100%; height:auto; padding:8px; font-size:.8rem; background:#25D366; color:#fff; border-radius:8px;" onclick="openOrderChat(${shopOrderId})">💬 Chat</button>
     </div>`;
 }
 function calculateDistance(lat1, lon1, lat2, lon2){
@@ -1033,13 +1028,18 @@ function renderOrderCard(so){
   const itemsHtml = so.items.map(i => `
     <div class="item-check-row">
       <span class="name">${i.item_name} × ${i.quantity} <br><span class="hint">₹${i.unit_price}/unit</span></span>
-      <button class="avail-btn avail-ok ${i.availability==='available'?'active':''}" onclick="setAvailability(${i.id}, 'available')">✓</button>
-      <button class="avail-btn avail-no ${i.availability==='not_available'?'active':''}" onclick="setAvailability(${i.id}, 'not_available')">✕</button>
+      <button class="avail-btn avail-ok ${i.availability==='available'?'active':''}" onclick="setAvailability(${i.id}, 'available', ${so.id})">✓</button>
+<button class="avail-btn avail-no ${i.availability==='not_available'?'active':''}" onclick="setAvailability(${i.id}, 'not_available', ${so.id})">✕</button>
     </div>`).join('');
 
   let footer = '';
-  if(so.status === 'awaiting_payment'){
-    footer = `<div class="hint">Customer is making payment — please wait.</div>`;
+  const allReviewed = so.items.every(i => i.availability !== 'pending');
+  if(so.status === 'pending_shop_review' && allReviewed){
+    footer = `<button class="btn-accent" style="width:100%; margin-top:8px;" onclick="confirmOrderReview(${so.id})">✅ Confirm & Customer Ko Bhejo</button>`;
+  } else if(so.status === 'pending_shop_review'){
+    footer = `<div class="hint">Har item pe ✓ ya ✕ maaro, phir confirm button aayega.</div>`;
+  } else if(so.status === 'awaiting_payment' || so.status === 'partially_unavailable'){
+    footer = `<div class="hint" style="color:var(--green-ok); font-weight:700;">✅ Confirm ho gaya — order customer ke paas chala gaya hai. Ab customer payment kar raha hai.</div>`;
   } else if(so.status === 'confirmed'){
     footer = `<div class="hint">Payment: <strong>${so.payment_status}</strong></div>
       ${renderContactButtons(so.customer_phone, so.id)}
@@ -1077,12 +1077,23 @@ function dismissOrderCard(orderId){
   if(el) el.remove();
 }
 
-async function setAvailability(shopOrderItemId, availability){
+async function setAvailability(shopOrderItemId, availability, shopOrderId){
   if(!requireLogin()) return;
   const res = await fetch(`${API}/shop/order-items/${shopOrderItemId}/availability`, {
     method:'PATCH', headers: authHeaders(), body: JSON.stringify({availability})
   });
   if(!res.ok){ toast(await res.text()); return; }
+  if(shopOrderId) stopOrderAlarm(shopOrderId);
+  loadOrders();
+}
+async function confirmOrderReview(shopOrderId){
+  if(!requireLogin()) return;
+  const res = await fetch(`${API}/shop/orders/${shopOrderId}/confirm-review`, {
+    method:'POST', headers: authHeaders()
+  });
+  if(!res.ok){ toast(await res.text()); return; }
+  stopOrderAlarm(shopOrderId);
+  toast('Order confirm ho gaya — customer ko bhej diya!');
   loadOrders();
 }
 

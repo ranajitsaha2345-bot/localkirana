@@ -213,30 +213,6 @@ async def mark_item_availability(
             },
         )
 
-    # check karo ki saare items review ho gaye ya nahi
-    all_items = shop_order.items
-    still_pending = any(i.availability == models.ItemAvailability.pending for i in all_items)
-
-    if not still_pending:
-        any_unavailable = any(
-            i.availability == models.ItemAvailability.not_available for i in all_items
-        )
-        # dono cases mein amount recompute karo (sirf available items ka)
-        shop_order.amount = sum(
-            i.unit_price * i.quantity for i in all_items
-            if i.availability == models.ItemAvailability.available
-        )
-        if any_unavailable:
-            shop_order.status = models.ShopOrderStatus.partially_unavailable
-        else:
-            shop_order.status = models.ShopOrderStatus.awaiting_payment
-
-        await realtime.manager.send_to_user(
-            shop_order.order.customer_id,
-            "ready_for_payment",
-            {"shop_order_id": shop_order.id, "amount": shop_order.amount},
-        )
-
     db.commit()
     db.refresh(soi)
     return {
@@ -251,6 +227,42 @@ async def mark_item_availability(
 # RULE 2 support: shopkeeper dekh sake customer cash ke liye eligible hai ya nahi
 # (Asli 10-order rule /customer/... routes mein enforce hota hai, yeh sirf info hai)
 # ---------------------------------------------------------------------------
+@router.post("/orders/{shop_order_id}/confirm-review", response_model=schemas.ShopOrderOut)
+async def confirm_order_review(shop_order_id: int, db: Session = Depends(get_db),
+                                user: models.User = Depends(require_shopkeeper)):
+    """
+    Dukandar saare items check karne ke baad ye button dabata hai —
+    isi se order finally customer ko payment ke liye chala jata hai.
+    """
+    shop = _get_owned_shop(db, user)
+    so = db.query(models.ShopOrder).get(shop_order_id)
+    if not so or so.shop_id != shop.id:
+        raise HTTPException(404, "Order nahi mila")
+
+    if so.status != models.ShopOrderStatus.pending_shop_review:
+        raise HTTPException(400, "Ye order already confirm ho chuka hai")
+
+    all_items = so.items
+    still_pending = any(i.availability == models.ItemAvailability.pending for i in all_items)
+    if still_pending:
+        raise HTTPException(400, "Pehle har item pe ✓ ya ✕ maaro")
+
+    any_unavailable = any(i.availability == models.ItemAvailability.not_available for i in all_items)
+    so.amount = sum(
+        i.unit_price * i.quantity for i in all_items
+        if i.availability == models.ItemAvailability.available
+    )
+    so.status = models.ShopOrderStatus.partially_unavailable if any_unavailable else models.ShopOrderStatus.awaiting_payment
+    db.commit()
+    db.refresh(so)
+
+    await realtime.manager.send_to_user(
+        so.order.customer_id,
+        "ready_for_payment",
+        {"shop_order_id": so.id, "amount": so.amount},
+    )
+    return _to_shop_order_out(db, so)
+    
 @router.get("/orders/{shop_order_id}/customer-eligibility")
 def customer_eligibility(shop_order_id: int, db: Session = Depends(get_db),
                           user: models.User = Depends(require_shopkeeper)):
