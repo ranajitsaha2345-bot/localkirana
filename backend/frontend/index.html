@@ -1411,20 +1411,21 @@ function startLiveLocationSharing(shopOrderIds){
     { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
   );
 }
-function renderContactButtons(phone, shopOrderId){
+function renderContactButtons(phone, shopOrderId, shopName){
   return `
     <div class="contact-row">
-      <button id="chat-btn-${shopOrderId}" class="contact-btn" style="width:100%;position:relative;" onclick="openCustomerChat(${shopOrderId})">💬 Chat<span id="chat-count-${shopOrderId}" class="chat-badge" style="display:${unreadChatCounts[shopOrderId] ? 'flex' : 'none'};">${unreadChatCounts[shopOrderId] || ''}</span></button>
+      <button id="chat-btn-${shopOrderId}" class="contact-btn" style="width:100%;position:relative;" onclick="openCustomerChat(${shopOrderId}, '${(shopName||'').replace(/'/g,"\\'")}')">💬 Chat<span id="chat-count-${shopOrderId}" class="chat-badge" style="display:${unreadChatCounts[shopOrderId] ? 'flex' : 'none'};">${unreadChatCounts[shopOrderId] || ''}</span></button>
     </div>`;
 }
 let activeCustomerChatShopOrderId = null;
 let unreadChatOrderIds = new Set();
 let unreadChatCounts = {};
 
-async function openCustomerChat(shopOrderId){
+async function openCustomerChat(shopOrderId, shopName){
   activeCustomerChatShopOrderId = shopOrderId;
   unreadChatOrderIds.delete(shopOrderId);
   unreadChatCounts[shopOrderId] = 0;
+  document.getElementById('order-chat-title').innerText = shopName ? `🛍️ ${shopName}` : '🛍️ Shop Chat';
   const countEl = document.getElementById(`chat-count-${shopOrderId}`);
   if(countEl){ countEl.style.display = 'none'; countEl.textContent = ''; }
   if(!hasUnreadChats()) stopChatAlert(); else hideNewMsgPopup();
@@ -1498,13 +1499,13 @@ if(so.status === 'partially_unavailable'){
 ${routeSrc ? `<iframe style="width:100%; height:220px; border:0; border-radius:12px; margin-top:8px;" loading="lazy"
       src="${routeSrc}"></iframe>` : ''}
 <div class="hint">The shopkeeper is preparing your order — you'll be notified once it's ready.</div>
-${renderContactButtons(so.shop_phone, so.id)}`;
+${renderContactButtons(so.shop_phone, so.id, so.shop_name)}`;
   } else if(so.status === 'ready'){
     actionHtml = `
       <div id="qr-box-${so.id}" style="text-align:center; margin-top:10px;"></div>
       <div class="code-box">${so.verification_code}</div>
       <div class="hint">Show this QR or tell this code to the shopkeeper for pickup</div>
-      ${renderContactButtons(so.shop_phone, so.id)}
+      ${renderContactButtons(so.shop_phone, so.id, so.shop_name)}
 
       <div id="map-${so.id}" style="margin-top:14px;"></div>
 
