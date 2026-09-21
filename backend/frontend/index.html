@@ -822,7 +822,7 @@ function formatQty(amount, cfg){
 function toBackendQtyByName(amount, name){
   const cfg = getUnitConfig(name);
   if(cfg.pricing_unit === 'kg' || cfg.pricing_unit === 'litre'){
-    return +(amount / 1000).toFixed(3); // 250g -> 0.25 kg
+    return +(amount / 100).toFixed(3); // 200g -> 2 (price is per-100g, not per-kg)
   }
   return amount; // pcs items same rahenge
 }
