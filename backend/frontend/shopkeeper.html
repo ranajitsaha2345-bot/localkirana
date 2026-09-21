@@ -608,14 +608,32 @@ function setVoiceEnabled(enabled){
   localStorage.setItem('shop_voice_enabled', enabled ? 'true' : 'false');
 }
 
+let indianVoice = null;
+
+function pickIndianVoice(){
+  const voices = window.speechSynthesis.getVoices();
+  indianVoice =
+    voices.find(v => v.lang === 'en-IN') ||
+    voices.find(v => v.lang === 'en_IN') ||
+    voices.find(v => /india/i.test(v.name)) ||
+    voices.find(v => v.lang === 'hi-IN') ||
+    null;
+}
+
+if('speechSynthesis' in window){
+  pickIndianVoice();
+  window.speechSynthesis.onvoiceschanged = pickIndianVoice;
+}
+
 function speakText(text){
   if(!isVoiceEnabled()) return;
   if(!('speechSynthesis' in window)) return;
-  const clean = String(text).replace(/<[^>]*>/g, ''); // HTML tags hata do
+  const clean = String(text).replace(/<[^>]*>/g, '');
   const utter = new SpeechSynthesisUtterance(clean);
-  utter.lang = 'en-IN';
+  utter.lang = indianVoice ? indianVoice.lang : 'en-IN';
+  if(indianVoice) utter.voice = indianVoice;
   utter.rate = 1;
-  window.speechSynthesis.cancel(); // purani speech rok kar nayi bolo
+  window.speechSynthesis.cancel();
   window.speechSynthesis.speak(utter);
 }
 
@@ -994,7 +1012,7 @@ async function loadOrders(){
   }
   if(!res.ok) return;
   const orders = await res.json();
-  console.log('ORDERS DEBUG:', orders.map(o => ({id:o.id, status:o.status, items:o.items.map(i => i.availability)})));
+  
 
   const activeOrder = orders.find(o => o.status === 'ready') || orders.find(o => o.status === 'confirmed');
   window._activeCustomerPhone = activeOrder ? activeOrder.customer_phone : null;
