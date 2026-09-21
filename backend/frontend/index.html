@@ -1412,13 +1412,8 @@ function startLiveLocationSharing(shopOrderIds){
   );
 }
 function renderContactButtons(phone, shopOrderId){
-  if(!phone) return '';
-  const cleanPhone = phone.replace(/\D/g,'');
   return `
     <div class="contact-row">
-      <a href="tel:${cleanPhone}" style="flex:1; text-decoration:none;">
-        <button class="contact-btn call-btn" style="width:100%;">📞 Call</button>
-      </a>
       <button id="chat-btn-${shopOrderId}" class="contact-btn" style="width:100%;position:relative;" onclick="openCustomerChat(${shopOrderId})">💬 Chat<span id="chat-count-${shopOrderId}" class="chat-badge" style="display:${unreadChatCounts[shopOrderId] ? 'flex' : 'none'};">${unreadChatCounts[shopOrderId] || ''}</span></button>
     </div>`;
 }
