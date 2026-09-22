@@ -333,12 +333,12 @@ window.onload = function() {
     <p id="phone-hint" style="text-align:center; color:var(--muted); margin:12px 0; font-size:.85rem;">Enter number, then continue with Google</p>
     <div style="display:flex; align-items:flex-start; gap:8px; margin:10px 0; font-size:.78rem; color:var(--muted);">
       <input type="checkbox" id="terms-checkbox" style="width:auto; margin-top:2px;" onchange="updateGoogleButtonState()">
-      <label for="terms-checkbox">i read <a href="terms.html" target="_blank" style="color:var(--red-dark);">Terms & Conditions aur Privacy Policy</a> I agree </label>
+      <label for="terms-checkbox">I have read the <a href="terms.html" target="_blank" style="color:var(--red-dark);">Terms & Conditions and Privacy Policy</a> and I agree</label>
     </div>
     <div id="google-btn-wrap" style="opacity:0.4; pointer-events:none;">
       <div id="google-fallback-msg" class="hidden" style="text-align:center; margin-top:10px; font-size:.78rem; color:var(--red-dark);">
-        ⚠️ Google Sign-In load nahi ho paya. Kripya page refresh karo ya thodi der baad try karo. Agar problem bani rahe to support se contact karo.
-        <br><button class="btn-outline btn-sm" style="margin-top:6px;" onclick="location.reload()">🔄 Refresh Karo</button>
+        ⚠️ Google Sign-In failed to load. Please refresh the page or try again in a moment. Contact support if the problem persists.
+        <br><button class="btn-outline btn-sm" style="margin-top:6px;" onclick="location.reload()">🔄 Refresh</button>
       </div>
       <div id="g_id_onload"
            data-client_id="331552152118-9kbvonm08obtu4fjepnvc46b4lkdjid8.apps.googleusercontent.com"
@@ -452,8 +452,8 @@ window.onload = function() {
       <section class="panel">
         <h2>Confirm Pickup</h2>
 
-<label>Order ID (customer ne aapko bataya hoga)</label>
-<input id="scan-order-id-display" placeholder="Jaise: 5" />
+<label>Order ID (given to you by the customer)</label>
+<input id="scan-order-id-display" placeholder="e.g. 5" />
 
 <label>Code Given by Customer</label>
 <input id="code-input" maxlength="4" placeholder="1234" />
@@ -495,18 +495,19 @@ window.onload = function() {
 <div id="new-msg-popup" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:80; display:flex; align-items:center; justify-content:center; padding:16px;">
   <div class="panel" style="max-width:340px; width:100%; text-align:center;">
     <div style="font-size:2.2rem;">💬</div>
-    <h2>Aapke order ka message aaya hai</h2>
+    <h2>You have a new message on your order</h2>
     <button class="btn-accent" onclick="openUnreadChat()">Open Chat</button>
     <button class="btn-outline" style="width:100%; margin-top:8px;" onclick="hideChatPopup()">Later</button>
   </div>
 </div>
+
 <div id="pending-review-popup" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:85; display:flex; align-items:center; justify-content:center; padding:16px;">
   <div class="panel" style="max-width:340px; width:100%; text-align:center;">
     <div style="font-size:2.2rem;">🔔</div>
-    <h2>Order confirm karo</h2>
+    <h2>Confirm the order</h2>
     <p id="pending-review-text" style="font-size:.9rem; margin:10px 0 14px;"></p>
-    <button class="btn-accent" onclick="goToPendingOrder()">Order Dekho</button>
-    <button class="btn-outline" style="width:100%; margin-top:8px;" onclick="hidePendingReviewPopup()">Baad Mein</button>
+    <button class="btn-accent" onclick="goToPendingOrder()">View Order</button>
+    <button class="btn-outline" style="width:100%; margin-top:8px;" onclick="hidePendingReviewPopup()">Later</button>
   </div>
 </div>
 <div id="order-chat-window" class="chat-window hidden">
@@ -580,7 +581,7 @@ function showPendingReviewPopup(){
   if(ids.length === 0) return;
   const idText = ids.map(id => '#' + id).join(', ');
   document.getElementById('pending-review-text').innerText =
-    `Order ID ${idText} ke items aapne ✓ ya ✕ nahi kiye, isliye buzzer baj raha hai. Please confirm karein.`;
+    `You haven't marked ✓ or ✕ for the items in Order ID ${idText}, so the alarm is ringing. Please confirm.`;
   document.getElementById('pending-review-popup').classList.remove('hidden');
 }
 
@@ -1106,11 +1107,11 @@ function renderOrderCard(so){
   let footer = '';
   const allReviewed = so.items.every(i => i.availability !== 'pending');
   if(so.status === 'pending_shop_review' && allReviewed){
-    footer = `<button class="btn-accent" style="width:100%; margin-top:8px;" onclick="confirmOrderReview(${so.id})">✅ Confirm & Customer Ko Bhejo</button>`;
+    footer = `<button class="btn-accent" style="width:100%; margin-top:8px;" onclick="confirmOrderReview(${so.id})">✅ Confirm & Send to Customer</button>`;
   } else if(so.status === 'pending_shop_review'){
-    footer = `<div class="hint">Har item pe ✓ ya ✕ maaro, phir confirm button aayega.</div>`;
+    footer = `<div class="hint">Mark ✓ or ✕ for each item, then the confirm button will appear.</div>`;
   } else if(so.status === 'awaiting_payment' || so.status === 'partially_unavailable'){
-    footer = `<div class="hint" style="color:var(--green-ok); font-weight:700;">✅ Confirm ho gaya — order customer ke paas chala gaya hai. Ab customer payment kar raha hai.</div>`;
+    footer = `<div class="hint" style="color:var(--green-ok); font-weight:700;">✅ Confirmed — the order has been sent to the customer. The customer is now making payment.</div>`;
   } else if(so.status === 'confirmed'){
     footer = `<div class="hint">Payment: <strong>${so.payment_status}</strong></div>
       ${renderContactButtons(so.customer_phone, so.id)}
@@ -1162,7 +1163,7 @@ async function confirmOrderReview(shopOrderId){
   });
   if(!res.ok){ toast(await res.text()); return; }
   stopOrderAlarm(shopOrderId);
-  toast('Order confirm ho gaya — customer ko bhej diya!');
+  toast('Order confirmed — sent to customer!');
   loadOrders();
 }
 
@@ -1432,7 +1433,7 @@ function connectWS(){
   unreadOrders++;
   updateOrdersBadge();
   toast('New order received!');
-  speakText(`Naya order aaya hai. Order number ${data.shop_order_id || data.id}. Turant check karo.`);
+  speakText(`New order received. Order number ${data.shop_order_id || data.id}. Please check it right away.`);
   startOrderAlarm(data.id || data.shop_order_id);
   loadOrders();
 } else if(event === 'new_message'){
@@ -1571,7 +1572,7 @@ async function loadShopStatus(){
     if(!res.ok) return;
     const data = await res.json();
     document.getElementById('shop-open-toggle').checked = !!data.is_open;
-    document.getElementById('shop-status-label').innerText = data.is_open ? 'Open' : 'Dukan Band Hai';
+    document.getElementById('shop-status-label').innerText = data.is_open ? 'Open' : 'Shop Closed';
   } catch(err){}
 }
 let supportChatOpened = false;
@@ -1620,6 +1621,18 @@ function showQuickReplies(){
   const wrap = document.getElementById('chat-quick-replies');
   wrap.innerHTML = replies.map(r => `<button class="chat-quick-btn" onclick="handleQuickReply('${r.replace(/'/g,"\\'")}')">${r}</button>`).join('');
 }
+function isUnsupportedLanguage(text){
+  // Tamil, Telugu, Kannada, Malayalam, Gujarati, Gurmukhi(Punjabi), Arabic/Urdu, CJK, Japanese, Korean, Cyrillic
+  const otherScripts = /[\u0B80-\u0BFF\u0C00-\u0C7F\u0C80-\u0CFF\u0D00-\u0D7F\u0A80-\u0AFF\u0A00-\u0A7F\u0600-\u06FF\u4E00-\u9FFF\u3040-\u30FF\uAC00-\uD7AF\u0400-\u04FF]/;
+  return otherScripts.test(text);
+}
+
+function showLangPopup(){
+  document.getElementById('lang-not-supported-popup').classList.remove('hidden');
+}
+function hideLangPopup(){
+  document.getElementById('lang-not-supported-popup').classList.add('hidden');
+}
 
 function handleQuickReply(text){
   addUserMessage(text);
@@ -1632,6 +1645,10 @@ function sendSupportMessage(){
   if(!text) return;
   addUserMessage(text);
   input.value = '';
+  if(isUnsupportedLanguage(text)){
+    showLangPopup();
+    return;
+  }
   respondToQuery(text);
 }
 
@@ -1639,21 +1656,21 @@ function respondToQuery(text){
   const q = text.toLowerCase();
   let reply = '';
 
-  if(q.includes('dukandar') && (q.includes('number') || q.includes('numbar'))){
+  if((q.includes('dukandar') || q.includes('দোকানদার')) && (q.includes('number') || q.includes('numbar') || q.includes('নম্বর'))){
     const phone = window._activeShopPhone;
     reply = phone ? `Shopkeeper's number: <strong>${phone}</strong>. You can talk directly using the Call or Chat button.` : 'There no active order right now to share the shopkeeper number. Place an order first, and youll get it once its Ready.';
-  } else if(q.includes('customer') && (q.includes('number') || q.includes('numbar'))){
+  } else if((q.includes('customer') || q.includes('কাস্টমার')) && (q.includes('number') || q.includes('numbar') || q.includes('নম্বর'))){
     const phone = window._activeCustomerPhone;
     reply = phone ? `Customer's number: <strong>${phone}</strong>` : 'There no confirmed order right now to share the customer number.';
-  } else if(q.includes('dukan') && (q.includes('dhoond') || q.includes('mil') || q.includes('nahi'))){
+  } else if((q.includes('dukan') || q.includes('দোকান')) && (q.includes('dhoond') || q.includes('mil') || q.includes('nahi') || q.includes('খুঁজে') || q.includes('পাচ্ছি না') || q.includes('নেই'))){
     reply = 'Dont worry — once the order is "Ready", youll get the shop exact location and a "Show Directions" button opening Google Maps.';
-  } else if(q.includes('payment')){
+  } else if(q.includes('payment') || q.includes('পেমেন্ট') || q.includes('টাকা')){
     reply = 'Got it, payment issue. Please wait a bit, itll be fixed soon. If not resolved in 10 minutes, message here again.';
-  } else if(q.includes('customer') && (q.includes('nahi aaya') || q.includes('late') || q.includes('let'))){
+  } else if((q.includes('customer') || q.includes('কাস্টমার')) && (q.includes('nahi aaya') || q.includes('late') || q.includes('let') || q.includes('আসেনি') || q.includes('দেরি'))){
     reply = 'Understood, the customer hasnt arrived yet. Type "Need customer number" to call/chat with them directly.';
-  } else if(q.includes('cancel')){
+  } else if(q.includes('cancel') || q.includes('বাতিল')){
     reply = 'To cancel, please talk directly to the shopkeeper (Call/Chat button) or wait — well add this feature soon.';
-  } else if(q.includes('app') && (q.includes('dikkat') || q.includes('problem') || q.includes('kaam nahi'))){
+  } else if((q.includes('app') || q.includes('অ্যাপ')) && (q.includes('dikkat') || q.includes('problem') || q.includes('kaam nahi') || q.includes('সমস্যা') || q.includes('কাজ করছে না'))){
     reply = 'Sorry for the trouble. Please refresh/reload the app and try again. If it still doesnt work, try again shortly.';
   } else {
     reply = 'Sorry, I couldnt fully understand. Choose from the options below or rephrase.';
@@ -1789,7 +1806,7 @@ function showCategoryTemplate(categoryName){
   document.getElementById('category-modal-title').innerText = categoryName;
 
   content.innerHTML = `
-    <button class="btn-outline btn-sm" style="margin-bottom:10px;" onclick="openCategoryPicker()">← Wapas Categories Pe</button>
+    <button class="btn-outline btn-sm" style="margin-bottom:10px;" onclick="openCategoryPicker()">← Back to Categories</button>
     ${data.items.map(it => `
       <div class="template-item-row">
         <div>
