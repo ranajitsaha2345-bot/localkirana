@@ -1130,7 +1130,7 @@ function renderOrderCard(so){
     <span style="position:absolute; top:8px; left:12px; font-size:.7rem; font-weight:700; color:var(--muted);">Order ID: ${so.id}</span>
     <span onclick="dismissOrderCard(${so.id})" style="position:absolute; top:6px; right:10px; cursor:pointer; font-size:1.1rem; color:var(--red); font-weight:800; line-height:1;">✕</span>
         ${itemsHtml}
-    <div style="display:flex; justify-content:space-between; font-weight:800; padding:10px 0 4px;"><span>Total</span><span>₹${so.amount.toFixed(2)}</span></div>
+    <div style="display:flex; justify-content:space-between; font-weight:800; padding:10px 104px 4px 0;"><span>Total</span><span>₹${so.amount.toFixed(2)}</span></div>
     ${footer}
     ${locationHtml}
     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-top:8px; border-top:1px dashed var(--line);">
