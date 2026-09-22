@@ -82,6 +82,7 @@
   .item-check-row .name{flex:1; font-size:.92rem;}
   .add-item-row{ display:flex; align-items:center; gap:6px; }
   .add-item-row{ display:flex; align-items:center; gap:6px; }
+  .item-price{ font-weight:700; white-space:nowrap; }
 .add-item-row input, .add-item-row select{
   margin-bottom:0; padding:10px 8px; font-size:.85rem; min-width:0;
 }
@@ -1096,7 +1097,8 @@ function formatQty(qty, unit){
 function renderOrderCard(so){
   const itemsHtml = so.items.map(i => `
     <div class="item-check-row">
-    <span class="name">${i.item_name} ${formatQty(i.quantity, i.unit)} — ₹${+(i.unit_price * i.quantity).toFixed(2)}</span>
+    <span class="name">${i.item_name} ${formatQty(i.quantity, i.unit)}</span>
+    <span class="item-price">₹${+(i.unit_price * i.quantity).toFixed(2)}</span>
       <button class="avail-btn avail-ok ${i.availability==='available'?'active':''}" onclick="setAvailability(${i.id}, 'available', ${so.id})">✓</button>
 <button class="avail-btn avail-no ${i.availability==='not_available'?'active':''}" onclick="setAvailability(${i.id}, 'not_available', ${so.id})">✕</button>
     </div>`).join('');
