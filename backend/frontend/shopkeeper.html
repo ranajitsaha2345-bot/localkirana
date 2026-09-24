@@ -1576,6 +1576,33 @@ async function loadShopStatus(){
   } catch(err){}
 }
 let supportChatOpened = false;
+let supportPollTimer = null;
+const seenSupportIds = new Set();
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function loadSupportHistory(firstLoad){
+  if(!token) return;
+  try{
+    const res = await fetch(`${API}/shop/support/messages`, {headers: authHeaders()});
+    if(!res.ok) return;
+    const rows = await res.json();
+    const body = document.getElementById('chat-body');
+    rows.forEach(m => {
+      if(seenSupportIds.has(m.id)) return;
+      seenSupportIds.add(m.id);
+      if(m.sender_role === 'support'){
+        body.innerHTML += `<div class="chat-msg bot">${escapeHtml(m.message)}</div>`;
+        if(!firstLoad) toast('Support: ' + m.message);
+      } else if(firstLoad){
+        body.innerHTML += `<div class="chat-msg user">${escapeHtml(m.message)}</div>`;
+      }
+    });
+    body.scrollTop = body.scrollHeight;
+  } catch(e){}
+}
 
 function toggleSupportChat(){
   const win = document.getElementById('support-chat-window');
@@ -1583,12 +1610,18 @@ function toggleSupportChat(){
   if(isHidden){
     win.classList.remove('hidden');
     if(!supportChatOpened){
+      supportChatOpened = true;
       addBotMessage('Choose your question below or type it.');
       showQuickReplies();
-      supportChatOpened = true;
+      loadSupportHistory(true);
+    } else {
+      loadSupportHistory(false);
     }
+    if(supportPollTimer) clearInterval(supportPollTimer);
+    supportPollTimer = setInterval(() => loadSupportHistory(false), 5000);
   } else {
     win.classList.add('hidden');
+    if(supportPollTimer){ clearInterval(supportPollTimer); supportPollTimer = null; }
   }
 }
 
@@ -1655,11 +1688,12 @@ function sendSupportMessage(){
 }
 async function forwardToTelegram(text){
   try{
-    await fetch(`${API}/shop/support/message`, {
+    const res = await fetch(`${API}/shop/support/message`, {
       method: 'POST',
       headers: authHeaders(),
       body: JSON.stringify({message: text})
     });
+    if(!res.ok) toast('Support message could not be sent');
   } catch(e){
     console.error('Telegram forward failed', e);
   }
@@ -1688,7 +1722,7 @@ function respondToQuery(text){
   } else if(q.includes('talk to company') || q.includes('need to talk')){
     reply = 'OK, tell me whatever problem you have.';
   } else {
-    reply = 'OK, I understand.';
+    reply = 'Message sent to support. Their reply will appear here.';
   }
 
   setTimeout(() => addBotMessage(reply), 400);
