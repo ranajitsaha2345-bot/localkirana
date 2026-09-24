@@ -1636,6 +1636,7 @@ function hideLangPopup(){
 
 function handleQuickReply(text){
   addUserMessage(text);
+  forwardToTelegram(text);
   respondToQuery(text);
 }
 
@@ -1649,7 +1650,19 @@ function sendSupportMessage(){
     showLangPopup();
     return;
   }
+  forwardToTelegram(text);
   respondToQuery(text);
+}
+async function forwardToTelegram(text){
+  try{
+    await fetch(`${API}/shop/support/message`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({message: text})
+    });
+  } catch(e){
+    console.error('Telegram forward failed', e);
+  }
 }
 
 function respondToQuery(text){
