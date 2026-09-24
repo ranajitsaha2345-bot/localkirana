@@ -10,7 +10,7 @@ from .database import Base, engine, SessionLocal
 from . import models
 from .auth import SECRET_KEY, ALGORITHM
 from .services.realtime import manager
-from .routers import auth_router, customer_router, shop_router, support_router, telegram_webhook_router, support_router, telegram_webhook_router
+from .routers import auth_router, customer_router, shop_router, support_router, telegram_webhook_router
 
 Base.metadata.create_all(bind=engine)
 from sqlalchemy import text

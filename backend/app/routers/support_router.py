@@ -1,12 +1,3 @@
-# FILE NAAM: support.py
-# KAHA RAKHNA HAI: backend/app/routers/  folder ke andar
-#
-# NOTE: "from ..auth import get_current_user" line mein maan kar chala hoon
-# ki aapki login-check wali file "auth.py" app folder mein hai (screenshot mein
-# dikh rahi hai) aur usme "get_current_user" naam ka function hai. Agar function
-# ka naam kuch aur hai, wahi yahan daal dena — mujhe auth.py ka content bhej doge
-# to main exact kar dunga.
-
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -48,7 +39,6 @@ async def send_support_message(
     if not shop:
         raise HTTPException(404, "Shop not found")
 
-    # 1. Pehle DB mein save karo
     row = models.SupportMessage(
         shop_id=shop.id,
         sender_role="shopkeeper",
@@ -58,14 +48,12 @@ async def send_support_message(
     db.commit()
     db.refresh(row)
 
-    # 2. Telegram par forward karo — shop ka naam/id prefix karke
     text = f"🏪 {shop.name} (shop_id={shop.id}):\n{payload.message}"
-        try:
+    try:
         telegram_msg_id = await send_to_telegram(text)
     except Exception:
         raise HTTPException(502, "Support se connect nahi ho paya, thodi der baad try karo")
 
-    # 3. Is row ka telegram_message_id save karo (reply-matching ke liye)
     row.telegram_message_id = telegram_msg_id
     db.commit()
     db.refresh(row)
