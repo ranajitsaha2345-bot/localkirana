@@ -60,7 +60,10 @@ async def send_support_message(
 
     # 2. Telegram par forward karo — shop ka naam/id prefix karke
     text = f"🏪 {shop.name} (shop_id={shop.id}):\n{payload.message}"
-    telegram_msg_id = await send_to_telegram(text)
+        try:
+        telegram_msg_id = await send_to_telegram(text)
+    except Exception:
+        raise HTTPException(502, "Support se connect nahi ho paya, thodi der baad try karo")
 
     # 3. Is row ka telegram_message_id save karo (reply-matching ke liye)
     row.telegram_message_id = telegram_msg_id
