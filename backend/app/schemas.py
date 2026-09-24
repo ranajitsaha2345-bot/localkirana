@@ -223,3 +223,23 @@ class ChatMessageOut(BaseModel):
 
     class Config:
         from_attributes = True
+# Ye do classes apni existing schemas.py ke end mein add karo
+# (ChatMessageOut ke neeche, same file mein)
+
+from datetime import datetime
+from pydantic import BaseModel
+
+
+class SupportMessageCreate(BaseModel):
+    message: str
+
+
+class SupportMessageOut(BaseModel):
+    id: int
+    shop_id: int
+    sender_role: str  # "shopkeeper" | "support"
+    message: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

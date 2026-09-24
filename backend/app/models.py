@@ -186,3 +186,36 @@ class ChatMessage(Base):
 
     shop_order = relationship("ShopOrder")
     sender = relationship("User")
+# Ye class apni existing models.py ke end mein add karo
+# (ChatMessage class ke neeche, same file mein)
+
+from datetime import datetime
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text
+from sqlalchemy.orm import relationship
+
+# NOTE: agar ye alag file mein daal rahe ho to upar
+# `from .database import Base` already models.py mein hai, use hi rehne do.
+
+
+class SupportMessage(Base):
+    """Shopkeeper <-> Telegram support chat ka history.
+
+    Har row ek message hai — ya to shopkeeper ne bheja (sender_role='shopkeeper')
+    ya support/owner ne Telegram se reply kiya (sender_role='support').
+    """
+    __tablename__ = "support_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    shop_id = Column(Integer, ForeignKey("shops.id"), nullable=False, index=True)
+    sender_role = Column(String, nullable=False)  # "shopkeeper" | "support"
+    message = Column(Text, nullable=False)
+
+    # Telegram ka message_id jo humein Telegram API se wapas mila tha jab
+    # humne ye message Telegram par bheja. Reply-matching isi column se hoti hai:
+    # jab owner is message ko Telegram mein swipe-reply karta hai, uska
+    # reply_to_message.message_id isi value ke barabar hoga.
+    telegram_message_id = Column(Integer, nullable=True, unique=True, index=True)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    shop = relationship("Shop")

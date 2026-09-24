@@ -1611,7 +1611,7 @@ function showQuickReplies(){
     'Customer not arrived',
     'Payment problem',
     'App is having issues',
-    'Need customer number'
+    'Need to talk to company'
   ] : [
     'not find the shop',
     'Need shopkeeper number',
@@ -1665,15 +1665,17 @@ function respondToQuery(text){
   } else if((q.includes('dukan') || q.includes('দোকান')) && (q.includes('dhoond') || q.includes('mil') || q.includes('nahi') || q.includes('খুঁজে') || q.includes('পাচ্ছি না') || q.includes('নেই'))){
     reply = 'Dont worry — once the order is "Ready", youll get the shop exact location and a "Show Directions" button opening Google Maps.';
   } else if(q.includes('payment') || q.includes('পেমেন্ট') || q.includes('টাকা')){
-    reply = 'Got it, payment issue. Please wait a bit, itll be fixed soon. If not resolved in 10 minutes, message here again.';
+    reply = 'Please send full detail.';
   } else if((q.includes('customer') || q.includes('কাস্টমার')) && (q.includes('nahi aaya') || q.includes('late') || q.includes('let') || q.includes('আসেনি') || q.includes('দেরি'))){
-    reply = 'Understood, the customer hasnt arrived yet. Type "Need customer number" to call/chat with them directly.';
+    reply = 'Understood, the customer hasnt arrived yet. Type "Need to talk to company" to reach out directly.';
   } else if(q.includes('cancel') || q.includes('বাতিল')){
     reply = 'To cancel, please talk directly to the shopkeeper (Call/Chat button) or wait — well add this feature soon.';
-  } else if((q.includes('app') || q.includes('অ্যাপ')) && (q.includes('dikkat') || q.includes('problem') || q.includes('kaam nahi') || q.includes('সমস্যা') || q.includes('কাজ করছে না'))){
-    reply = 'Sorry for the trouble. Please refresh/reload the app and try again. If it still doesnt work, try again shortly.';
+  } else if(q.includes('app') && (q.includes('issue') || q.includes('dikkat') || q.includes('problem') || q.includes('kaam nahi') || q.includes('সমস্যা') || q.includes('কাজ করছে না'))){
+    reply = 'Please send full details.';
+  } else if(q.includes('talk to company') || q.includes('need to talk')){
+    reply = 'OK, tell me whatever problem you have.';
   } else {
-    reply = 'Sorry, I couldnt fully understand. Choose from the options below or rephrase.';
+    reply = 'OK, I understand.';
   }
 
   setTimeout(() => addBotMessage(reply), 400);
