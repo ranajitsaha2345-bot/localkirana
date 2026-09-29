@@ -1072,6 +1072,34 @@ async function handleGoogleLogin(response) {
     toast('Google login failed, please try again');
   }
 }
+function confirmBuy(itemId, name){
+  const info = getUnitInfo(itemUnitById[itemId]);
+  let qty = pendingQty[itemId];
+  if(qty === undefined){
+    qty = cart[itemId] ? cart[itemId] : info.step;
+  }
+  if(qty > 0){
+    cart[itemId] = qty;
+    toast(name + ' added');
+  } else {
+    delete cart[itemId];
+    toast(name + ' removed');
+  }
+  delete pendingQty[itemId];
+
+  const badge = document.getElementById(`qty-float-${itemId}`);
+  if(badge){
+    if(qty > 0){
+      badge.innerText = formatQty(qty, info);
+      badge.classList.remove('hidden');
+    } else {
+      badge.classList.add('hidden');
+    }
+  }
+
+  if(typeof renderCart === 'function') renderCart();
+  if(typeof updateCartBar === 'function') updateCartBar();
+}
 async function handleSendOTP() {
   const phone = document.getElementById('phone').value.trim();
   const email = document.getElementById('reg-email').value.trim();
