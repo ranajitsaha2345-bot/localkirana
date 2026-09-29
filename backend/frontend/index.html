@@ -2137,10 +2137,41 @@ function respondToQuery(text){
   } else if(q.includes('app') && (q.includes('dikkat') || q.includes('problem') || q.includes('kaam nahi'))){
     reply = 'Sorry for the trouble with the app. Please refresh/reload and try again. If the problem continues, try again after a while.';
   } else {
-    reply = 'Sorry, I didnt fully understand. Please choose from the options below or try phrasing it differently.';
+    reply = 'Thanks! Your message has been sent to our support team. Their reply will appear here.';
+    sendToSupport(text);
   }
 
   setTimeout(() => addBotMessage(reply), 400);
+}
+
+
+let _supportSeen = null, _supportTimer = null;
+
+async function pollSupport(){
+  try{
+    const r = await fetch(`${API}/customer-support/messages`, {
+      headers: authHeaders()
+    });
+    if(!r.ok) return;
+    const list = await r.json();
+    if(_supportSeen === null){ _supportSeen = list.length; return; }
+    list.slice(_supportSeen).forEach(m => {
+      if(m.from === 'support') addBotMessage('Support: ' + m.text);
+    });
+    _supportSeen = list.length;
+  }catch(e){}
+}
+
+async function sendToSupport(text){
+  await pollSupport();
+  try{
+    await fetch(`${API}/customer-support/send`, {
+      method: 'POST',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text })
+    });
+  }catch(e){}
+  if(!_supportTimer) _supportTimer = setInterval(pollSupport, 6000);
 }
 
 function toast(msg){
