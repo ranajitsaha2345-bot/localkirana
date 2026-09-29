@@ -262,6 +262,68 @@ main{ padding-bottom:80px; }
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+/* ===== PHONE FIX ===== */
+*, *::before, *::after { box-sizing: border-box; }
+img, video { max-width: 100%; }
+
+@media (max-width: 768px){
+  html, body { width: 100%; max-width: 100%; overflow-x: clip !important; }
+
+  header { padding: 10px 12px 14px !important; max-width: 100% !important; }
+  header * { min-width: 0; max-width: 100%; }
+
+  main {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+  .panel {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  table { display: block; max-width: 100%; overflow-x: auto; }
+  input, select, textarea { max-width: 100%; }
+}
+/* ===== HEADER PHONE FIX ===== */
+@media (max-width: 768px){
+  .hdr-top {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 6px 8px !important;
+    position: relative !important;
+    padding: 0 !important;
+  }
+  .hdr-top .back-btn,
+  .hdr-top .forward-btn {
+    position: static !important;
+    transform: none !important;
+    flex: 0 0 34px !important;
+    order: 1 !important;
+  }
+  .hdr-top .badge {
+    position: static !important;
+    margin-left: auto !important;
+    order: 2 !important;
+    max-width: 65% !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  .hdr-top h1 {
+    order: 3 !important;
+    flex: 1 1 100% !important;
+    margin: 4px 0 0 !important;
+    font-size: 1rem !important;
+    text-align: center !important;
+    white-space: normal !important;
+  }
+}
 </style>
 
 <script src="https://accounts.google.com/gsi/client" async defer onload="loadGoogleButton()"></script>
