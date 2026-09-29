@@ -2117,6 +2117,7 @@ setInterval(async () => {
 }, 3000);
 
 function respondToQuery(text){
+  sendToSupport(text);
   const q = text.toLowerCase();
   let reply = '';
 
@@ -2135,8 +2136,6 @@ function respondToQuery(text){
   } else if(q.includes('cancel')){
     reply = 'To cancel an order, please talk directly to the shopkeeper (via Call/Chat button), or wait a bit — well add this feature soon.';
   } else if(q.includes('app') && (q.includes('dikkat') || q.includes('problem') || q.includes('kaam nahi'))){
-    reply = 'Sorry for the trouble with the app. Please refresh/reload and try again. If the problem continues, try again after a while.';
-  } else {
     reply = 'Thanks! Your message has been sent to our support team. Their reply will appear here.';
     sendToSupport(text);
   }
