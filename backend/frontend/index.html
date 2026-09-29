@@ -490,7 +490,101 @@ div:has(> .item-card){
 @media (max-width:480px){
   div:has(> .item-card){ grid-template-columns:repeat(2,1fr); }
 }
-</style>
+/* ===== HORIZONTAL ITEM CARD (Zomato/Swiggy style) ===== */
+#catalog,
+div:has(> .item-card){
+  display:flex !important;
+  flex-direction:column !important;
+  gap:10px !important;
+}
+
+#catalog .item-card,
+.item-card{
+  display:flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  text-align:left !important;
+  gap:12px !important;
+  width:100% !important;
+  padding:10px !important;
+  border-radius:16px !important;
+  position:relative;
+}
+
+#catalog .icon-wrap,
+.item-card .icon-wrap{
+  width:92px !important;
+  height:92px !important;
+  flex:0 0 92px !important;
+  position:relative;
+}
+#catalog .icon,
+.item-card .icon{
+  width:100% !important;
+  height:100% !important;
+  border-radius:12px !important;
+  overflow:hidden;
+}
+
+.item-card .item-info{
+  flex:1;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.item-card .item-info .name{
+  min-height:0 !important;
+  justify-content:flex-start !important;
+  font-size:.95rem !important;
+  font-weight:800 !important;
+}
+
+.item-card .qty-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.item-card .qty-row .unit-hint{
+  font-size:.78rem !important;
+  color:var(--muted);
+}
+.item-card .qty-row .qty-controls{
+  width:auto !important;
+  gap:10px !important;
+}
+.item-card .qty-btn{
+  width:26px !important;
+  height:26px !important;
+  font-size:.95rem !important;
+}
+
+.item-card .btn-row{
+  display:flex;
+  gap:8px;
+}
+.item-card .btn-row .btn-buy,
+.item-card .btn-row .btn-shops{
+  flex:1;
+  width:auto !important;
+  margin:0 !important;
+  padding:8px 4px !important;
+  font-size:.78rem !important;
+  border-radius:10px !important;
+}
+
+/* image ke upar price badge */
+.item-card .price-badge{
+  font-size:.62rem !important;
+  padding:2px 6px !important;
+}
+
+/* quantity badge (jo + dabane pe upar dikhta hai) */
+.item-card .qty-float{
+  top:8px !important;
+  right:10px !important;
+  font-size:.7rem !important;
+}
 </style>
 </head>
 <body>
@@ -1243,21 +1337,31 @@ async function loadCatalog(){
     const priceBadge = it.starting_price != null
       ? `<div class="price-badge">₹${it.starting_price}${it.shop_count > 1 ? '+' : ''}</div>`
       : '';
-    return `
+      return `
     <div class="item-card" data-name="${it.name}" data-category="${it.category || ''}" data-nearby="${it.has_nearby_shop}">
       <span class="qty-float hidden" id="qty-float-${it.id}">0</span>
+
       <div class="icon-wrap">
         ${priceBadge}
-        <div class="icon">${it.image_url ? `<img src="${it.image_url}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">` : iconFor(it.name, it.category)}</div>
+        <div class="icon">${it.image_url ? `<img src="${it.image_url}" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">` : iconFor(it.name, it.category)}</div>
       </div>
-      <div class="name">${it.name}</div>
-      <div class="unit-hint">${hint}</div>
-      <div class="qty-controls">
-        <button class="qty-btn minus" onclick="adjustPending(${it.id}, -1)">-</button>
-        <button class="qty-btn" onclick="adjustPending(${it.id}, 1)">+</button>
+
+      <div class="item-info">
+        <div class="name">${it.name}</div>
+
+        <div class="qty-row">
+          <span class="unit-hint">${hint}</span>
+          <div class="qty-controls">
+            <button class="qty-btn minus" onclick="adjustPending(${it.id}, -1)">-</button>
+            <button class="qty-btn" onclick="adjustPending(${it.id}, 1)">+</button>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-buy" onclick="confirmBuy(${it.id}, '${it.name.replace(/'/g,"\\'")}')">Add</button>
+          <button class="btn-shops" onclick="showShopsForItem(${it.id}, '${it.name.replace(/'/g,"\\'")}')">Show Shop</button>
+        </div>
       </div>
-      <button class="btn-buy" onclick="confirmBuy(${it.id}, '${it.name.replace(/'/g,"\\'")}')">Add</button>
-      <button class="btn-shops" onclick="showShopsForItem(${it.id}, '${it.name.replace(/'/g,"\\'")}')">Show Shop</button>
     </div>
     `;
   }).join('');
