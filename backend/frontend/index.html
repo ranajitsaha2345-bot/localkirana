@@ -1096,10 +1096,73 @@ function confirmBuy(itemId, name){
       badge.classList.add('hidden');
     }
   }
-
-  if(typeof renderCart === 'function') renderCart();
-  if(typeof updateCartBar === 'function') updateCartBar();
+  renderSelectedBar();
 }
+
+function removeFromCart(itemId){
+  delete cart[itemId];
+  delete pendingQty[itemId];
+  const badge = document.getElementById(`qty-float-${itemId}`);
+  if(badge) badge.classList.add('hidden');
+  renderSelectedBar();
+}
+
+function renderSelectedBar(){
+  let bar = document.getElementById('selected-bar');
+  if(!bar){
+    const catalogEl = document.getElementById('catalog');
+    if(!catalogEl) return;
+    bar = document.createElement('div');
+    bar.id = 'selected-bar';
+    bar.style.cssText = 'position:sticky; top:0; z-index:20; background:#fff; border:1px solid #eee; border-radius:14px; padding:10px; margin-bottom:12px; box-shadow:0 2px 8px rgba(0,0,0,.08);';
+    const anchor = catalogEl.previousElementSibling || catalogEl;
+    anchor.parentNode.insertBefore(bar, anchor);
+  }
+
+  const ids = Object.keys(cart);
+  if(ids.length === 0){
+    bar.style.display = 'none';
+    return;
+  }
+  bar.style.display = 'block';
+  bar.innerHTML = '';
+
+  const title = document.createElement('div');
+  title.textContent = 'Selected (' + ids.length + ')';
+  title.style.cssText = 'font-weight:700; margin-bottom:8px;';
+  bar.appendChild(title);
+
+  const row = document.createElement('div');
+  row.style.cssText = 'display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;';
+
+  ids.forEach(id => {
+    const item = catalogItems.find(x => String(x.id) === String(id));
+    const info = getUnitInfo(itemUnitById[id]);
+    const chip = document.createElement('div');
+    chip.style.cssText = 'display:flex; align-items:center; gap:6px; background:#FFF3E0; border:1px solid #ffd7a8; border-radius:20px; padding:6px 6px 6px 12px; font-size:14px;';
+
+    const label = document.createElement('span');
+    label.textContent = (item ? item.name : 'Item') + ' · ' + formatQty(cart[id], info);
+    chip.appendChild(label);
+
+    const x = document.createElement('button');
+    x.textContent = '×';
+    x.style.cssText = 'border:none; background:#999; color:#fff; width:22px; height:22px; border-radius:50%; cursor:pointer; font-size:14px; line-height:1;';
+    x.addEventListener('click', () => removeFromCart(id));
+    chip.appendChild(x);
+
+    row.appendChild(chip);
+  });
+  bar.appendChild(row);
+
+  const next = document.createElement('button');
+  next.textContent = 'Next';
+  next.style.cssText = 'width:100%; padding:12px; border:none; border-radius:12px; background:#c62828; color:#fff; font-weight:700; font-size:16px; cursor:pointer;';
+  next.addEventListener('click', () => matchCart());
+  bar.appendChild(next);
+}
+
+  
 async function handleSendOTP() {
   const phone = document.getElementById('phone').value.trim();
   const email = document.getElementById('reg-email').value.trim();
