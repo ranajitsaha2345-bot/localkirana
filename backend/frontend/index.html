@@ -61,7 +61,8 @@ header .sub{ font-size:.78rem; opacity:.75; margin-top:2px; }
   border-radius:50%; display:none; align-items:center; justify-content:center; cursor:pointer; font-size:1.2rem;
 }
 .forward-btn.show{ display:flex; }
-main{max-width:520px; margin:0 auto; padding:16px; padding-top:0;}
+main{max-width:1100px; margin:0 auto; padding:16px; padding-top:0;}
+#auth-panel, #match-panel, #order-tracker, #history-panel{ max-width:520px; margin-left:auto; margin-right:auto; }
 .panel{
   background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
   padding:16px; margin-bottom:14px;
@@ -94,24 +95,21 @@ main{max-width:520px; margin:0 auto; padding:16px; padding-top:0;}
 .cat-row::-webkit-scrollbar{ display:none; }
 .cat-item{ flex-shrink:0; text-align:center; cursor:pointer; }
 .cat-circle{
-  .cat-item span{
+  width:58px; height:58px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:1.5rem; background:linear-gradient(135deg, var(--orange), var(--red));
+  color:#fff; margin:0 auto 6px; box-shadow:0 6px 14px rgba(255,138,61,.35);
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+.cat-item span{
   font-size:.62rem; font-weight:600; color:var(--ink);
   display:block; text-align:center; overflow:hidden;
   text-overflow:ellipsis; white-space:nowrap;
 }
-  .cat-item.active .cat-circle{
-  transform: scale(1.18);
-  box-shadow: 0 0 0 3px var(--red), 0 10px 22px rgba(230,55,47,.45);
+.cat-item.active .cat-circle{
+  transform:scale(1.18);
+  box-shadow:0 0 0 3px var(--red), 0 10px 22px rgba(230,55,47,.45);
 }
-.cat-item.active span{
-  color: var(--red-dark);
-  font-weight:800;
-}
-  width:58px; height:58px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-  font-size:1.5rem; background:linear-gradient(135deg, var(--orange), var(--red));
-  color:#fff; margin:0 auto 6px; box-shadow:0 6px 14px rgba(255,138,61,.35);
-}
-.cat-item span{ font-size:.72rem; font-weight:600; color:var(--ink); }
+.cat-item.active span{ color:var(--red-dark); font-weight:800; }
 
 label{font-size:.82rem; color:var(--muted); display:block; margin-bottom:4px;}
 button{
@@ -199,31 +197,23 @@ button:active{transform:scale(.97);}
 #qr-box{text-align:center; padding:10px;}
 #qr-box canvas{margin:0 auto;}
 .code-box{
-  .contact-row{ display:flex; gap:8px; margin-top:10px; }
+  text-align:center; font-size:2rem; letter-spacing:10px; font-weight:800;
+  color:var(--red-dark); background:#FFF0E6; border-radius:12px; padding:14px; margin:10px 0;
+}
+.contact-row{ display:flex; gap:8px; margin-top:10px; }
 .contact-btn{
   flex:1; padding:10px 8px; font-size:.82rem; font-weight:700;
-  background:#fff; color:#25D366; border:1.5px solid #25D366; border:none; border-radius:10px; cursor:pointer;
+  background:#fff; color:#25D366; border:1.5px solid #25D366; border-radius:10px; cursor:pointer;
   display:flex; align-items:center; justify-content:center; gap:6px;
 }
 .contact-btn.call-btn{ background:var(--plum); }
+.chat-unread{ background:#25D366 !important; color:#fff !important; border-color:#25D366 !important; }
 .chat-badge{
-  .chat-unread{ background:#25D366 !important; color:#fff !important; border-color:#25D366 !important; }
   position:absolute; top:-6px; right:-6px;
   background:#e53935; color:#fff; border-radius:50%;
   width:18px; height:18px; font-size:.65rem; font-weight:700;
   display:flex; align-items:center; justify-content:center;
   border:2px solid #fff;
-}
-.chat-badge{
-  .chat-unread{ background:#25D366 !important; color:#fff !important; border-color:#25D366 !important; }
-  position:absolute; top:-6px; right:-6px;
-  background:#e53935; color:#fff; border-radius:50%;
-  width:18px; height:18px; font-size:.65rem; font-weight:700;
-  display:flex; align-items:center; justify-content:center;
-  border:2px solid #fff;
-}
-  text-align:center; font-size:2rem; letter-spacing:10px; font-weight:800;
-  color:var(--red-dark); background:#FFF0E6; border-radius:12px; padding:14px; margin:10px 0;
 }
 .hint{font-size:.78rem; color:var(--muted); margin-top:4px;}
 .hidden{display:none !important;}
@@ -400,191 +390,44 @@ body.photo-active .item-card {
     margin-bottom: 10px;
   }
 }
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-css
+/* ===== COMPACT 6-COLUMN ITEM GRID ===== */
 #catalog{
   display:grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap:10px;
+  grid-template-columns:repeat(6, 1fr);
+  gap:8px;
 }
 #catalog .item-card{
-  border:1px solid var(--line);
-  border-radius:14px;
-  padding:10px 6px;
-  background:#FFFCF9;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  text-align:center;
-  gap:4px;
-  position:relative;
-  width:100%;
+  display:flex; flex-direction:column; align-items:stretch; text-align:center;
+  gap:4px; padding:6px; width:100%; position:relative;
+  border:1px solid var(--line); border-radius:12px; background:#FFFCF9;
 }
-#catalog .icon-wrap{
-  width:60px;
-  height:60px;
-  flex:none;
-}
+#catalog .icon-wrap{ width:100%; height:auto; aspect-ratio:1/1; flex:none; position:relative; }
 #catalog .icon{
-  width:100%;
-  height:100%;
-  font-size:1.8rem;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  width:100%; height:100%; border-radius:10px; overflow:hidden;
+  display:flex; align-items:center; justify-content:center; font-size:1.6rem;
 }
+#catalog .item-info{ display:flex; flex-direction:column; gap:4px; min-width:0; }
 #catalog .name{
-  font-size:.72rem;
-  font-weight:700;
-  overflow-wrap:break-word;
-  word-break:break-word;
-  line-height:1.2;
+  font-size:.75rem; font-weight:800; line-height:1.2;
+  min-height:2.4em; justify-content:center;
 }
-#catalog .unit-hint{
-  font-size:.65rem;
-  color:var(--muted);
+#catalog .unit-select{
+  width:100%; padding:3px 2px; font-size:.7rem; color:var(--ink);
+  border:1px solid var(--line); border-radius:6px; background:#fff;
 }
-#catalog .qty-controls{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-  width:100%;
-}
+#catalog .unit-fixed{ font-size:.7rem; color:var(--muted); padding:4px 0; }
+#catalog .qty-controls{ display:flex; justify-content:center; gap:10px; width:100%; }
+#catalog .qty-btn{ width:24px; height:24px; font-size:.9rem; }
+#catalog .btn-row{ display:flex; flex-direction:column; gap:4px; }
 #catalog .btn-buy,
 #catalog .btn-shops{
-  width:100%;
-  padding:5px 2px;
-  font-size:.68rem;
-  margin-top:2px;
+  width:100%; margin:0; padding:5px 2px; font-size:.68rem; border-radius:8px;
 }
+#catalog .price-badge{ font-size:.6rem; padding:1px 5px; }
+#catalog .qty-float{ top:6px; right:6px; font-size:.6rem; }
 
-@media (max-width: 480px){
-  #catalog{ grid-template-columns: repeat(2, 1fr); }
-}
-/* jo bhi div item-card ka seedha parent hai, use grid bana do */
-div:has(> .item-card){
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:10px;
-}
-.item-card{
-  border:1px solid var(--line); border-radius:14px; padding:10px 6px;
-  background:#FFFCF9; display:flex; flex-direction:column;
-  align-items:center; text-align:center; gap:4px;
-  position:relative; width:100%; box-sizing:border-box;
-}
-.item-card .icon-wrap{ width:60px; height:60px; flex:none; }
-.item-card .icon{ width:100%; height:100%; font-size:1.8rem;
-  display:flex; align-items:center; justify-content:center; }
-.item-card .name{ font-size:.72rem; font-weight:700; line-height:1.2;
-  overflow-wrap:break-word; word-break:break-word; }
-.item-card .unit-hint{ font-size:.65rem; color:var(--muted); }
-.item-card .qty-controls{ display:flex; align-items:center;
-  justify-content:center; gap:8px; width:100%; }
-.item-card .btn-buy, .item-card .btn-shops{
-  width:100%; padding:5px 2px; font-size:.68rem; margin-top:2px; }
-
-@media (max-width:480px){
-  div:has(> .item-card){ grid-template-columns:repeat(2,1fr); }
-}
-/* ===== HORIZONTAL ITEM CARD (Zomato/Swiggy style) ===== */
-#catalog,
-div:has(> .item-card){
-  display:flex !important;
-  flex-direction:column !important;
-  gap:10px !important;
-}
-
-#catalog .item-card,
-.item-card{
-  display:flex !important;
-  flex-direction:row !important;
-  align-items:center !important;
-  text-align:left !important;
-  gap:12px !important;
-  width:100% !important;
-  padding:10px !important;
-  border-radius:16px !important;
-  position:relative;
-}
-
-#catalog .icon-wrap,
-.item-card .icon-wrap{
-  width:92px !important;
-  height:92px !important;
-  flex:0 0 92px !important;
-  position:relative;
-}
-#catalog .icon,
-.item-card .icon{
-  width:100% !important;
-  height:100% !important;
-  border-radius:12px !important;
-  overflow:hidden;
-}
-
-.item-card .item-info{
-  flex:1;
-  min-width:0;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-.item-card .item-info .name{
-  min-height:0 !important;
-  justify-content:flex-start !important;
-  font-size:.95rem !important;
-  font-weight:800 !important;
-}
-
-.item-card .qty-row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-}
-.item-card .qty-row .unit-hint{
-  font-size:.78rem !important;
-  color:var(--muted);
-}
-.item-card .qty-row .qty-controls{
-  width:auto !important;
-  gap:10px !important;
-}
-.item-card .qty-btn{
-  width:26px !important;
-  height:26px !important;
-  font-size:.95rem !important;
-}
-
-.item-card .btn-row{
-  display:flex;
-  gap:8px;
-}
-.item-card .btn-row .btn-buy,
-.item-card .btn-row .btn-shops{
-  flex:1;
-  width:auto !important;
-  margin:0 !important;
-  padding:8px 4px !important;
-  font-size:.78rem !important;
-  border-radius:10px !important;
-}
-
-/* image ke upar price badge */
-.item-card .price-badge{
-  font-size:.62rem !important;
-  padding:2px 6px !important;
-}
-
-/* quantity badge (jo + dabane pe upar dikhta hai) */
-.item-card .qty-float{
-  top:8px !important;
-  right:10px !important;
-  font-size:.7rem !important;
-}
+@media (max-width:768px){ #catalog{ grid-template-columns:repeat(3, 1fr); } }
+@media (max-width:380px){ #catalog{ grid-template-columns:repeat(2, 1fr); } }
 </style>
 </head>
 <body>
@@ -1333,11 +1176,20 @@ async function loadCatalog(){
   const el = document.getElementById('catalog');
   el.innerHTML = catalogItems.map(it => {
     const info = getUnitInfo(it.unit);
-    const hint = info.base === 'pcs' ? `1 pc` : `${info.step}${info.base}`;
     const priceBadge = it.starting_price != null
       ? `<div class="price-badge">₹${it.starting_price}${it.shop_count > 1 ? '+' : ''}</div>`
       : '';
-      return `
+
+    const isWeight = info.base !== 'pcs';
+    const opts = info.base === 'g'
+      ? [[100,'100g'],[250,'250g'],[500,'500g'],[1000,'1kg']]
+      : [[100,'100ml'],[250,'250ml'],[500,'500ml'],[1000,'1l']];
+    const unitControl = isWeight
+      ? `<select class="unit-select" id="unit-sel-${it.id}">${opts.map(o => `<option value="${o[0]}">${o[1]}</option>`).join('')}</select>`
+      : `<div class="unit-fixed">1 pc</div>`;
+    const safeName = it.name.replace(/'/g,"\\'");
+
+    return `
     <div class="item-card" data-name="${it.name}" data-category="${it.category || ''}" data-nearby="${it.has_nearby_shop}">
       <span class="qty-float hidden" id="qty-float-${it.id}">0</span>
 
@@ -1348,29 +1200,25 @@ async function loadCatalog(){
 
       <div class="item-info">
         <div class="name">${it.name}</div>
-
-        <div class="qty-row">
-          <span class="unit-hint">${hint}</span>
-          <div class="qty-controls">
-            <button class="qty-btn minus" onclick="adjustPending(${it.id}, -1)">-</button>
-            <button class="qty-btn" onclick="adjustPending(${it.id}, 1)">+</button>
-          </div>
+        ${unitControl}
+        <div class="qty-controls">
+          <button class="qty-btn minus" onclick="adjustPending(${it.id}, -1)">-</button>
+          <button class="qty-btn" onclick="adjustPending(${it.id}, 1)">+</button>
         </div>
-
         <div class="btn-row">
-          <button class="btn-buy" onclick="confirmBuy(${it.id}, '${it.name.replace(/'/g,"\\'")}')">Add</button>
-          <button class="btn-shops" onclick="showShopsForItem(${it.id}, '${it.name.replace(/'/g,"\\'")}')">Show Shop</button>
+          <button class="btn-buy" onclick="confirmBuy(${it.id}, '${safeName}')">Add</button>
+          <button class="btn-shops" onclick="showShopsForItem(${it.id}, '${safeName}')">Show Shop</button>
         </div>
       </div>
-    </div>
-    `;
+    </div>`;
   }).join('');
 }
-
 function adjustPending(itemId, delta){
   const info = getUnitInfo(itemUnitById[itemId]);
+  const sel = document.getElementById(`unit-sel-${itemId}`);
+  const step = sel ? parseInt(sel.value) : info.step;
   const current = pendingQty[itemId] !== undefined ? pendingQty[itemId] : (cart[itemId] || 0);
-  const next = Math.max(0, current + delta * info.step);
+  const next = Math.max(0, current + delta * step);
   pendingQty[itemId] = next;
   const badge = document.getElementById(`qty-float-${itemId}`);
   if(next > 0){
@@ -1379,43 +1227,6 @@ function adjustPending(itemId, delta){
   } else {
     badge.classList.add('hidden');
   }
-}
-
-function confirmBuy(itemId, name){
-  const qty = pendingQty[itemId] || 0;
-  if(qty <= 0){ toast('First select a quantity using +'); return; }
-  cart[itemId] = qty;
-  cartNames[itemId] = name;
-  renderFloatingCart();
-  const info = getUnitInfo(itemUnitById[itemId]);
-  toast(`${name} — ${formatQty(qty, info)} item add!`);
-}
-function removeFromCart(itemId){
-  delete cart[itemId];
-  delete pendingQty[itemId];
-  const badge = document.getElementById(`qty-float-${itemId}`);
-  if(badge) badge.classList.add('hidden');
-  renderFloatingCart();
-}
-
-function renderFloatingCart(){
-  const wrap = document.getElementById('floating-cart');
-  const itemsEl = document.getElementById('floating-cart-items');
-  const entries = Object.entries(cart);
-  if(entries.length === 0){
-    wrap.classList.add('hidden');
-    return;
-  }
-  wrap.classList.remove('hidden');
-  itemsEl.innerHTML = entries.map(([id, qty]) => {
-    const info = getUnitInfo(itemUnitById[id]);
-    return `
-    <div class="cart-chip">
-      ${cartNames[id] || 'Item'} × ${formatQty(qty, info)}
-      <span class="cart-remove" onclick="removeFromCart(${id})">✕</span>
-    </div>
-  `;
-  }).join('');
 }
 // ---------------- MATCH CHEAPEST SHOP ----------------
 async function matchCart(){
