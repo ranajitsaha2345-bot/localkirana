@@ -445,6 +445,93 @@ body.photo-active .item-card {
 }
 .search-suggest .sg-item:last-child{ border-bottom:none; }
 .search-suggest .sg-item:hover{ background:#FFF3E9; }
+/* ===== PHONE FIX ===== */
+*, *::before, *::after { box-sizing: border-box; }
+img, video { max-width: 100%; }
+
+@media (max-width: 768px){
+  html, body { width: 100%; max-width: 100%; overflow-x: clip !important; }
+
+  header {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    padding: 10px 12px !important;
+    max-width: 100% !important;
+  }
+  header * { min-width: 0; max-width: 100%; }
+  header h1, header .title, header .brand {
+    font-size: 1rem !important;
+    white-space: normal !important;
+  }
+
+  main {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+  .panel, #shop-panel, #auth-panel, #match-panel, #order-tracker, #history-panel {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .cat-row {
+    display: flex !important;
+    overflow-x: auto !important;
+    max-width: 100% !important;
+    gap: 10px !important;
+  }
+  .cat-item { flex: 0 0 auto !important; }
+
+  #hero-carousel, #category-banner { max-width: 100% !important; width: 100% !important; }
+
+  #catalog {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  #catalog .item-card, .item-card { width: 100% !important; max-width: 100% !important; }
+}
+/* ===== HEADER PHONE FIX ===== */
+@media (max-width: 768px){
+  header { padding: 10px 12px 14px !important; }
+
+  .hdr-top {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 6px 8px !important;
+    position: relative !important;
+    padding: 0 !important;
+  }
+  .hdr-top .back-btn,
+  .hdr-top .forward-btn {
+    position: static !important;
+    transform: none !important;
+    flex: 0 0 34px !important;
+    order: 1 !important;
+  }
+  .hdr-top .badge {
+    position: static !important;
+    margin-left: auto !important;
+    order: 2 !important;
+    max-width: 65% !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  .hdr-top h1 {
+    order: 3 !important;
+    flex: 1 1 100% !important;
+    margin: 4px 0 0 !important;
+    font-size: 1rem !important;
+    text-align: center !important;
+    white-space: normal !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -1147,7 +1234,7 @@ function renderSelectedBar(){
 
     const x = document.createElement('button');
     x.textContent = '×';
-    x.style.cssText = 'border:none; background:#999; color:#fff; width:22px; height:22px; border-radius:50%; cursor:pointer; font-size:14px; line-height:1;';
+    x.style.cssText = 'border:none; background:#999; color:#fff; flex:0 0 24px; width:24px; min-width:24px; height:24px; min-height:24px; padding:0; margin:0; border-radius:50%; cursor:pointer; font-size:16px; line-height:24px; display:flex; align-items:center; justify-content:center;';
     x.addEventListener('click', () => removeFromCart(id));
     chip.appendChild(x);
 
