@@ -1,9 +1,10 @@
 import os, re, httpx
 from fastapi import APIRouter, Depends, Request, HTTPException
 from pydantic import BaseModel
-from auth import get_current_user  # <-- yahi ek line apne project ke hisaab se badalni pad sakti hai
+from .. import models, auth
 
 router = APIRouter()
+require_customer = auth.require_role(models.UserRole.customer)
 
 BOT_TOKEN = os.getenv("CUSTOMER_BOT_TOKEN")
 CHAT_ID = os.getenv("CUSTOMER_SUPPORT_CHAT_ID")
@@ -15,7 +16,7 @@ class Msg(BaseModel):
     message: str
 
 @router.post("/customer-support/send")
-async def send(body: Msg, user=Depends(get_current_user)):
+async def send(body: Msg, user=Depends(require_customer)):
     _messages.setdefault(user.id, []).append({"from": "customer", "text": body.message})
     text = f"#C{user.id} {user.name}\n{body.message}"
     async with httpx.AsyncClient() as c:
@@ -24,7 +25,7 @@ async def send(body: Msg, user=Depends(get_current_user)):
     return {"ok": True}
 
 @router.get("/customer-support/messages")
-async def messages(user=Depends(get_current_user)):
+async def messages(user=Depends(require_customer)):
     return _messages.get(user.id, [])
 
 @router.post("/telegram/customer-webhook/{secret}")
