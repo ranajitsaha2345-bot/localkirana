@@ -435,6 +435,16 @@ body.photo-active .item-card {
 
 @media (max-width:768px){ #catalog{ grid-template-columns:repeat(2, 1fr); } }
 @media (max-width:480px){ #catalog{ grid-template-columns:repeat(1, 1fr); } }
+.search-suggest{
+  position:absolute; top:100%; left:0; right:0; margin-top:4px;
+  background:#fff; border:1px solid var(--line); border-radius:12px;
+  box-shadow:0 8px 20px rgba(0,0,0,.15); z-index:30; overflow:hidden;
+}
+.search-suggest .sg-item{
+  padding:10px 14px; font-size:.9rem; cursor:pointer; border-bottom:1px solid var(--line);
+}
+.search-suggest .sg-item:last-child{ border-bottom:none; }
+.search-suggest .sg-item:hover{ background:#FFF3E9; }
 </style>
 </head>
 <body>
@@ -511,9 +521,12 @@ body.photo-active .item-card {
       <div class="hero-carousel" id="hero-carousel"></div>
     </div> 
 
-    <div class="search-box">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B3221D" stroke-width="2" style="cursor:pointer;" onclick="filterCatalog(document.getElementById('item-search').value)"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" id="item-search" placeholder="Search for 'item'" onkeypress="if(event.key==='Enter') filterCatalog(this.value)" oninput="if(this.value==='') filterCatalog('')">
+    <div class="search-box" style="position:relative;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B3221D" stroke-width="2" style="cursor:pointer;" onclick="hideSuggestions(); filterCatalog(document.getElementById('item-search').value)"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="item-search" placeholder="Search for 'item'" autocomplete="off"
+        oninput="onSearchInput(this.value)"
+        onkeypress="if(event.key==='Enter'){ hideSuggestions(); filterCatalog(this.value); }">
+      <div id="search-suggest" class="search-suggest hidden"></div>
     </div>
     <button class="btn-outline hidden" id="history-btn" style="width:100%; margin-bottom:14px;" onclick="toggleHistory()">📜 History</button>
     <div class="cat-row" id="cat-row"></div>
@@ -524,7 +537,7 @@ body.photo-active .item-card {
   <!-- NO RESULTS SECTION -->
 <div id="no-results" class="hidden" style="text-align:center; padding:20px 10px;">
   <video id="no-results-video" autoplay muted loop playsinline style="width:100%; max-width:280px; border-radius:14px;">
-    <source src="https://localkirana-493r.onrender.com/static/no-item-found.mp4" type="video/mp4">
+    <source src="no-item-found.mp4" type="video/mp4">
   </video>
   <p style="margin-top:10px; font-size:16px; color:#999;">
     No item found
@@ -804,6 +817,51 @@ function fuzzyMatch(query, target){
   }
   return false;
 }
+function onSearchInput(v){
+  filterCatalog(v);      // type karte hi list filter hogi
+  showSuggestions(v);    // aur suggestion dikhega
+}
+
+function hideSuggestions(){
+  const box = document.getElementById('search-suggest');
+  if(box) box.classList.add('hidden');
+}
+
+function showSuggestions(q){
+  const box = document.getElementById('search-suggest');
+  q = (q || '').trim().toLowerCase();
+  if(!q){ hideSuggestions(); return; }
+
+  const names = [...new Set(catalogItems.map(i => i.name))]
+    .filter(n => fuzzyMatch(q, n))
+    .sort((a, b) => {
+      const as = a.toLowerCase().startsWith(q) ? 0 : 1;   // jo naam se shuru ho wo upar
+      const bs = b.toLowerCase().startsWith(q) ? 0 : 1;
+      return as - bs;
+    })
+    .slice(0, 6);
+
+  if(!names.length){ hideSuggestions(); return; }
+
+  box.innerHTML = names.map(n =>
+    `<div class="sg-item" data-name="${n.replace(/"/g, '&quot;')}">${n}</div>`
+  ).join('');
+  box.classList.remove('hidden');
+
+  box.onmousedown = (e) => {
+    const t = e.target.closest('.sg-item');
+    if(!t) return;
+    e.preventDefault();
+    const input = document.getElementById('item-search');
+    input.value = t.dataset.name;
+    hideSuggestions();
+    filterCatalog(t.dataset.name);
+  };
+}
+
+document.addEventListener('click', (e) => {
+  if(!e.target.closest('.search-box')) hideSuggestions();
+});
 
 function filterCatalog(q){
   q = (q||'').toLowerCase().trim();
