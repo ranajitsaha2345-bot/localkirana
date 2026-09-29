@@ -2096,6 +2096,25 @@ function sendSupportMessage(){
   input.value = '';
   respondToQuery(text);
 }
+let supportSeen = 0;
+async function sendToSupport(text){
+  if(!token){ respondToQuery(text); return; }
+  const res = await fetch(`${API}/customer-support/send`, {
+    method:'POST', headers: authHeaders(), body: JSON.stringify({message: text})
+  });
+  if(res.ok) addBotMessage('Message support ko bhej diya. Reply yahin aayega.');
+  else addBotMessage('Message nahi ja paya, dobara try karo.');
+}
+setInterval(async () => {
+  if(!token) return;
+  const win = document.getElementById('support-chat-window');
+  if(win.classList.contains('hidden')) return;
+  const res = await fetch(`${API}/customer-support/messages`, {headers: authHeaders()});
+  if(!res.ok) return;
+  const msgs = (await res.json()).filter(m => m.from === 'support');
+  msgs.slice(supportSeen).forEach(m => addBotMessage(m.text));
+  supportSeen = msgs.length;
+}, 3000);
 
 function respondToQuery(text){
   const q = text.toLowerCase();
