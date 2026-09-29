@@ -390,44 +390,51 @@ body.photo-active .item-card {
     margin-bottom: 10px;
   }
 }
-/* ===== COMPACT 6-COLUMN ITEM GRID ===== */
+/* ===== HORIZONTAL ITEM CARD (image left, details right) ===== */
 #catalog{
   display:grid;
-  grid-template-columns:repeat(6, 1fr);
-  gap:8px;
+  grid-template-columns:repeat(3, 1fr);
+  gap:10px;
 }
 #catalog .item-card{
-  display:flex; flex-direction:column; align-items:stretch; text-align:center;
-  gap:4px; padding:6px; width:100%; position:relative;
-  border:1px solid var(--line); border-radius:12px; background:#FFFCF9;
+  display:flex; flex-direction:row; align-items:center; text-align:left;
+  gap:10px; padding:8px; width:100%; position:relative;
+  border:1px solid var(--line); border-radius:14px; background:#FFFCF9;
 }
-#catalog .icon-wrap{ width:100%; height:auto; aspect-ratio:1/1; flex:none; position:relative; }
+#catalog .icon-wrap{ width:84px; height:84px; flex:0 0 84px; position:relative; }
 #catalog .icon{
   width:100%; height:100%; border-radius:10px; overflow:hidden;
   display:flex; align-items:center; justify-content:center; font-size:1.6rem;
 }
-#catalog .item-info{ display:flex; flex-direction:column; gap:4px; min-width:0; }
+#catalog .item-info{ flex:1; min-width:0; display:flex; flex-direction:column; gap:5px; }
+
+/* line 1: naam + dropdown */
+#catalog .top-row{ display:flex; align-items:center; justify-content:space-between; gap:6px; }
 #catalog .name{
-  font-size:.75rem; font-weight:800; line-height:1.2;
-  min-height:2.4em; justify-content:center;
+  font-size:.85rem; font-weight:800; line-height:1.15; min-height:0;
+  justify-content:flex-start; flex:1; min-width:0;
 }
 #catalog .unit-select{
-  width:100%; padding:3px 2px; font-size:.7rem; color:var(--ink);
-  border:1px solid var(--line); border-radius:6px; background:#fff;
+  width:64px; flex:0 0 64px; padding:3px 2px; font-size:.72rem;
+  border:1px solid var(--line); border-radius:6px; background:#fff; color:var(--ink);
 }
-#catalog .unit-fixed{ font-size:.7rem; color:var(--muted); padding:4px 0; }
-#catalog .qty-controls{ display:flex; justify-content:center; gap:10px; width:100%; }
-#catalog .qty-btn{ width:24px; height:24px; font-size:.9rem; }
-#catalog .btn-row{ display:flex; flex-direction:column; gap:4px; }
+#catalog .unit-fixed{ font-size:.72rem; color:var(--muted); flex:0 0 auto; }
+
+/* line 2: - + */
+#catalog .qty-controls{ display:flex; justify-content:center; gap:16px; width:100%; }
+#catalog .qty-btn{ width:26px; height:26px; font-size:.95rem; }
+
+/* line 3: Add + Show Shop ek line mein */
+#catalog .btn-row{ display:flex; flex-direction:row; gap:5px; }
 #catalog .btn-buy,
 #catalog .btn-shops{
-  width:100%; margin:0; padding:5px 2px; font-size:.68rem; border-radius:8px;
+  flex:1; width:auto; margin:0; padding:6px 2px; font-size:.7rem; border-radius:8px;
 }
 #catalog .price-badge{ font-size:.6rem; padding:1px 5px; }
 #catalog .qty-float{ top:6px; right:6px; font-size:.6rem; }
 
-@media (max-width:768px){ #catalog{ grid-template-columns:repeat(3, 1fr); } }
-@media (max-width:380px){ #catalog{ grid-template-columns:repeat(2, 1fr); } }
+@media (max-width:768px){ #catalog{ grid-template-columns:repeat(2, 1fr); } }
+@media (max-width:480px){ #catalog{ grid-template-columns:repeat(1, 1fr); } }
 </style>
 </head>
 <body>
@@ -741,30 +748,7 @@ function formatQty(amount, info){
 function toBackendQty(displayAmount, info){
   return +(displayAmount / info.factor).toFixed(3);
 }
-function getUnitConfig(name){
-  const n = name.toLowerCase();
-  for(const u of UNIT_CONFIG){
-    if(u.kw.some(k => n.includes(k))) return u;
-  }
-  return {step:1, base:'pcs', pricing_unit:'pcs'};
-}
-function formatQty(amount, cfg){
-  if(cfg.base === 'g'){
-    return amount >= 1000 ? `${(amount/1000).toFixed(amount % 1000 === 0 ? 0 : 1)}kg` : `${amount}g`;
-  }
-  if(cfg.base === 'ml'){
-    return amount >= 1000 ? `${(amount/1000).toFixed(amount % 1000 === 0 ? 0 : 1)}l` : `${amount}ml`;
-  }
-  return `${amount} pc${amount > 1 ? 's' : ''}`;
-}
 // Backend ko bhejne layak quantity nikalne ke liye
-function toBackendQtyByName(amount, name){
-  const cfg = getUnitConfig(name);
-  if(cfg.pricing_unit === 'kg' || cfg.pricing_unit === 'litre'){
-    return +(amount / 100).toFixed(3); // 200g -> 2 (price is per-100g, not per-kg)
-  }
-  return amount; // pcs items same rahenge
-}
 function renderCategories(){
   const row = document.getElementById('cat-row');
   if(row){
@@ -1199,8 +1183,10 @@ async function loadCatalog(){
       </div>
 
       <div class="item-info">
-        <div class="name">${it.name}</div>
-        ${unitControl}
+        <div class="top-row">
+          <div class="name">${it.name}</div>
+          ${unitControl}
+        </div>
         <div class="qty-controls">
           <button class="qty-btn minus" onclick="adjustPending(${it.id}, -1)">-</button>
           <button class="qty-btn" onclick="adjustPending(${it.id}, 1)">+</button>
